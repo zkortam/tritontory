@@ -7,20 +7,30 @@ import { AnimatedHeroBackground } from "@/components/ui/animated-hero-background
 import { ArticleService, VideoService, ResearchService, LegalService } from "@/lib/firebase-service";
 import { Article, Video, Research, LegalArticle } from "@/lib/models";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Newspaper, 
+  Video as VideoIcon, 
+  Microscope, 
+  Scale, 
+  ChevronDown,
+  Play
+} from "lucide-react";
 
 // Founders information
 const founders = [
   {
     name: "Zakaria Kortam",
-    title: "Co-Founder",
+    title: "Founder",
     bio: "3rd year Electrical Engineering major with a passion for campus journalism and technology.",
-    image: "https://picsum.photos/300/300?random=1"
+    initials: "ZK",
+    color: "bg-tory-500"
   },
   {
     name: "Dylan Archer",
-    title: "Co-Founder",
+    title: "Founder",
     bio: "3rd year Political Science and History double major focused on bringing informed journalism to UC San Diego.",
-    image: "https://picsum.photos/300/300?random=2"
+    initials: "DA",
+    color: "bg-today-500"
   }
 ];
 
@@ -29,28 +39,28 @@ const mediaSections = [
   {
     title: "Triton Tory News",
     description: "Campus-focused journalism covering UCSD events, student government, sports, and more. From local happenings to global impacts, get the full story.",
-    icon: "/icons/newspaper.svg?v=2",
+    icon: Newspaper,
     gradient: "from-tory-500/20 to-tory-700/20",
     color: "tory-500"
   },
   {
     title: "Triton Today",
     description: "Vertical short-form news videos where reporters deliver 30-60 second updates on the most important campus events.",
-    icon: "/icons/video.svg?v=2",
+    icon: VideoIcon,
     gradient: "from-today-500/20 to-today-700/20",
     color: "today-500"
   },
   {
     title: "Science Journal",
     description: "Highlighting groundbreaking research and scientific discoveries happening across UC San Diego departments and labs.",
-    icon: "/icons/microscope.svg?v=2",
+    icon: Microscope,
     gradient: "from-science-500/20 to-science-700/20",
     color: "science-500"
   },
   {
     title: "Law Review",
     description: "Student-led legal analysis on campus policies, broader legal developments, and their implications for the university community.",
-    icon: "/icons/scale.svg?v=2",
+    icon: Scale,
     gradient: "from-law-500/20 to-law-700/20",
     color: "law-500"
   }
@@ -154,21 +164,7 @@ export default async function Home() {
 
         {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-gray-300"
-          >
-            <path d="M12 5v14" />
-            <path d="m19 12-7 7-7-7" />
-          </svg>
+          <ChevronDown className="w-6 h-6 text-gray-300" />
         </div>
       </section>
 
@@ -188,13 +184,7 @@ export default async function Home() {
             <Card key={index} className={`bg-gray-900 border-gray-800 hover:border-${section.color} transition-colors`}>
               <CardHeader className="text-center">
                 <div className={`w-16 h-16 mx-auto mb-4 p-3 rounded-lg bg-gradient-to-br ${section.gradient}`}>
-                  <Image
-                    src={section.icon}
-                    alt={section.title}
-                    width={40}
-                    height={40}
-                    className="w-full h-full object-contain"
-                  />
+                  <section.icon className="w-full h-full text-white" />
                 </div>
                 <CardTitle className="text-xl">{section.title}</CardTitle>
               </CardHeader>
@@ -316,9 +306,7 @@ export default async function Home() {
                       />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                         <div className="w-12 h-12 bg-today-500 rounded-full flex items-center justify-center">
-                          <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
+                          <Play className="w-6 h-6 text-white ml-1" />
                         </div>
                       </div>
                       <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
@@ -432,17 +420,11 @@ export default async function Home() {
           {founders.map((founder, index) => (
             <Card key={index} className="bg-gray-900 border-gray-800 text-center">
               <CardHeader>
-                <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden">
-                  <Image
-                    src={founder.image}
-                    alt={founder.name}
-                    width={128}
-                    height={128}
-                    className="w-full h-full object-cover"
-                  />
+                <div className={`w-32 h-32 mx-auto mb-4 rounded-full flex items-center justify-center ${founder.color}`}>
+                  <span className="text-4xl font-bold text-white">{founder.initials}</span>
                 </div>
                 <CardTitle className="text-2xl">{founder.name}</CardTitle>
-                <CardDescription className="text-lg text-tory-400">{founder.title}</CardDescription>
+                <CardDescription className="text-lg text-white">{founder.title}</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-400">{founder.bio}</p>

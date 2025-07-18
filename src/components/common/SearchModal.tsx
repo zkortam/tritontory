@@ -160,33 +160,33 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] p-0 bg-gray-900 border-gray-800">
-        <DialogHeader className="p-6 pb-0">
+      <DialogContent className="sm:max-w-[600px] max-w-[95vw] p-0 bg-gray-900 border-gray-800">
+        <DialogHeader className="p-4 md:p-6 pb-0">
           <DialogTitle className="sr-only">Search</DialogTitle>
         </DialogHeader>
 
         <div className="relative">
-          <Search className="absolute left-6 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-4 md:left-6 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
             placeholder="Search articles, videos, research, and legal analysis..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="border-0 border-b border-gray-700 rounded-none bg-transparent px-12 py-6 text-lg focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="border-0 border-b border-gray-700 rounded-none bg-transparent px-12 md:px-12 py-4 md:py-6 text-base md:text-lg focus-visible:ring-0 focus-visible:ring-offset-0"
             autoFocus
           />
           {loading && (
-            <div className="absolute right-6 top-1/2 -translate-y-1/2">
+            <div className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2">
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-600 border-t-primary"></div>
             </div>
           )}
         </div>
 
         {/* Search Results */}
-        <div className="max-h-[400px] overflow-y-auto">
+        <div className="max-h-[50vh] md:max-h-[400px] overflow-y-auto">
           {query && !loading && results.length === 0 && (
-            <div className="p-6 text-center text-gray-400">
-              <Search className="h-12 w-12 mx-auto mb-4 text-gray-600" />
-              <p>No results found for &ldquo;{query}&rdquo;</p>
+            <div className="p-4 md:p-6 text-center text-gray-400">
+              <Search className="h-8 md:h-12 w-8 md:w-12 mx-auto mb-2 md:mb-4 text-gray-600" />
+              <p className="text-sm md:text-base">No results found for &ldquo;{query}&rdquo;</p>
             </div>
           )}
 
@@ -217,15 +217,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       onClose();
                     }}
                     className={cn(
-                      "w-full text-left p-4 rounded-lg transition-colors",
+                      "w-full text-left p-3 md:p-4 rounded-lg transition-colors",
                       index === selectedIndex
                         ? "bg-gray-800"
                         : "hover:bg-gray-800/50"
                     )}
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-2 md:gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-1 md:gap-2 mb-1">
                           <Badge
                             className={cn(
                               "text-white text-xs",
@@ -241,15 +241,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             </span>
                           )}
                         </div>
-                        <h3 className="font-medium line-clamp-1 mb-1">
+                        <h3 className="font-medium line-clamp-1 mb-1 text-sm md:text-base">
                           {result.title}
                         </h3>
                         {(result.excerpt || result.description || result.abstract) && (
-                          <p className="text-sm text-gray-400 line-clamp-2 mb-2">
+                          <p className="text-xs md:text-sm text-gray-400 line-clamp-2 mb-2">
                             {result.excerpt || result.description || result.abstract}
                           </p>
                         )}
-                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <div className="flex items-center gap-2 md:gap-3 text-xs text-gray-500">
                           {result.authorName && (
                             <span className="flex items-center gap-1">
                               <User className="h-3 w-3" />
@@ -272,21 +272,21 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-700 p-4 text-xs text-gray-400">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="border-t border-gray-700 p-3 md:p-4 text-xs text-gray-400">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0">
+            <div className="flex flex-wrap items-center gap-2 md:gap-4">
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 text-xs bg-gray-800 border border-gray-700 rounded">↑</kbd>
                 <kbd className="px-1.5 py-0.5 text-xs bg-gray-800 border border-gray-700 rounded">↓</kbd>
-                to navigate
+                <span className="hidden sm:inline">to navigate</span>
               </span>
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 text-xs bg-gray-800 border border-gray-700 rounded">↵</kbd>
-                to select
+                <span className="hidden sm:inline">to select</span>
               </span>
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 text-xs bg-gray-800 border border-gray-700 rounded">esc</kbd>
-                to close
+                <span className="hidden sm:inline">to close</span>
               </span>
             </div>
           </div>

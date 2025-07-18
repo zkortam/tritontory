@@ -73,12 +73,12 @@ const footerLinks = {
 export function Footer() {
   return (
     <footer className="bg-gray-900 border-t border-gray-800">
-      <div className="container px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+      <div className="container px-4 py-8 md:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8">
           {/* Logo and Description */}
-          <div className="col-span-2 md:col-span-3 lg:col-span-2">
+          <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2">
             <Logo variant="default" size="sm" className="mb-4" />
-            <p className="text-gray-400 text-sm mb-6 max-w-md">
+            <p className="text-gray-400 text-sm mb-4 md:mb-6 max-w-md">
               The comprehensive voice of UC San Diego, bringing you the latest in campus news,
               videos, research, and legal analysis.
             </p>
@@ -89,7 +89,7 @@ export function Footer() {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors p-2 -m-2"
                 >
                   {item.icon}
                   <span className="sr-only">{item.name}</span>
@@ -101,7 +101,7 @@ export function Footer() {
           {/* Section Links */}
           {footerLinks.sections.map((section) => (
             <div key={section.title}>
-              <h3 className="text-sm font-semibold text-white mb-4">
+              <h3 className="text-sm font-semibold text-white mb-3 md:mb-4">
                 {section.title}
               </h3>
               <ul className="space-y-2">
@@ -109,7 +109,7 @@ export function Footer() {
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-sm text-gray-400 hover:text-white transition-colors"
+                      className="text-sm text-gray-400 hover:text-white transition-colors block py-1"
                     >
                       {link.name}
                     </Link>
@@ -120,11 +120,11 @@ export function Footer() {
           ))}
         </div>
 
-        <Separator className="my-8 bg-gray-800" />
+        <Separator className="my-6 md:my-8 bg-gray-800" />
 
         {/* Bottom Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="flex flex-wrap gap-4 mb-4 md:mb-0">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex flex-wrap justify-center md:justify-start gap-4">
             {footerLinks.company.map((link) => (
               <Link
                 key={link.name}
@@ -135,7 +135,7 @@ export function Footer() {
               </Link>
             ))}
           </div>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-400 text-center md:text-left">
             © {new Date().getFullYear()} Triton Tory Media. All rights reserved.
           </p>
         </div>
