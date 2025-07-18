@@ -314,7 +314,7 @@ export class PerformanceService {
   }
 
   // Debounce function calls
-  debounce<T extends (...args: any[]) => any>(
+  debounce<T extends (...args: unknown[]) => unknown>(
     func: T,
     wait: number
   ): (...args: Parameters<T>) => void {
@@ -326,7 +326,7 @@ export class PerformanceService {
   }
 
   // Throttle function calls
-  throttle<T extends (...args: any[]) => any>(
+  throttle<T extends (...args: unknown[]) => unknown>(
     func: T,
     limit: number
   ): (...args: Parameters<T>) => void {

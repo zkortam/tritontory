@@ -37,25 +37,24 @@ import {
   Trash2,
   Scale,
   Eye,
-  Calendar,
   AlertCircle,
   BookOpen
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { LegalService } from "@/lib/firebase-service";
-import { useAuth } from "@/lib/auth-context";
+
 import { RequirePermission } from "@/lib/rbac";
 import Link from "next/link";
 
 export default function LegalPage() {
-  const [legalArticles, setLegalArticles] = useState<any[]>([]);
+  const [legalArticles, setLegalArticles] = useState<Array<{id: string; title: string; abstract: string; authorName: string; category: string; status: string; coverImage?: string; publishedAt: Date; updatedAt: Date}>>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [articleToDelete, setArticleToDelete] = useState<any | null>(null);
+  const [articleToDelete, setArticleToDelete] = useState<{id: string; title: string} | null>(null);
 
   // Fetch legal articles from Firebase
   useEffect(() => {

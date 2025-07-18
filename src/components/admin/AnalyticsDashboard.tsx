@@ -36,7 +36,7 @@ interface AnalyticsSummary {
   totalLikes: number;
   totalComments: number;
   topContent: ContentAnalytics[];
-  recentActivity: Array<{id: string; type: string; timestamp: Date; contentType: string; platform?: string}>;
+  recentActivity: Array<{type: string; contentId: string; timestamp: Date; contentType: string; platform?: string}>;
 }
 
 
@@ -159,7 +159,7 @@ export function AnalyticsDashboard() {
           <p className="text-gray-400">Content performance and user engagement metrics</p>
         </div>
         <div className="flex items-center gap-4">
-          <Tabs value={timeRange} onValueChange={(value) => setTimeRange(value as any)}>
+          <Tabs value={timeRange} onValueChange={(value) => setTimeRange(value as '7d' | '30d' | '90d')}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="7d">7 Days</TabsTrigger>
               <TabsTrigger value="30d">30 Days</TabsTrigger>

@@ -37,26 +37,25 @@ import {
   Trash2,
   Play,
   Eye,
-  Calendar,
   AlertCircle,
   Video,
   TrendingUp
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { VideoService } from "@/lib/firebase-service";
-import { useAuth } from "@/lib/auth-context";
+
 import { RequirePermission } from "@/lib/rbac";
 import Link from "next/link";
 
 export default function VideosPage() {
-  const [videos, setVideos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<Array<{id: string; title: string; description: string; authorName: string; category: string; status: string; thumbnailUrl?: string; views?: number; duration?: number; publishedAt: Date; updatedAt: Date}>>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [videoToDelete, setVideoToDelete] = useState<any | null>(null);
+  const [videoToDelete, setVideoToDelete] = useState<{id: string; title: string} | null>(null);
 
   // Fetch videos from Firebase
   useEffect(() => {

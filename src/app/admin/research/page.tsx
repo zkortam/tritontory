@@ -37,25 +37,24 @@ import {
   Trash2,
   Microscope,
   Eye,
-  Calendar,
   AlertCircle,
   Building
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ResearchService } from "@/lib/firebase-service";
-import { useAuth } from "@/lib/auth-context";
+
 import { RequirePermission } from "@/lib/rbac";
 import Link from "next/link";
 
 export default function ResearchPage() {
-  const [research, setResearch] = useState<any[]>([]);
+  const [research, setResearch] = useState<Array<{id: string; title: string; abstract: string; authorName: string; department: string; status: string; coverImage?: string; contributors?: string[]; publishedAt: Date; updatedAt: Date}>>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [researchToDelete, setResearchToDelete] = useState<any | null>(null);
+  const [researchToDelete, setResearchToDelete] = useState<{id: string; title: string} | null>(null);
 
   // Fetch research from Firebase
   useEffect(() => {
