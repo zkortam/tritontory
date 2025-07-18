@@ -281,6 +281,7 @@ export class SearchService {
   }
 
   // Check if content matches search term
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static matchesSearch(content: any, searchTerm: string): boolean {
     const searchableFields = [
       content.title?.toLowerCase(),

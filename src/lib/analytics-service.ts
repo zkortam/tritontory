@@ -148,24 +148,13 @@ export class AnalyticsService {
 
       if (analyticsDoc.exists()) {
         // Update existing analytics
-        const updates: Record<string, any> = {
+        const updates = {
           updatedAt: serverTimestamp(),
+          ...(action === 'view' && { views: increment(1) }),
+          ...(action === 'share' && { shares: increment(1) }),
+          ...(action === 'like' && { likes: increment(1) }),
+          ...(action === 'unlike' && { likes: increment(-1) }),
         };
-
-        switch (action) {
-          case 'view':
-            updates.views = increment(1);
-            break;
-          case 'share':
-            updates.shares = increment(1);
-            break;
-          case 'like':
-            updates.likes = increment(1);
-            break;
-          case 'unlike':
-            updates.likes = increment(-1);
-            break;
-        }
 
         await updateDoc(analyticsRef, updates);
       } else {

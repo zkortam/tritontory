@@ -58,7 +58,7 @@ interface ArticleForm {
   tags: string;
   coverImage: string;
   featured: boolean;
-  status: 'draft' | 'published';
+  status: 'draft' | 'published' | 'archived';
 }
 
 export default function EditArticlePage() {
@@ -255,7 +255,7 @@ export default function EditArticlePage() {
                 <div>
                   <Label htmlFor="content">Content *</Label>
                   <RichTextEditor
-                    value={form.content}
+                    content={form.content}
                     onChange={(content) => setForm(prev => ({ ...prev, content }))}
                     placeholder="Write your article content..."
                   />
@@ -276,7 +276,7 @@ export default function EditArticlePage() {
                   <Label htmlFor="status">Status</Label>
                   <Select
                     value={form.status}
-                    onValueChange={(value: 'draft' | 'published') => setForm(prev => ({ ...prev, status: value }))}
+                    onValueChange={(value: 'draft' | 'published' | 'archived') => setForm(prev => ({ ...prev, status: value }))}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700">
                       <SelectValue />
@@ -284,6 +284,7 @@ export default function EditArticlePage() {
                     <SelectContent>
                       <SelectItem value="draft">Draft</SelectItem>
                       <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="archived">Archived</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
