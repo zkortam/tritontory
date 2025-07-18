@@ -206,6 +206,7 @@ export function FileUpload({
               <p className="text-lg font-medium">
                 Drop files here or{' '}
                 <Button
+                  type="button"
                   variant="link"
                   className="p-0 h-auto text-primary"
                   onClick={() => fileInputRef.current?.click()}
@@ -263,6 +264,7 @@ export function FileUpload({
               </div>
 
               <Button
+                type="button"
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-gray-400 hover:text-white"
