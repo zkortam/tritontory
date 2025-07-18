@@ -200,7 +200,7 @@ export class SEOService {
   }
 
   // Generate structured data (JSON-LD)
-  static generateStructuredData(seoConfig: SEOConfig, content?: any) {
+  static generateStructuredData(seoConfig: SEOConfig, content?: Record<string, unknown>) {
     const baseStructuredData = {
       "@context": "https://schema.org",
       "@type": seoConfig.type === "article" ? "Article" : "WebPage",
@@ -237,9 +237,9 @@ export class SEOService {
         "dateModified": seoConfig.modifiedTime,
         "articleSection": seoConfig.section,
         "keywords": seoConfig.keywords?.join(", "),
-        "wordCount": content.content ? content.content.split(" ").length : undefined,
+        "wordCount": content.content ? (content.content as string).split(" ").length : undefined,
         "timeRequired": content.content ? 
-          `PT${Math.ceil(content.content.split(" ").length / 200)}M` : undefined,
+          `PT${Math.ceil((content.content as string).split(" ").length / 200)}M` : undefined,
       };
     }
 
@@ -251,7 +251,7 @@ export class SEOService {
         "description": seoConfig.description,
         "thumbnailUrl": seoConfig.image,
         "uploadDate": seoConfig.publishedTime,
-        "duration": content.duration ? `PT${Math.floor(content.duration / 60)}M${content.duration % 60}S` : undefined,
+        "duration": content.duration ? `PT${Math.floor((content.duration as number) / 60)}M${(content.duration as number) % 60}S` : undefined,
         "author": {
           "@type": "Person",
           "name": seoConfig.author,

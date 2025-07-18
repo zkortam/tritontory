@@ -10,7 +10,6 @@ import {
   Plus, 
   Edit, 
   Trash2, 
-  Eye, 
   AlertCircle,
   Loader2,
   Calendar,
@@ -18,7 +17,6 @@ import {
 } from "lucide-react";
 import { ArticleService } from "@/lib/firebase-service";
 import { Article } from "@/lib/models";
-import { serverTimestamp } from "firebase/firestore";
 
 export default function AdminArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);

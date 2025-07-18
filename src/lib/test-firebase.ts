@@ -28,7 +28,7 @@ export class FirebaseTester {
       const articles = await ArticleService.getArticles(undefined, undefined, false, 1);
       results.articles = true;
       console.log(`✅ Articles: Found ${articles.length} articles`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const firebaseError = ErrorHandler.handleError(error, "Articles Test");
       results.errors.push(`Articles: ${firebaseError.message}`);
       console.error("❌ Articles test failed:", firebaseError.message);
@@ -40,7 +40,7 @@ export class FirebaseTester {
       const videos = await VideoService.getVideos(undefined, false, 1);
       results.videos = true;
       console.log(`✅ Videos: Found ${videos.length} videos`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const firebaseError = ErrorHandler.handleError(error, "Videos Test");
       results.errors.push(`Videos: ${firebaseError.message}`);
       console.error("❌ Videos test failed:", firebaseError.message);
@@ -52,7 +52,7 @@ export class FirebaseTester {
       const research = await ResearchService.getResearchArticles(undefined, false, 1);
       results.research = true;
       console.log(`✅ Research: Found ${research.length} research articles`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const firebaseError = ErrorHandler.handleError(error, "Research Test");
       results.errors.push(`Research: ${firebaseError.message}`);
       console.error("❌ Research test failed:", firebaseError.message);
@@ -64,7 +64,7 @@ export class FirebaseTester {
       const legal = await LegalService.getLegalArticles(undefined, false, 1);
       results.legal = true;
       console.log(`✅ Legal Articles: Found ${legal.length} legal articles`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const firebaseError = ErrorHandler.handleError(error, "Legal Articles Test");
       results.errors.push(`Legal Articles: ${firebaseError.message}`);
       console.error("❌ Legal Articles test failed:", firebaseError.message);
@@ -94,7 +94,7 @@ export class FirebaseTester {
       // This is a basic test - in a real app you'd test actual auth flows
       console.log("✅ Authentication service is available");
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const firebaseError = ErrorHandler.handleError(error, "Authentication Test");
       console.error("❌ Authentication test failed:", firebaseError.message);
       return { success: false, error: firebaseError.message };
@@ -111,7 +111,7 @@ export class FirebaseTester {
       // This would test actual file upload in a real scenario
       console.log("✅ File upload service is available");
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const firebaseError = ErrorHandler.handleError(error, "File Upload Test");
       console.error("❌ File upload test failed:", firebaseError.message);
       return { success: false, error: firebaseError.message };

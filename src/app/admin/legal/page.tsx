@@ -38,9 +38,7 @@ import {
   Scale,
   Eye,
   Calendar,
-  User,
   AlertCircle,
-  TrendingUp,
   BookOpen
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -50,7 +48,6 @@ import { RequirePermission } from "@/lib/rbac";
 import Link from "next/link";
 
 export default function LegalPage() {
-  const { user } = useAuth();
   const [legalArticles, setLegalArticles] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -349,7 +346,7 @@ export default function LegalPage() {
           <DialogHeader>
             <DialogTitle>Delete Legal Article</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{articleToDelete?.title}"? This action cannot be undone.
+              Are you sure you want to delete &quot;{articleToDelete?.title}&quot;? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

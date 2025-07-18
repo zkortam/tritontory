@@ -220,7 +220,7 @@ export default async function Home() {
         {/* Featured Articles Grid */}
         {featuredArticles.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {featuredArticles.map((article, index) => (
+            {featuredArticles.map((article) => (
               <Card key={article.id} className="bg-gray-900 border-gray-800 hover:border-tory-500 transition-colors group">
                 <div className="relative aspect-video overflow-hidden rounded-t-lg">
                   <Image

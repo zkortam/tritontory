@@ -14,15 +14,14 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  Newspaper, 
-  Video, 
+import {
+  Newspaper,
+  Video,
   Microscope, 
   Scale, 
   Users, 
   AlertCircle,
   Loader2,
-  Plus,
   MessageCircle
 } from "lucide-react";
 import { 
@@ -76,7 +75,7 @@ export default function AdminDashboard() {
     publishedLegal: 0,
   });
   const [recentContent, setRecentContent] = useState<RecentContent[]>([]);
-  const [contentChartData, setContentChartData] = useState<any[]>([]);
+  const [contentChartData, setContentChartData] = useState<Array<{name: string; count: number; color: string}>>([]);
 
   // Fetch dashboard data
   const fetchDashboardData = useCallback(async () => {

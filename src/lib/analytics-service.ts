@@ -148,7 +148,7 @@ export class AnalyticsService {
 
       if (analyticsDoc.exists()) {
         // Update existing analytics
-        const updates: any = {
+        const updates: Record<string, any> = {
           updatedAt: serverTimestamp(),
         };
 
@@ -275,7 +275,7 @@ export class AnalyticsService {
     totalLikes: number;
     totalComments: number;
     topContent: ContentAnalytics[];
-    recentActivity: any[];
+    recentActivity: Array<{type: string; contentId: string; contentType: string; timestamp: Date; platform?: string}>;
   }> {
     try {
       const analyticsQuery = collection(db, "content-analytics");
@@ -334,9 +334,9 @@ export class AnalyticsService {
   }
 
   // Get recent activity
-  private static async getRecentActivity(since: Date): Promise<any[]> {
+  private static async getRecentActivity(since: Date): Promise<Array<{type: string; contentId: string; contentType: string; timestamp: Date; platform?: string}>> {
     try {
-      const activities: any[] = [];
+      const activities: Array<{type: string; contentId: string; contentType: string; timestamp: Date; platform?: string}> = [];
 
       // Get recent views
       const viewsQuery = collection(db, "view-events");

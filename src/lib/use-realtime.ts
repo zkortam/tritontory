@@ -6,8 +6,11 @@ import { db } from "./firebase";
 import { Article, Video, Research, LegalArticle } from "./models";
 
 // Convert Firestore timestamp to Date
-const convertTimestampToDate = (timestamp: any): Date => {
-  return timestamp.toDate();
+const convertTimestampToDate = (timestamp: unknown): Date => {
+  if (timestamp && typeof timestamp === 'object' && 'toDate' in timestamp && typeof (timestamp as {toDate: () => Date}).toDate === 'function') {
+    return (timestamp as {toDate: () => Date}).toDate();
+  }
+  return new Date();
 };
 
 // Real-time hook for articles

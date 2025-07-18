@@ -12,7 +12,7 @@ import { Article } from "@/lib/models";
 import { Comments } from "@/components/common/Comments";
 import { SocialShare } from "@/components/common/SocialShare";
 import { AnalyticsService } from "@/lib/analytics-service";
-import { ArrowLeft, Calendar, User, Tag, Share, Heart, BookOpen } from "lucide-react";
+import { ArrowLeft, Calendar, User, Tag, BookOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 export default function ArticlePage() {
@@ -59,25 +59,7 @@ export default function ArticlePage() {
     fetchArticle();
   }, [params.id]);
 
-  const handleShare = async () => {
-    if (navigator.share && article) {
-      try {
-        await navigator.share({
-          title: article.title,
-          text: article.excerpt,
-          url: window.location.href,
-        });
-      } catch {
-        // Fallback to copying URL
-        navigator.clipboard.writeText(window.location.href);
-        alert("Article URL copied to clipboard!");
-      }
-    } else {
-      // Fallback for browsers that don't support Web Share API
-      navigator.clipboard.writeText(window.location.href);
-      alert("Article URL copied to clipboard!");
-    }
-  };
+
 
   // Track view on component mount
   useEffect(() => {

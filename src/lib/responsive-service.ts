@@ -419,7 +419,7 @@ export class ResponsiveService {
     style.textContent = `
       .mobile-optimized {
         --touch-target-size: 44px;
-        --font-size-base: 16px;
+        --font-size-base: 18px;
         --spacing-unit: 8px;
       }
       
@@ -434,6 +434,14 @@ export class ResponsiveService {
       .mobile-optimized textarea {
         font-size: var(--font-size-base);
         padding: 12px;
+      }
+      
+      .mobile-optimized .text-sm {
+        font-size: 16px;
+      }
+      
+      .mobile-optimized .text-base {
+        font-size: 18px;
       }
     `;
     document.head.appendChild(style);

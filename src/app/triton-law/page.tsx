@@ -2,7 +2,7 @@ import { LegalService } from "@/lib/firebase-service";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, User, Scale } from "lucide-react";
+import { Calendar, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 

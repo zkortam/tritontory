@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "Triton Tory Media - UC San Diego's Premier Student Media",
   description: "The comprehensive voice of UC San Diego featuring news, videos, research, and legal analysis",
   keywords: ["UCSD", "UC San Diego", "student media", "campus news", "triton"],
+  viewport: "width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes",
 };
 
 export default function RootLayout({

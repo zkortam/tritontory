@@ -20,12 +20,7 @@ import {
 import { UserService } from "@/lib/firebase-service";
 import { User } from "@/lib/models";
 
-const roles = [
-  { value: "admin", label: "Admin", description: "Full access to all features" },
-  { value: "editor", label: "Editor", description: "Can edit and publish content" },
-  { value: "author", label: "Author", description: "Can create and submit content" },
-  { value: "viewer", label: "Viewer", description: "Read-only access" }
-];
+
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);

@@ -88,8 +88,8 @@ export class PerformanceService {
       let cls = 0;
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (entry.entryType === 'layout-shift' && !(entry as any).hadRecentInput) {
-            cls += (entry as any).value;
+          if (entry.entryType === 'layout-shift' && !(entry as PerformanceEntry & {hadRecentInput?: boolean}).hadRecentInput) {
+            cls += (entry as PerformanceEntry & {value?: number}).value || 0;
           }
         }
       });
@@ -109,7 +109,7 @@ export class PerformanceService {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           if (entry.entryType === 'first-input') {
-            fid = (entry as any).processingStart - entry.startTime;
+            fid = (entry as PerformanceEntry & {processingStart?: number}).processingStart || 0 - entry.startTime;
             break;
           }
         }
@@ -272,12 +272,14 @@ export class PerformanceService {
       return;
     }
 
-    const memory = (performance as any).memory;
-    console.log('Memory usage:', {
-      usedJSHeapSize: `${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
-      totalJSHeapSize: `${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
-      jsHeapSizeLimit: `${(memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)}MB`,
-    });
+    const memory = (performance as Performance & {memory?: {usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number}}).memory;
+    if (memory) {
+      console.log('Memory usage:', {
+        usedJSHeapSize: `${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
+        totalJSHeapSize: `${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)}MB`,
+        jsHeapSizeLimit: `${(memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)}MB`,
+      });
+    }
   }
 
   // Optimize images

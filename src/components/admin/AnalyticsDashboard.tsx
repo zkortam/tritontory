@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   BarChart,
   Bar,
@@ -13,8 +13,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
@@ -38,10 +36,10 @@ interface AnalyticsSummary {
   totalLikes: number;
   totalComments: number;
   topContent: ContentAnalytics[];
-  recentActivity: any[];
+  recentActivity: Array<{id: string; type: string; timestamp: Date; contentType: string; platform?: string}>;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
 
 export function AnalyticsDashboard() {
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
@@ -150,7 +148,7 @@ export function AnalyticsDashboard() {
       });
     }
     return acc;
-  }, [] as any[]);
+  }, [] as Array<{name: string; value: number; color: string}>);
 
   return (
     <div className="space-y-6">

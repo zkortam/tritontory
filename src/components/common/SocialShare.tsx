@@ -4,15 +4,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Share2, 
+import {
+  Share2,
   Twitter, 
   Facebook, 
   Linkedin, 
   Mail, 
   Copy, 
-  Check,
-  ExternalLink
+  Check
 } from "lucide-react";
 import { AnalyticsService } from "@/lib/analytics-service";
 
@@ -56,7 +55,7 @@ const sharePlatforms = [
   },
 ];
 
-export function SocialShare({ contentId, contentType, title, description, url, image }: SocialShareProps) {
+export function SocialShare({ contentId, contentType, title, description, url }: SocialShareProps) {
   const [copied, setCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 

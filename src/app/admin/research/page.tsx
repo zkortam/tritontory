@@ -38,9 +38,7 @@ import {
   Microscope,
   Eye,
   Calendar,
-  User,
   AlertCircle,
-  TrendingUp,
   Building
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -50,7 +48,6 @@ import { RequirePermission } from "@/lib/rbac";
 import Link from "next/link";
 
 export default function ResearchPage() {
-  const { user } = useAuth();
   const [research, setResearch] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
@@ -356,7 +353,7 @@ export default function ResearchPage() {
           <DialogHeader>
             <DialogTitle>Delete Research Article</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{researchToDelete?.title}"? This action cannot be undone.
+              Are you sure you want to delete &quot;{researchToDelete?.title}&quot;? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

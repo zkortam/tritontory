@@ -174,7 +174,7 @@ export const ArticleService = {
 
     // Filter out undefined values to prevent Firebase errors
     const cleanArticle = Object.fromEntries(
-      Object.entries(article).filter(([_, value]) => value !== undefined)
+      Object.entries(article).filter(([, value]) => value !== undefined)
     );
 
     await updateDoc(docRef, {
@@ -332,7 +332,7 @@ export const VideoService = {
 
     // Filter out undefined values to prevent Firebase errors
     const cleanVideo = Object.fromEntries(
-      Object.entries(video).filter(([_, value]) => value !== undefined)
+      Object.entries(video).filter(([, value]) => value !== undefined)
     );
 
     await updateDoc(docRef, {
@@ -489,7 +489,7 @@ export const ResearchService = {
 
     // Filter out undefined values to prevent Firebase errors
     const cleanResearch = Object.fromEntries(
-      Object.entries(research).filter(([_, value]) => value !== undefined)
+      Object.entries(research).filter(([, value]) => value !== undefined)
     );
 
     await updateDoc(docRef, {
@@ -637,7 +637,7 @@ export const LegalService = {
 
     // Filter out undefined values to prevent Firebase errors
     const cleanLegalArticle = Object.fromEntries(
-      Object.entries(legalArticle).filter(([_, value]) => value !== undefined)
+      Object.entries(legalArticle).filter(([, value]) => value !== undefined)
     );
 
     await updateDoc(docRef, {
@@ -696,7 +696,7 @@ export const UserService = {
 // Settings Service for Admin Settings Management
 export const SettingsService = {
   // Get all settings from Firestore
-  getSettings: async (): Promise<any> => {
+  getSettings: async (): Promise<Record<string, unknown>> => {
     try {
       const settingsQuery = collection(db, "settings");
       const querySnapshot = await getDocs(settingsQuery);
@@ -721,7 +721,7 @@ export const SettingsService = {
       }
 
       // Combine all settings documents into one object
-      const settings: any = {};
+      const settings: Record<string, unknown> = {};
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         settings[doc.id] = data.value !== undefined ? data.value : data;
@@ -735,7 +735,7 @@ export const SettingsService = {
   },
 
   // Save a setting to Firestore
-  saveSetting: async (key: string, value: any): Promise<void> => {
+  saveSetting: async (key: string, value: unknown): Promise<void> => {
     try {
       const docRef = doc(db, "settings", key);
       await setDoc(docRef, {
@@ -749,7 +749,7 @@ export const SettingsService = {
   },
 
   // Save multiple settings at once
-  saveSettings: async (settings: Record<string, any>): Promise<void> => {
+  saveSettings: async (settings: Record<string, unknown>): Promise<void> => {
     try {
       const batch = writeBatch(db);
       

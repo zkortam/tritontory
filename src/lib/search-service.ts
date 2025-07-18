@@ -12,11 +12,11 @@ import { db } from "./firebase";
 import { Article, Video, Research, LegalArticle } from "./models";
 
 // Convert Firestore timestamp to Date
-const convertTimestampToDate = (timestamp: any): Date => {
-  if (timestamp?.toDate) {
-    return timestamp.toDate();
+const convertTimestampToDate = (timestamp: unknown): Date => {
+  if (timestamp && typeof timestamp === 'object' && 'toDate' in timestamp && typeof (timestamp as {toDate: () => Date}).toDate === 'function') {
+    return (timestamp as {toDate: () => Date}).toDate();
   }
-  return new Date(timestamp);
+  return new Date(timestamp as string | number | Date);
 };
 
 export interface SearchResult {
@@ -56,7 +56,7 @@ export class SearchService {
       );
 
       articlesSnapshot.forEach((doc) => {
-        const data = doc.data() as any;
+        const data = doc.data();
         const article = {
           ...data,
           id: doc.id,
@@ -89,7 +89,7 @@ export class SearchService {
       );
 
       videosSnapshot.forEach((doc) => {
-        const data = doc.data() as any;
+        const data = doc.data();
         const video = {
           ...data,
           id: doc.id,
@@ -123,7 +123,7 @@ export class SearchService {
       );
 
       researchSnapshot.forEach((doc) => {
-        const data = doc.data() as any;
+        const data = doc.data();
         const research = {
           ...data,
           id: doc.id,
@@ -157,7 +157,7 @@ export class SearchService {
       );
 
       legalSnapshot.forEach((doc) => {
-        const data = doc.data() as any;
+        const data = doc.data();
         const legal = {
           ...data,
           id: doc.id,
@@ -235,37 +235,37 @@ export class SearchService {
 
       snapshot.forEach((doc) => {
         const data = doc.data();
-        const content: any = {
+        const content = {
           ...data,
           id: doc.id,
           publishedAt: convertTimestampToDate(data.publishedAt),
-        };
+        } as Record<string, unknown>;
 
         if (this.matchesSearch(content, searchTerm)) {
           const result: SearchResult = {
-            id: content.id,
+            id: content.id as string,
             type,
-            title: content.title,
-            category: content[categoryField],
-            publishedAt: content.publishedAt,
-            authorName: content.authorName,
+            title: content.title as string,
+            category: content[categoryField] as string,
+            publishedAt: content.publishedAt as Date,
+            authorName: content.authorName as string,
           };
 
           // Add type-specific fields
           if (type === 'article') {
-            result.excerpt = content.excerpt;
-            result.coverImage = content.coverImage;
+            result.excerpt = content.excerpt as string | undefined;
+            result.coverImage = content.coverImage as string | undefined;
           } else if (type === 'video') {
-            result.description = content.description;
-            result.thumbnailUrl = content.thumbnailUrl;
-            result.views = content.views;
+            result.description = content.description as string | undefined;
+            result.thumbnailUrl = content.thumbnailUrl as string | undefined;
+            result.views = content.views as number | undefined;
           } else if (type === 'research') {
-            result.abstract = content.abstract;
-            result.coverImage = content.coverImage;
-            result.department = content.department;
+            result.abstract = content.abstract as string | undefined;
+            result.coverImage = content.coverImage as string | undefined;
+            result.department = content.department as string | undefined;
           } else if (type === 'legal') {
-            result.abstract = content.abstract;
-            result.coverImage = content.coverImage;
+            result.abstract = content.abstract as string | undefined;
+            result.coverImage = content.coverImage as string | undefined;
           }
 
           results.push(result);

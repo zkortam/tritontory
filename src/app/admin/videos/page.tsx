@@ -19,7 +19,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -39,7 +38,6 @@ import {
   Play,
   Eye,
   Calendar,
-  User,
   AlertCircle,
   Video,
   TrendingUp
@@ -51,7 +49,6 @@ import { RequirePermission } from "@/lib/rbac";
 import Link from "next/link";
 
 export default function VideosPage() {
-  const { user } = useAuth();
   const [videos, setVideos] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -367,7 +364,7 @@ export default function VideosPage() {
           <DialogHeader>
             <DialogTitle>Delete Video</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{videoToDelete?.title}"? This action cannot be undone.
+              Are you sure you want to delete &quot;{videoToDelete?.title}&quot;? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

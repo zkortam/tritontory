@@ -53,7 +53,7 @@ export function RequireAdmin({ children, fallback }: RequireAdminProps) {
         <Alert className="max-w-md bg-red-900/50 border-red-800">
           <Shield className="h-4 w-4" />
           <AlertDescription>
-            You don't have admin privileges to access this page. Please contact an administrator.
+            You don&apos;t have admin privileges to access this page. Please contact an administrator.
           </AlertDescription>
         </Alert>
       </div>
@@ -100,7 +100,7 @@ export function RequireRole({ children, requiredRole, fallback }: RequireRolePro
         <Alert className="max-w-md bg-red-900/50 border-red-800">
           <Shield className="h-4 w-4" />
           <AlertDescription>
-            You don't have permission to access this page. Required role: {requiredRole}
+            You don&apos;t have permission to access this page. Required role: {requiredRole}
           </AlertDescription>
         </Alert>
       </div>
@@ -147,7 +147,7 @@ export function RequirePermission({ children, permission, fallback }: RequirePer
       <Alert className="bg-red-900/50 border-red-800">
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          You don't have permission to perform this action.
+          You don&apos;t have permission to perform this action.
         </AlertDescription>
       </Alert>
     );

@@ -58,7 +58,7 @@ export class AccessibilityService {
     const images = document.querySelectorAll('img');
     images.forEach((img, index) => {
       const alt = img.getAttribute('alt');
-      const src = img.getAttribute('src');
+
       
       if (!alt && !img.hasAttribute('aria-label') && !img.hasAttribute('aria-labelledby')) {
         this.violations.push({
@@ -175,8 +175,7 @@ export class AccessibilityService {
     const inputs = document.querySelectorAll('input, textarea, select');
     inputs.forEach((input, index) => {
       const id = input.getAttribute('id');
-      const name = input.getAttribute('name');
-      const type = input.getAttribute('type');
+
       
       // Check for missing labels
       if (!id && !input.hasAttribute('aria-label') && !input.hasAttribute('aria-labelledby')) {
