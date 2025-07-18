@@ -19,6 +19,7 @@ import {
   Loader2
 } from "lucide-react";
 import { SettingsService } from "@/lib/firebase-service";
+import { Settings as SettingsType } from "@/lib/models";
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -26,7 +27,7 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<SettingsType>({
     siteName: "Triton Tory Media",
     siteDescription: "The comprehensive voice of UC San Diego",
     contactEmail: "contact@tritontory.com",

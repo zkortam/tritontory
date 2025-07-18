@@ -23,7 +23,7 @@ import {
   deleteObject
 } from "firebase/storage";
 import { db, storage } from "./firebase";
-import { Article, Video, Research, LegalArticle, User, Comment } from "./models";
+import { Article, Video, Research, LegalArticle, User, Comment, Settings } from "./models";
 
 // Convert Firestore timestamp to Date
 const convertTimestampToDate = (timestamp: Timestamp): Date => {
@@ -696,7 +696,7 @@ export const UserService = {
 // Settings Service for Admin Settings Management
 export const SettingsService = {
   // Get all settings from Firestore
-  getSettings: async (): Promise<Record<string, unknown>> => {
+  getSettings: async (): Promise<Settings> => {
     try {
       const settingsQuery = collection(db, "settings");
       const querySnapshot = await getDocs(settingsQuery);
@@ -727,7 +727,22 @@ export const SettingsService = {
         settings[doc.id] = data.value !== undefined ? data.value : data;
       });
 
-      return settings;
+      // Convert to Settings type with proper defaults
+      return {
+        siteName: (settings.siteName as string) || "Triton Tory Media",
+        siteDescription: (settings.siteDescription as string) || "The comprehensive voice of UC San Diego",
+        contactEmail: (settings.contactEmail as string) || "contact@tritontory.com",
+        maxFileSize: (settings.maxFileSize as string) || "10",
+        enableComments: (settings.enableComments as boolean) ?? true,
+        requireApproval: (settings.requireApproval as boolean) ?? true,
+        autoPublish: (settings.autoPublish as boolean) ?? false,
+        newContentAlerts: (settings.newContentAlerts as boolean) ?? true,
+        errorNotifications: (settings.errorNotifications as boolean) ?? true,
+        weeklyReports: (settings.weeklyReports as boolean) ?? false,
+        version: (settings.version as string) || "1.0.0",
+        lastUpdated: (settings.lastUpdated as Date) || new Date(),
+        status: (settings.status as string) || "Online"
+      };
     } catch (error) {
       console.error("Error fetching settings:", error);
       throw error;
@@ -749,7 +764,7 @@ export const SettingsService = {
   },
 
   // Save multiple settings at once
-  saveSettings: async (settings: Record<string, unknown>): Promise<void> => {
+  saveSettings: async (settings: Settings): Promise<void> => {
     try {
       const batch = writeBatch(db);
       

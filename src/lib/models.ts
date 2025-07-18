@@ -89,3 +89,20 @@ export interface ContentAnalytics {
   averageReadTime?: number; // Not applicable for videos
   completionRate?: number; // For videos only
 }
+
+// Settings model for admin configuration
+export interface Settings {
+  siteName: string;
+  siteDescription: string;
+  contactEmail: string;
+  maxFileSize: string;
+  enableComments: boolean;
+  requireApproval: boolean;
+  autoPublish: boolean;
+  newContentAlerts: boolean;
+  errorNotifications: boolean;
+  weeklyReports: boolean;
+  version: string;
+  lastUpdated: Date;
+  status: string;
+}
