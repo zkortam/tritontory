@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Helper function to check if user is author of content
+    function isAuthor(contentAuthorId) {
+      return isAuthenticated() && request.auth.uid == contentAuthorId;
+    }
+    
+    // Helper function to check if user has role
+    function hasRole(requiredRole) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == requiredRole;
+    }
+
+    // Articles collection
+    match /articles/{articleId} {
+      allow read: if true; // Public read access
+      allow create: if isAuthenticated() && (isAdmin() || hasRole('author') || hasRole('editor'));
+      allow update: if isAuthenticated() && (isAdmin() || isAuthor(resource.data.authorId) || hasRole('editor'));
+      allow delete: if isAuthenticated() && (isAdmin() || isAuthor(resource.data.authorId));
+    }
+    
+    // Videos collection
+    match /videos/{videoId} {
+      allow read: if true; // Public read access
+      allow create: if isAuthenticated() && (isAdmin() || hasRole('author') || hasRole('editor'));
+      allow update: if isAuthenticated() && (isAdmin() || isAuthor(resource.data.authorId) || hasRole('editor'));
+      allow delete: if isAuthenticated() && (isAdmin() || isAuthor(resource.data.authorId));
+    }
+    
+    // Research collection
+    match /research/{researchId} {
+      allow read: if true; // Public read access
+      allow create: if isAuthenticated() && (isAdmin() || hasRole('author') || hasRole('editor'));
+      allow update: if isAuthenticated() && (isAdmin() || isAuthor(resource.data.authorId) || hasRole('editor'));
+      allow delete: if isAuthenticated() && (isAdmin() || isAuthor(resource.data.authorId));
+    }
+    
+    // Legal articles collection
+    match /legal-articles/{legalId} {
+      allow read: if true; // Public read access
+      allow create: if isAuthenticated() && (isAdmin() || hasRole('author') || hasRole('editor'));
+      allow update: if isAuthenticated() && (isAdmin() || isAuthor(resource.data.authorId) || hasRole('editor'));
+      allow delete: if isAuthenticated() && (isAdmin() || isAuthor(resource.data.authorId));
+    }
+    
+    // Comments collection
+    match /comments/{commentId} {
+      allow read: if true; // Public read access
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (isAdmin() || isAuthor(resource.data.authorId));
+      allow delete: if isAuthenticated() && (isAdmin() || isAuthor(resource.data.authorId));
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+    
+    // Settings collection (admin only)
+    match /settings/{settingId} {
+      allow read, write: if isAuthenticated() && isAdmin();
+    }
+    
+    // Analytics collections (admin only)
+    match /content-analytics/{docId} {
+      allow read, write: if isAuthenticated() && isAdmin();
+    }
+    
+    match /view-events/{docId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow create: if true; // Allow tracking for analytics
+    }
+    
+    match /share-events/{docId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow create: if true; // Allow tracking for analytics
+    }
+    
+    match /like-events/{docId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow create: if isAuthenticated(); // Only authenticated users can like
+    }
+  }
+} 

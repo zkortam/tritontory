@@ -1,0 +1,16 @@
+  const getFileIcon = (file: File) => {
+    if (!file || !file.type) return <File className="h-4 w-4" />;
+    const fileType = file.type;
+    if (fileType.startsWith('image/')) return <ImageIcon className="h-4 w-4" />;
+    if (fileType.startsWith('video/')) return <Video className="h-4 w-4" />;
+    return <File className="h-4 w-4" />;
+  };
+EOF  
+cd /home/project && cd /home/project/triton-tory && cat > temp_fix.txt << 'EOF'
+  const getFileIcon = (file: File) => {
+    if (!file || !file.type) return <File className="h-4 w-4" />;
+    const fileType = file.type;
+    if (fileType.startsWith('image/')) return <ImageIcon className="h-4 w-4" />;
+    if (fileType.startsWith('video/')) return <Video className="h-4 w-4" />;
+    return <File className="h-4 w-4" />;
+  };
