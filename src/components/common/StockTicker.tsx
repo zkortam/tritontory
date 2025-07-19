@@ -143,15 +143,16 @@ export function StockTicker() {
       }`}
     >
       <div className="flex">
-        {/* Weather Section - Fixed 150px width */}
-        <div className="w-[150px] flex-shrink-0 flex items-center justify-center px-3 py-2 border-r border-gray-700">
-          <div className="flex items-center space-x-2">
+        {/* Weather Section - Responsive width for mobile */}
+        <div className="w-[120px] sm:w-[150px] flex-shrink-0 flex items-center justify-center px-2 sm:px-3 py-2 border-r border-gray-700">
+          <div className="flex items-center space-x-1 sm:space-x-2">
             <div className="text-blue-400">
               {getWeatherIcon(weather.icon)}
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-bold text-white">{weather.temperature}°</span>
-              <span className="text-xs text-gray-400">{weather.location}</span>
+              <span className="text-xs text-gray-400 hidden sm:block">{weather.location}</span>
+              <span className="text-xs text-gray-400 sm:hidden">SD</span>
             </div>
           </div>
         </div>
@@ -163,11 +164,11 @@ export function StockTicker() {
             {[...stocks, ...stocks].map((stock, index) => (
               <div
                 key={`${stock.symbol}-${index}`}
-                className="flex items-center space-x-4 px-6 py-2 min-w-max"
+                className="flex items-center space-x-3 sm:space-x-4 px-4 sm:px-6 py-2 min-w-max"
               >
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-white leading-tight">{getDisplayName(stock.symbol)}</span>
-                  <span className="text-lg font-bold text-white leading-tight -mt-1">
+                  <span className="text-base sm:text-lg font-bold text-white leading-tight -mt-1">
                     {isLoading && !hasLoadedOnce ? (
                       <span className="text-gray-400">Loading...</span>
                     ) : stock.price > 0 ? (
