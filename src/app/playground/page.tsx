@@ -214,10 +214,7 @@ export default function PlaygroundPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Featured Tests */}
         <section className="mb-12">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500">
-              <Star className="h-6 w-6 text-white" />
-            </div>
+          <div className="mb-8">
             <h2 className="text-2xl font-bold">Featured Tests</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
