@@ -13,15 +13,9 @@ import {
   VolumeX, 
   Heart, 
   MessageCircle, 
-  Share2, 
-  MoreHorizontal,
-  ArrowLeft,
-  ArrowRight,
   Eye,
   Calendar,
-  User,
-  Bookmark,
-  BookmarkPlus
+  User
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -37,7 +31,6 @@ export default function TritonTodayPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [likedVideos, setLikedVideos] = useState<Set<string>>(new Set());
-  const [savedVideos, setSavedVideos] = useState<Set<string>>(new Set());
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -100,17 +93,7 @@ export default function TritonTodayPage() {
     });
   };
 
-  const handleSave = (videoId: string) => {
-    setSavedVideos(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(videoId)) {
-        newSet.delete(videoId);
-      } else {
-        newSet.add(videoId);
-      }
-      return newSet;
-    });
-  };
+
 
   const handleScroll = (direction: 'up' | 'down') => {
     if (direction === 'down' && currentVideoIndex < videos.length - 1) {
@@ -135,14 +118,7 @@ export default function TritonTodayPage() {
     return views.toString();
   };
 
-  const categories = [
-    { name: "", label: "All Videos" },
-    { name: "Campus", label: "Campus Life" },
-    { name: "Interview", label: "Interviews" },
-    { name: "Events", label: "Events" },
-    { name: "Sports", label: "Sports" },
-    { name: "Academic", label: "Academic" }
-  ];
+
 
   if (loading) {
     return (
@@ -170,34 +146,10 @@ export default function TritonTodayPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-gray-800">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-today-500">Triton Today</h1>
-            
-            {/* Category Filter */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-              {categories.map((category) => (
-                <Button
-                  key={category.name}
-                  variant={selectedCategory === category.name ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category.name)}
-                  className={selectedCategory === category.name ? "bg-today-500 hover:bg-today-600" : ""}
-                >
-                  {category.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Video Container */}
       <div 
         ref={containerRef}
-        className="pt-20 pb-4 h-screen overflow-y-auto scroll-smooth"
+        className="h-screen overflow-y-auto scroll-smooth"
         style={{ scrollSnapType: 'y mandatory' }}
       >
         {videos.map((video, index) => (
@@ -206,25 +158,37 @@ export default function TritonTodayPage() {
             className="h-screen flex items-center justify-center relative scroll-snap-start"
             style={{ scrollSnapAlign: 'start' }}
           >
-            {/* Video Player */}
-            <div className="relative w-full max-w-sm mx-auto">
-                             <video
-                 ref={(el) => {
-                   videoRefs.current[index] = el;
-                 }}
-                 src={video.videoUrl}
-                 poster={video.thumbnailUrl}
-                 className="w-full h-[80vh] object-cover rounded-lg"
-                 loop
-                 playsInline
-                 onPlay={() => setIsPlaying(true)}
-                 onPause={() => setIsPlaying(false)}
-                 onEnded={() => {
-                   if (index < videos.length - 1) {
-                     setCurrentVideoIndex(index + 1);
-                   }
-                 }}
-               />
+                          {/* Video Player */}
+              <div className="relative w-full max-w-sm mx-auto">
+                <video
+                  ref={(el) => {
+                    videoRefs.current[index] = el;
+                  }}
+                  src={video.videoUrl}
+                  poster={video.thumbnailUrl}
+                  className="w-full h-[80vh] object-cover rounded-lg"
+                  loop
+                  playsInline
+                  muted={isMuted}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => {
+                    if (index < videos.length - 1) {
+                      setCurrentVideoIndex(index + 1);
+                    }
+                  }}
+                  onLoadedMetadata={() => {
+                    // Auto-play the first video
+                    if (index === 0 && !isPlaying) {
+                      const videoElement = videoRefs.current[index];
+                      if (videoElement) {
+                        videoElement.play().catch(() => {
+                          // Auto-play failed, that's okay
+                        });
+                      }
+                    }
+                  }}
+                />
               
               {/* Video Overlay */}
               <div className="absolute inset-0 flex items-center justify-center">
@@ -284,27 +248,6 @@ export default function TritonTodayPage() {
                   <MessageCircle className="w-8 h-8" />
                   <span className="text-xs">Comment</span>
                 </button>
-                
-                <button className="flex flex-col items-center gap-1 text-white">
-                  <Share2 className="w-8 h-8" />
-                  <span className="text-xs">Share</span>
-                </button>
-                
-                <button
-                  onClick={() => handleSave(video.id)}
-                  className="flex flex-col items-center gap-1 text-white"
-                >
-                  {savedVideos.has(video.id) ? (
-                    <Bookmark className="w-8 h-8 fill-white" />
-                  ) : (
-                    <BookmarkPlus className="w-8 h-8" />
-                  )}
-                  <span className="text-xs">Save</span>
-                </button>
-                
-                <button className="flex flex-col items-center gap-1 text-white">
-                  <MoreHorizontal className="w-8 h-8" />
-                </button>
               </div>
 
               {/* Mute Button */}
@@ -333,27 +276,7 @@ export default function TritonTodayPage() {
         ))}
       </div>
 
-      {/* Navigation Hints */}
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-40">
-        <div className="flex items-center gap-4 text-white/60 text-sm">
-          <div className="flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" />
-            <span>Previous</span>
-          </div>
-          <span>•</span>
-          <div className="flex items-center gap-1">
-            <span>Next</span>
-            <ArrowRight className="w-4 h-4" />
-          </div>
-        </div>
-      </div>
 
-      {/* Video Counter */}
-      <div className="fixed top-24 right-4 z-40">
-        <Badge className="bg-black/80 text-white">
-          {currentVideoIndex + 1} / {videos.length}
-        </Badge>
-      </div>
     </div>
   );
 } 
