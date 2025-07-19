@@ -263,59 +263,7 @@ export default function TritonLawPage() {
     </section>
   );
 
-  // Legal Stats Widget
-  const renderLegalStatsWidget = () => (
-    <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 sticky top-20 max-h-[400px] self-end mobile-gpu-accelerated">
-      <CardContent className="p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 rounded-lg bg-crimson-500/20">
-            <TrendingUp className="h-6 w-6 text-crimson-500" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">Legal Stats</h3>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-gray-800/30">
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-blue-400" />
-              <span className="text-sm text-gray-300">Total Analyses</span>
-            </div>
-            <span className="text-lg font-bold text-white">{legalArticles.length}</span>
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg bg-gray-800/30">
-            <div className="flex items-center gap-2">
-              <Scale className="h-4 w-4 text-green-400" />
-              <span className="text-sm text-gray-300">Categories</span>
-            </div>
-            <span className="text-lg font-bold text-white">{new Set(legalArticles.map(l => l.category)).size}</span>
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg bg-gray-800/30">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-purple-400" />
-              <span className="text-sm text-gray-300">Legal Scholars</span>
-            </div>
-            <span className="text-lg font-bold text-white">{new Set(legalArticles.map(l => l.authorName)).size}</span>
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg bg-gray-800/30">
-            <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-orange-400" />
-              <span className="text-sm text-gray-300">This Month</span>
-            </div>
-            <span className="text-lg font-bold text-white">
-              {legalArticles.filter(l => {
-                const monthAgo = new Date();
-                monthAgo.setMonth(monthAgo.getMonth() - 1);
-                return l.publishedAt > monthAgo;
-              }).length}
-            </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-  );
+  
 
   return (
     <div className="bg-black text-white min-h-screen">
@@ -396,30 +344,20 @@ export default function TritonLawPage() {
               ))}
             </div>
 
-            {/* Featured Legal with Stats Widget */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-              {/* Featured Legal - 3/4 width */}
-              <div className="lg:col-span-3">
-                <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 rounded-lg bg-crimson-500/20">
-            <TrendingUp className="h-6 w-6 text-crimson-500" />
-          </div>
-                  <h2 className="text-2xl font-bold text-white">Featured Analysis</h2>
+            {/* Featured Legal */}
+            <div className="mb-12">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-2 rounded-lg bg-crimson-500/20">
+                  <TrendingUp className="h-6 w-6 text-crimson-500" />
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {featuredLegal.slice(0, 2).map((item) => 
-                    renderFeaturedLegalCard(item)
-                  )}
-                </div>
+                <h2 className="text-2xl font-bold text-white">Featured Analysis</h2>
               </div>
-
-              {/* Legal Stats Widget - 1/4 width */}
-              <div className="lg:col-span-1 flex flex-col">
-                <div className="mt-auto">
-                  {renderLegalStatsWidget()}
-                </div>
-                  </div>
-        </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {featuredLegal.slice(0, 2).map((item) => 
+                  renderFeaturedLegalCard(item)
+                )}
+              </div>
+            </div>
         
             {/* Category Sections */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
