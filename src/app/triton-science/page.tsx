@@ -90,7 +90,7 @@ export default function TritonSciencePage() {
     { name: "Chemistry", icon: <FlaskConical className="h-5 w-5" />, color: "bg-blue-500", count: research.filter(r => r.department === "Chemistry").length },
     { name: "Physics", icon: <Atom className="h-5 w-5" />, color: "bg-purple-500", count: research.filter(r => r.department === "Physics").length },
     { name: "Neuroscience", icon: <Brain className="h-5 w-5" />, color: "bg-pink-500", count: research.filter(r => r.department === "Neuroscience").length },
-    { name: "Environmental Science", icon: <Leaf className="h-5 w-5" />, color: "bg-emerald-500", count: research.filter(r => r.department === "Environmental Science").length },
+    { name: "Environment", icon: <Leaf className="h-5 w-5" />, color: "bg-emerald-500", count: research.filter(r => r.department === "Environmental Science").length },
     { name: "Computer Science", icon: <Database className="h-5 w-5" />, color: "bg-orange-500", count: research.filter(r => r.department === "Computer Science").length },
     { name: "Engineering", icon: <Zap className="h-5 w-5" />, color: "bg-red-500", count: research.filter(r => r.department === "Engineering").length },
   ];

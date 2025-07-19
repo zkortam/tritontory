@@ -28,7 +28,7 @@ const departments = [
   "Psychology",
   "Neuroscience",
   "Medicine",
-  "Environmental Science",
+  "Environment",
   "Economics",
   "Political Science",
   "Other"

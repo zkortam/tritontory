@@ -40,13 +40,13 @@ import {
   User,
   Briefcase,
   Library,
-  Scroll,
-  Hammer,
-  Balance,
-  Court,
-  Constitution,
-  Law,
-  Policy
+  FileText as Scroll,
+  Hammer as HammerIcon,
+  Scale as Balance,
+  Building as Court,
+  BookOpen as Constitution,
+  FileText as Law,
+  FileText as Policy
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -97,7 +97,7 @@ export default function TritonLawPage() {
     { name: "Campus Policy", icon: <Building className="h-5 w-5" />, color: "bg-blue-500", count: legalArticles.filter(l => l.category === "Campus Policy").length },
     { name: "Student Rights", icon: <Shield className="h-5 w-5" />, color: "bg-green-500", count: legalArticles.filter(l => l.category === "Student Rights").length },
     { name: "Supreme Court", icon: <Gavel className="h-5 w-5" />, color: "bg-purple-500", count: legalArticles.filter(l => l.category === "Supreme Court").length },
-    { name: "Constitutional Law", icon: <Constitution className="h-5 w-5" />, color: "bg-red-500", count: legalArticles.filter(l => l.category === "Constitutional Law").length },
+    { name: "Constitutional Law", icon: <BookOpen className="h-5 w-5" />, color: "bg-red-500", count: legalArticles.filter(l => l.category === "Constitutional Law").length },
     { name: "Administrative Law", icon: <Briefcase className="h-5 w-5" />, color: "bg-orange-500", count: legalArticles.filter(l => l.category === "Administrative Law").length },
     { name: "Civil Rights", icon: <Heart className="h-5 w-5" />, color: "bg-pink-500", count: legalArticles.filter(l => l.category === "Civil Rights").length },
     { name: "Criminal Law", icon: <AlertTriangle className="h-5 w-5" />, color: "bg-yellow-500", count: legalArticles.filter(l => l.category === "Criminal Law").length },
