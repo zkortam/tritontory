@@ -21,7 +21,6 @@ import {
   Filter,
   ArrowRight,
   Clock,
-  Star,
   Building,
   GraduationCap,
   Target,
@@ -29,8 +28,6 @@ import {
   Globe,
   Shield,
   Heart,
-  Eye,
-  Download,
   MapPin,
   AlertTriangle,
   CheckCircle,
@@ -168,21 +165,7 @@ export default function TritonLawPage() {
             </div>
           </div>
           
-          {/* Legal Metrics */}
-          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-700/50">
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              <Eye className="h-3 w-3" />
-              <span>{Math.floor(Math.random() * 300) + 50} views</span>
-            </div>
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              <Download className="h-3 w-3" />
-              <span>{Math.floor(Math.random() * 20) + 5} citations</span>
-            </div>
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              <Star className="h-3 w-3 text-yellow-500" />
-              <span>{Math.floor(Math.random() * 5) + 1}.{Math.floor(Math.random() * 9)}</span>
-            </div>
-          </div>
+
         </CardContent>
       </Link>
     </Card>
@@ -224,10 +207,7 @@ export default function TritonLawPage() {
               <BookOpen className="h-3 w-3" />
               <span>10 min read</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Eye className="h-3 w-3" />
-              <span>{Math.floor(Math.random() * 150) + 25}</span>
-            </div>
+
           </div>
         </div>
       </div>
