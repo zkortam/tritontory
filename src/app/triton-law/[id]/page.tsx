@@ -14,6 +14,7 @@ import { SocialShare } from "@/components/common/SocialShare";
 import { AnalyticsService } from "@/lib/analytics-service";
 import { ArrowLeft, Calendar, User, Tag, BookOpen, Scale, Gavel, FileText } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { calculateReadingTime } from "@/lib/utils";
 
 export default function LegalArticlePage() {
   const params = useParams();
@@ -62,7 +63,7 @@ export default function LegalArticlePage() {
   useEffect(() => {
     if (article) {
       const sessionId = AnalyticsService.generateSessionId();
-      AnalyticsService.trackView(article.id, 'legal-article', sessionId);
+      AnalyticsService.trackView(article.id, 'legal', sessionId);
     }
   }, [article]);
 
@@ -153,7 +154,7 @@ export default function LegalArticlePage() {
             </div>
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
-              <span>{Math.ceil((article.content?.split(' ').length || 0) / 200)} min read</span>
+              <span>{calculateReadingTime(article.content || "")} min read</span>
             </div>
           </div>
 
@@ -161,7 +162,7 @@ export default function LegalArticlePage() {
           <div className="flex gap-3 mb-8">
             <SocialShare
               contentId={article.id}
-              contentType="legal-article"
+              contentType="legal"
               title={article.title}
               description={article.abstract || ""}
               url={window.location.href}
@@ -212,8 +213,7 @@ export default function LegalArticlePage() {
         <div className="mb-12">
           <Comments
             contentId={article.id}
-            contentType="legal-article"
-            title={article.title}
+            contentType="legal"
           />
         </div>
 

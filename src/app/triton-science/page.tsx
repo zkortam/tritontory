@@ -41,6 +41,7 @@ import {
   Download
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { calculateReadingTime } from "@/lib/utils";
 
 export default function TritonSciencePage() {
   const [research, setResearch] = useState<Research[]>([]);
@@ -155,7 +156,7 @@ export default function TritonSciencePage() {
               </div>
               <div className="flex items-center gap-1">
                 <BookOpen className="h-3 w-3" />
-                <span>8 min read</span>
+                <span>{calculateReadingTime(research.content || "")} min read</span>
               </div>
             </div>
           </div>
@@ -214,7 +215,7 @@ export default function TritonSciencePage() {
                     </div>
                     <div className="flex items-center gap-1">
               <BookOpen className="h-3 w-3" />
-              <span>6 min read</span>
+              <span>{calculateReadingTime(research.content || "")} min read</span>
             </div>
             <div className="flex items-center gap-1">
               <Eye className="h-3 w-3" />

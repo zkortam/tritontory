@@ -11,6 +11,7 @@ import { ArticleService, NewsTickerService } from "@/lib/firebase-service";
 import type { Article, NewsTicker } from "@/lib/models";
 import { Search, User, TrendingUp, Clock, MapPin, Globe, Building, Trophy, Newspaper, Sun, Cloud, TrendingDown, ArrowRight, BookOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { calculateReadingTime } from "@/lib/utils";
 import { NewsTicker as NewsTickerComponent } from "@/components/common/NewsTicker";
 import { StockService, FALLBACK_STOCK_DATA, type StockData } from "@/lib/stock-service";
 import { WeatherService, FALLBACK_WEATHER_DATA, type WeatherData } from "@/lib/weather-service";
@@ -149,7 +150,7 @@ export default function TritonToryPage() {
               </div>
               <div className="flex items-center gap-1">
                 <BookOpen className="h-3 w-3" />
-                <span>5 min read</span>
+                <span>{calculateReadingTime(article.content || "")} min read</span>
               </div>
             </div>
           </div>
@@ -189,7 +190,7 @@ export default function TritonToryPage() {
             </div>
             <div className="flex items-center gap-1">
               <BookOpen className="h-3 w-3" />
-              <span>3 min read</span>
+              <span>{calculateReadingTime(article.content || "")} min read</span>
             </div>
           </div>
         </div>

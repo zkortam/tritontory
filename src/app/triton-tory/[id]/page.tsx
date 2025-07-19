@@ -14,6 +14,7 @@ import { SocialShare } from "@/components/common/SocialShare";
 import { AnalyticsService } from "@/lib/analytics-service";
 import { ArrowLeft, Calendar, User, Tag, BookOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { calculateReadingTime } from "@/lib/utils";
 
 export default function ArticlePage() {
   const params = useParams();
@@ -156,7 +157,7 @@ export default function ArticlePage() {
             </div>
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
-              <span>{Math.ceil(article.content.split(' ').length / 200)} min read</span>
+              <span>{calculateReadingTime(article.content)} min read</span>
             </div>
           </div>
 

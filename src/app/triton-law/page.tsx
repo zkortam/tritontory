@@ -46,6 +46,7 @@ import {
   FileText as Policy
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { calculateReadingTime } from "@/lib/utils";
 
 export default function TritonLawPage() {
   const [legalArticles, setLegalArticles] = useState<LegalArticle[]>([]);
@@ -160,7 +161,7 @@ export default function TritonLawPage() {
               </div>
               <div className="flex items-center gap-1">
                 <BookOpen className="h-3 w-3" />
-                <span>12 min read</span>
+                <span>{calculateReadingTime(legal.content || "")} min read</span>
               </div>
             </div>
           </div>
@@ -205,7 +206,7 @@ export default function TritonLawPage() {
                     </div>
                     <div className="flex items-center gap-1">
               <BookOpen className="h-3 w-3" />
-              <span>10 min read</span>
+              <span>{calculateReadingTime(legal.content || "")} min read</span>
             </div>
 
           </div>
