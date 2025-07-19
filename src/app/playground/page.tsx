@@ -162,7 +162,7 @@ export default function PlaygroundPage() {
           title: "Leadership Style",
           description: "Discover your natural leadership approach",
           icon: <Crown className="h-5 w-5" />,
-          questions: 22,
+          questions: 25,
           time: "8-12 min",
           difficulty: "Medium",
           featured: false
