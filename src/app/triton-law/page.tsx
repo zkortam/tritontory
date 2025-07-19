@@ -112,7 +112,7 @@ export default function TritonLawPage() {
   ];
 
   const renderFeaturedLegalCard = (legal: LegalArticle) => (
-    <Card key={legal.id} className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 hover:border-law-500/50 transition-all duration-300 overflow-hidden group">
+    <Card key={legal.id} className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 hover:border-crimson-500/50 transition-all duration-300 overflow-hidden group">
       <Link href={`/triton-law/${legal.id}`} className="block">
         <div className="relative aspect-[16/9] overflow-hidden">
           <Image
@@ -125,7 +125,7 @@ export default function TritonLawPage() {
           
           {/* Category Badge */}
           <div className="absolute top-4 left-4">
-            <Badge className="bg-law-500/90 text-white text-xs font-medium">
+            <Badge className="bg-crimson-500/90 text-white text-xs font-medium">
               {legal.category}
             </Badge>
           </div>
@@ -139,7 +139,7 @@ export default function TritonLawPage() {
 
           {/* Content */}
           <div className="absolute bottom-4 left-4 right-4">
-            <h3 className="font-bold text-white group-hover:text-law-400 transition-colors line-clamp-2 text-xl">
+            <h3 className="font-bold text-white group-hover:text-crimson-400 transition-colors line-clamp-2 text-xl">
               {legal.title}
             </h3>
             {legal.abstract && (
@@ -201,7 +201,7 @@ export default function TritonLawPage() {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <Badge className="bg-law-500 text-white text-xs font-medium">
+            <Badge className="bg-crimson-500 text-white text-xs font-medium">
               {legal.category}
             </Badge>
             <Badge variant="outline" className="text-xs">
@@ -211,7 +211,7 @@ export default function TritonLawPage() {
             <span className="text-xs text-gray-500">{formatDistanceToNow(legal.publishedAt, { addSuffix: true })}</span>
           </div>
           <Link href={`/triton-law/${legal.id}`} className="group">
-            <h4 className="font-semibold text-white group-hover:text-law-400 transition-colors line-clamp-2 text-sm leading-tight mb-2">
+            <h4 className="font-semibold text-white group-hover:text-crimson-400 transition-colors line-clamp-2 text-sm leading-tight mb-2">
               {legal.title}
             </h4>
           </Link>
@@ -270,8 +270,8 @@ export default function TritonLawPage() {
     <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 sticky top-20 max-h-[400px] self-end mobile-gpu-accelerated">
       <CardContent className="p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 rounded-lg bg-law-500/20">
-            <TrendingUp className="h-6 w-6 text-law-500" />
+          <div className="p-2 rounded-lg bg-crimson-500/20">
+            <TrendingUp className="h-6 w-6 text-crimson-500" />
           </div>
           <h3 className="text-lg font-semibold text-white">Legal Stats</h3>
         </div>
@@ -321,21 +321,8 @@ export default function TritonLawPage() {
 
   return (
     <div className="bg-black text-white min-h-screen">
-      {/* Header */}
+      {/* Main Content */}
       <div className="container mx-auto mobile-safe-area py-8">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-law-500/20">
-              <Scale className="h-8 w-8 text-law-500" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">
-              Law Review
-            </h1>
-          </div>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Student-led legal analysis on campus policies, broader legal developments, and their implications for the university community
-          </p>
-        </div>
 
         {loading ? (
           <div className="space-y-12">
@@ -358,7 +345,7 @@ export default function TritonLawPage() {
           // Search Results
           <section>
             <div className="flex items-center gap-3 mb-8">
-              <Search className="h-6 w-6 text-law-500" />
+              <Search className="h-6 w-6 text-crimson-500" />
               <h2 className="text-2xl font-bold">Search Results</h2>
               <Badge variant="outline" className="ml-2">
                 {filteredLegal.length} results
@@ -387,39 +374,28 @@ export default function TritonLawPage() {
         ) : (
           // Main Layout
           <div className="space-y-12">
-            {/* Search and Filters */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search legal analyses..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-law-500/20 focus:border-law-500"
-                />
-              </div>
-              
-              <div className="flex gap-2">
+            {/* Jurisdiction Filters */}
+            <div className="flex justify-center gap-2 mb-8">
+              <Button
+                variant={selectedJurisdiction === "" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedJurisdiction("")}
+                className={selectedJurisdiction === "" ? "bg-crimson-500 hover:bg-crimson-600 border-crimson-500" : ""}
+              >
+                All Jurisdictions
+              </Button>
+              {jurisdictions.map((jurisdiction) => (
                 <Button
-                  variant={selectedJurisdiction === "" ? "default" : "outline"}
+                  key={jurisdiction.name}
+                  variant={selectedJurisdiction === jurisdiction.name ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setSelectedJurisdiction("")}
+                  onClick={() => setSelectedJurisdiction(jurisdiction.name)}
+                  className={selectedJurisdiction === jurisdiction.name ? "bg-crimson-500 hover:bg-crimson-600 border-crimson-500" : ""}
                 >
-                  All Jurisdictions
+                  {jurisdiction.icon}
+                  <span className="ml-1">{jurisdiction.name}</span>
                 </Button>
-                {jurisdictions.map((jurisdiction) => (
-                  <Button
-                    key={jurisdiction.name}
-                    variant={selectedJurisdiction === jurisdiction.name ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedJurisdiction(jurisdiction.name)}
-                  >
-                    {jurisdiction.icon}
-                    <span className="ml-1">{jurisdiction.name}</span>
-                  </Button>
-                ))}
-              </div>
+              ))}
             </div>
 
             {/* Featured Legal with Stats Widget */}
@@ -427,9 +403,9 @@ export default function TritonLawPage() {
               {/* Featured Legal - 3/4 width */}
               <div className="lg:col-span-3">
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="p-2 rounded-lg bg-law-500/20">
-                    <TrendingUp className="h-6 w-6 text-law-500" />
-                  </div>
+                            <div className="p-2 rounded-lg bg-crimson-500/20">
+            <TrendingUp className="h-6 w-6 text-crimson-500" />
+          </div>
                   <h2 className="text-2xl font-bold text-white">Featured Analysis</h2>
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
