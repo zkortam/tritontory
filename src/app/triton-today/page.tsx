@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { VideoService } from "@/lib/firebase-service";
 import { Video } from "@/lib/models";
 import { Badge } from "@/components/ui/badge";
@@ -92,7 +92,7 @@ export default function TritonTodayPage() {
 
 
 
-  const handleScroll = (direction: 'up' | 'down') => {
+  const handleScroll = useCallback((direction: 'up' | 'down') => {
     if (direction === 'down' && currentVideoIndex < videos.length - 1) {
       setCurrentVideoIndex(prev => prev + 1);
       // Scroll to next video
@@ -108,7 +108,7 @@ export default function TritonTodayPage() {
         prevVideo.scrollIntoView({ behavior: 'smooth' });
       }
     }
-  };
+  }, [currentVideoIndex, videos.length]);
 
   // Add intersection observer for autoplay when video enters viewport
   useEffect(() => {

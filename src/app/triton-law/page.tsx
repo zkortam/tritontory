@@ -12,7 +12,7 @@ import {
   Scale,
   Gavel, 
   BookOpen, 
-  FileText, 
+
   Users,
   Calendar,
   TrendingUp,

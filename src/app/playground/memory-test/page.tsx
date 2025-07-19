@@ -344,7 +344,7 @@ export default function MemoryTest() {
     }, memoryTasks[currentTask].timeLimit * 1000);
     
     return () => clearTimeout(timer);
-  }, [currentTask, timeStarted]);
+  }, [currentTask, timeStarted, memoryTasks]);
 
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
@@ -401,17 +401,7 @@ export default function MemoryTest() {
     }
   };
 
-  const nextTask = () => {
-    if (currentTask < memoryTasks.length - 1) {
-      setCurrentTask(currentTask + 1);
-    }
-  };
 
-  const previousTask = () => {
-    if (currentTask > 0) {
-      setCurrentTask(currentTask - 1);
-    }
-  };
 
   const calculateResults = (): Results => {
     const correctAnswers = answers.filter(a => a.isCorrect).length;
@@ -489,9 +479,7 @@ export default function MemoryTest() {
     setShowResults(true);
   };
 
-  const currentAnswer = answers.find(a => a.taskId === memoryTasks[currentTask].id);
   const progress = ((currentTask + 1) / memoryTasks.length) * 100;
-  const isLastTask = currentTask === memoryTasks.length - 1;
 
   if (showResults && results) {
     return (
