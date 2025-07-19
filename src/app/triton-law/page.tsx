@@ -53,7 +53,6 @@ export default function TritonLawPage() {
   const [featuredLegal, setFeaturedLegal] = useState<LegalArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedJurisdiction, setSelectedJurisdiction] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -81,13 +80,12 @@ export default function TritonLawPage() {
   // Filter legal articles based on selections
   const filteredLegal = legalArticles.filter(item => {
     const matchesCategory = !selectedCategory || item.category === selectedCategory;
-    const matchesJurisdiction = !selectedJurisdiction || item.category.toLowerCase().includes(selectedJurisdiction.toLowerCase());
     const matchesSearch = !searchQuery || 
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.abstract.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.authorName.toLowerCase().includes(searchQuery.toLowerCase());
     
-    return matchesCategory && matchesJurisdiction && matchesSearch;
+    return matchesCategory && matchesSearch;
   });
 
   // Legal category configurations
@@ -101,13 +99,7 @@ export default function TritonLawPage() {
     { name: "Criminal Law", icon: <AlertTriangle className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Criminal Law").length },
   ];
 
-  const jurisdictions = [
-    { name: "Campus", icon: <Building className="h-4 w-4 text-white" />, color: "bg-crimson-500" },
-    { name: "State", icon: <MapPin className="h-4 w-4 text-white" />, color: "bg-crimson-500" },
-    { name: "Federal", icon: <Globe className="h-4 w-4 text-white" />, color: "bg-crimson-500" },
-    { name: "Supreme Court", icon: <Gavel className="h-4 w-4 text-white" />, color: "bg-crimson-500" },
-    { name: "International", icon: <Globe className="h-4 w-4 text-white" />, color: "bg-crimson-500" },
-  ];
+
 
   const renderFeaturedLegalCard = (legal: LegalArticle) => (
     <Card key={legal.id} className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 hover:border-crimson-500/50 transition-all duration-300 overflow-hidden group">
@@ -301,29 +293,7 @@ export default function TritonLawPage() {
         ) : (
           // Main Layout
           <div className="space-y-12">
-            {/* Jurisdiction Filters */}
-            <div className="flex justify-center gap-2 mb-8">
-              <Button
-                variant={selectedJurisdiction === "" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedJurisdiction("")}
-                className={selectedJurisdiction === "" ? "bg-crimson-500 hover:bg-crimson-600 border-crimson-500" : ""}
-              >
-                All Jurisdictions
-              </Button>
-              {jurisdictions.map((jurisdiction) => (
-                <Button
-                  key={jurisdiction.name}
-                  variant={selectedJurisdiction === jurisdiction.name ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedJurisdiction(jurisdiction.name)}
-                  className={selectedJurisdiction === jurisdiction.name ? "bg-crimson-500 hover:bg-crimson-600 border-crimson-500" : ""}
-                >
-                  {jurisdiction.icon}
-                  <span className="ml-1">{jurisdiction.name}</span>
-                </Button>
-              ))}
-            </div>
+
 
             {/* Featured Legal */}
             <div className="mb-12">

@@ -48,7 +48,6 @@ export default function TritonSciencePage() {
   const [featuredResearch, setFeaturedResearch] = useState<Research[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
-  const [selectedType, setSelectedType] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -76,13 +75,12 @@ export default function TritonSciencePage() {
   // Filter research based on selections
   const filteredResearch = research.filter(item => {
     const matchesDepartment = !selectedDepartment || item.department === selectedDepartment;
-    const matchesType = !selectedType || item.department.toLowerCase().includes(selectedType.toLowerCase());
     const matchesSearch = !searchQuery || 
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.abstract.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.authorName.toLowerCase().includes(searchQuery.toLowerCase());
     
-    return matchesDepartment && matchesType && matchesSearch;
+    return matchesDepartment && matchesSearch;
   });
 
   // Department configurations
@@ -96,13 +94,7 @@ export default function TritonSciencePage() {
     { name: "Engineering", icon: <Zap className="h-5 w-5" />, color: "bg-red-500", count: research.filter(r => r.department === "Engineering").length },
   ];
 
-  const researchTypes = [
-    { name: "Experimental", icon: <TestTube className="h-4 w-4" />, color: "bg-blue-500" },
-    { name: "Theoretical", icon: <Calculator className="h-4 w-4" />, color: "bg-purple-500" },
-    { name: "Review", icon: <BookOpen className="h-4 w-4" />, color: "bg-green-500" },
-    { name: "Clinical", icon: <Heart className="h-4 w-4" />, color: "bg-red-500" },
-    { name: "Computational", icon: <Database className="h-4 w-4" />, color: "bg-orange-500" },
-  ];
+
 
   const renderFeaturedResearchCard = (research: Research) => (
     <Card key={research.id} className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 hover:border-science-500/50 transition-all duration-300 overflow-hidden group">
@@ -367,27 +359,7 @@ export default function TritonSciencePage() {
         ) : (
           // Main Layout
           <div className="space-y-12">
-            {/* Research Type Filters */}
-            <div className="flex justify-center gap-2 mb-8">
-              <Button
-                variant={selectedType === "" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedType("")}
-              >
-                All Types
-              </Button>
-              {researchTypes.map((type) => (
-                <Button
-                  key={type.name}
-                  variant={selectedType === type.name ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedType(type.name)}
-                >
-                  {type.icon}
-                  <span className="ml-1">{type.name}</span>
-                </Button>
-              ))}
-            </div>
+
 
             {/* Featured Research with Stats Widget */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
