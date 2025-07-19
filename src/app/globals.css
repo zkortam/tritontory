@@ -13,6 +13,28 @@
   scrollbar-width: none;  /* Firefox */
 }
 
+/* YouTube Shorts style elastic scrolling */
+.shorts-container {
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.shorts-item {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Elastic bounce effect */
+@keyframes elastic-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.elastic-bounce {
+  animation: elastic-bounce 0.6s ease-in-out;
+}
+
 @layer base {
   :root {
     --background: 0 0% 4%;

@@ -98,10 +98,58 @@ export default function TritonTodayPage() {
   const handleScroll = (direction: 'up' | 'down') => {
     if (direction === 'down' && currentVideoIndex < videos.length - 1) {
       setCurrentVideoIndex(prev => prev + 1);
+      // Scroll to next video
+      const nextVideo = document.querySelector(`[data-video-index="${currentVideoIndex + 1}"]`);
+      if (nextVideo) {
+        nextVideo.scrollIntoView({ behavior: 'smooth' });
+      }
     } else if (direction === 'up' && currentVideoIndex > 0) {
       setCurrentVideoIndex(prev => prev - 1);
+      // Scroll to previous video
+      const prevVideo = document.querySelector(`[data-video-index="${currentVideoIndex - 1}"]`);
+      if (prevVideo) {
+        prevVideo.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
+
+  // Add touch/swipe support
+  useEffect(() => {
+    let startY = 0;
+    let endY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      endY = e.changedTouches[0].clientY;
+      const diff = startY - endY;
+      
+      if (Math.abs(diff) > 50) { // Minimum swipe distance
+        if (diff > 0) {
+          // Swipe up - next video
+          handleScroll('down');
+        } else {
+          // Swipe down - previous video
+          handleScroll('up');
+        }
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('touchstart', handleTouchStart);
+      container.addEventListener('touchend', handleTouchEnd);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('touchstart', handleTouchStart);
+        container.removeEventListener('touchend', handleTouchEnd);
+      }
+    };
+  }, [currentVideoIndex, videos.length]);
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -146,27 +194,27 @@ export default function TritonTodayPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Video Container */}
+            {/* Video Container */}
       <div 
         ref={containerRef}
-        className="h-screen overflow-y-auto scroll-smooth"
-        style={{ scrollSnapType: 'y mandatory' }}
+        className="h-screen overflow-y-auto shorts-container scrollbar-hide"
       >
         {videos.map((video, index) => (
           <div
             key={video.id}
-            className="h-screen flex items-center justify-center relative scroll-snap-start"
-            style={{ scrollSnapAlign: 'start' }}
+            data-video-index={index}
+            className="h-screen flex items-center justify-center relative shorts-item"
           >
-                          {/* Video Player */}
-              <div className="relative w-full max-w-sm mx-auto">
+            <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-6xl mx-auto px-4 gap-6">
+              {/* Video Player */}
+              <div className="relative flex-shrink-0">
                 <video
                   ref={(el) => {
                     videoRefs.current[index] = el;
                   }}
                   src={video.videoUrl}
                   poster={video.thumbnailUrl}
-                  className="w-full h-[80vh] object-cover rounded-lg"
+                  className="w-full max-w-sm h-[80vh] object-cover rounded-lg"
                   loop
                   playsInline
                   muted={isMuted}
@@ -189,87 +237,87 @@ export default function TritonTodayPage() {
                     }
                   }}
                 />
-              
-              {/* Video Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <button
-                  onClick={handleVideoClick}
-                  className="bg-black/50 rounded-full p-4 opacity-0 hover:opacity-100 transition-opacity"
-                >
-                  {isPlaying && index === currentVideoIndex ? (
-                    <Pause className="w-8 h-8 text-white" />
-                  ) : (
-                    <Play className="w-8 h-8 text-white" />
-                  )}
-                </button>
-              </div>
+                
+                {/* Video Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button
+                    onClick={handleVideoClick}
+                    className="bg-black/50 rounded-full p-4 opacity-0 hover:opacity-100 transition-opacity"
+                  >
+                    {isPlaying && index === currentVideoIndex ? (
+                      <Pause className="w-8 h-8 text-white" />
+                    ) : (
+                      <Play className="w-8 h-8 text-white" />
+                    )}
+                  </button>
+                </div>
 
-              {/* Video Info */}
-              <div className="absolute bottom-4 left-4 right-4">
-                <div className="flex items-end justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-white font-semibold text-lg mb-2 line-clamp-2">
-                      {video.title}
-                    </h3>
-                    <p className="text-gray-300 text-sm mb-3 line-clamp-2">
-                      {video.description}
-                    </p>
-                    <div className="flex items-center gap-4 text-sm text-gray-400">
-                      <div className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
-                        <span>{video.authorName}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{formatDistanceToNow(video.publishedAt, { addSuffix: true })}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Eye className="w-4 h-4" />
-                        <span>{formatViews(video.views)}</span>
-                      </div>
-                    </div>
-                  </div>
+                {/* Mute Button */}
+                <button
+                  onClick={handleMuteToggle}
+                  className="absolute top-4 right-4 bg-black/50 rounded-full p-2 text-white"
+                >
+                  {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                </button>
+
+                {/* Duration Badge */}
+                <div className="absolute top-4 left-4">
+                  <Badge className="bg-black/80 text-white text-xs">
+                    {formatDuration(video.duration)}
+                  </Badge>
+                </div>
+
+                {/* Category Badge */}
+                <div className="absolute top-4 left-20">
+                  <Badge className="bg-today-500/90 text-white text-xs">
+                    {video.category}
+                  </Badge>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="absolute right-4 bottom-20 flex flex-col gap-4">
-                <button
-                  onClick={() => handleLike(video.id)}
-                  className="flex flex-col items-center gap-1 text-white"
-                >
-                  <Heart 
-                    className={`w-8 h-8 ${likedVideos.has(video.id) ? 'fill-red-500 text-red-500' : ''}`} 
-                  />
-                  <span className="text-xs">{video.views}</span>
-                </button>
-                
-                <button className="flex flex-col items-center gap-1 text-white">
-                  <MessageCircle className="w-8 h-8" />
-                  <span className="text-xs">Comment</span>
-                </button>
-              </div>
+              {/* Content Sidebar */}
+              <div className="flex flex-col justify-between h-[80vh] max-w-sm w-full md:w-auto">
+                {/* Video Info */}
+                <div className="flex-1">
+                  <h3 className="text-white font-semibold text-xl mb-3 line-clamp-3">
+                    {video.title}
+                  </h3>
+                  <p className="text-gray-300 text-sm mb-4 line-clamp-4 leading-relaxed">
+                    {video.description}
+                  </p>
+                  <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
+                    <div className="flex items-center gap-1">
+                      <User className="w-4 h-4" />
+                      <span>{video.authorName}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>{formatDistanceToNow(video.publishedAt, { addSuffix: true })}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Eye className="w-4 h-4" />
+                      <span>{formatViews(video.views)}</span>
+                    </div>
+                  </div>
+                </div>
 
-              {/* Mute Button */}
-              <button
-                onClick={handleMuteToggle}
-                className="absolute top-4 right-4 bg-black/50 rounded-full p-2 text-white"
-              >
-                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-              </button>
-
-              {/* Duration Badge */}
-              <div className="absolute top-4 left-4">
-                <Badge className="bg-black/80 text-white text-xs">
-                  {formatDuration(video.duration)}
-                </Badge>
-              </div>
-
-              {/* Category Badge */}
-              <div className="absolute top-4 left-20">
-                <Badge className="bg-today-500/90 text-white text-xs">
-                  {video.category}
-                </Badge>
+                {/* Action Buttons */}
+                <div className="flex md:flex-col gap-6 justify-center md:justify-start">
+                  <button
+                    onClick={() => handleLike(video.id)}
+                    className="flex flex-col items-center gap-2 text-white hover:text-red-500 transition-colors"
+                  >
+                    <Heart 
+                      className={`w-10 h-10 ${likedVideos.has(video.id) ? 'fill-red-500 text-red-500' : ''}`} 
+                    />
+                    <span className="text-sm font-medium">{video.views}</span>
+                  </button>
+                  
+                  <button className="flex flex-col items-center gap-2 text-white hover:text-today-400 transition-colors">
+                    <MessageCircle className="w-10 h-10" />
+                    <span className="text-sm font-medium">Comment</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
