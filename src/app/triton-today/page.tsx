@@ -261,7 +261,7 @@ export default function TritonTodayPage() {
             data-video-index={index}
             className="shorts-item"
           >
-            <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-4xl mx-auto px-4 gap-6 h-full pb-[30px]">
+            <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-4xl mx-auto px-4 gap-6 h-full pb-[50px]">
               {/* Video Player */}
               <div className="relative flex-shrink-0">
                 <video
