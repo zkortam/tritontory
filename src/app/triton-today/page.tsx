@@ -31,6 +31,7 @@ export default function TritonTodayPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [likedVideos, setLikedVideos] = useState<Set<string>>(new Set());
+  const [isScrollLocked, setIsScrollLocked] = useState(true);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -151,6 +152,25 @@ export default function TritonTodayPage() {
     };
   }, [currentVideoIndex, videos.length]);
 
+  // Lock/unlock page scroll
+  useEffect(() => {
+    if (isScrollLocked) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [isScrollLocked]);
+
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -192,20 +212,20 @@ export default function TritonTodayPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-black text-white">
-            {/* Video Container */}
+    return (
+    <div className="min-h-screen bg-black text-white relative">
+      {/* Video Container */}
       <div 
         ref={containerRef}
-        className="h-screen overflow-y-auto shorts-container scrollbar-hide"
+        className="h-screen overflow-y-auto shorts-container scrollbar-hide flex items-center justify-center"
       >
         {videos.map((video, index) => (
           <div
             key={video.id}
             data-video-index={index}
-            className="h-screen flex items-center justify-center relative shorts-item"
+            className="h-screen flex items-center justify-center relative shorts-item w-full"
           >
-            <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-6xl mx-auto px-4 gap-6">
+            <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-4xl mx-auto px-4 gap-6">
               {/* Video Player */}
               <div className="relative flex-shrink-0">
                 <video
@@ -324,7 +344,27 @@ export default function TritonTodayPage() {
         ))}
       </div>
 
-
+      {/* Unlock Scroll Button */}
+      <button
+        onClick={() => setIsScrollLocked(!isScrollLocked)}
+        className="fixed bottom-6 right-6 z-50 bg-today-500 hover:bg-today-600 text-white px-4 py-2 rounded-full shadow-lg transition-colors duration-200 flex items-center gap-2"
+      >
+        {isScrollLocked ? (
+          <>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+            </svg>
+            Unlock Scroll
+          </>
+        ) : (
+          <>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+            </svg>
+            Lock Scroll
+          </>
+        )}
+      </button>
     </div>
   );
 } 
