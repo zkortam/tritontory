@@ -313,21 +313,8 @@ export default function TritonSciencePage() {
 
   return (
     <div className="bg-black text-white min-h-screen">
-      {/* Header */}
+      {/* Main Content */}
       <div className="container mx-auto mobile-safe-area py-8">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-science-500/20">
-              <Microscope className="h-8 w-8 text-science-500" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">
-              Science Journal
-            </h1>
-          </div>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Highlighting groundbreaking research and scientific discoveries happening across UC San Diego's research community
-          </p>
-        </div>
 
         {loading ? (
           <div className="space-y-12">
@@ -379,39 +366,26 @@ export default function TritonSciencePage() {
         ) : (
           // Main Layout
           <div className="space-y-12">
-            {/* Search and Filters */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search research..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-science-500/20 focus:border-science-500"
-                />
-              </div>
-              
-              <div className="flex gap-2">
+            {/* Research Type Filters */}
+            <div className="flex justify-center gap-2 mb-8">
+              <Button
+                variant={selectedType === "" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedType("")}
+              >
+                All Types
+              </Button>
+              {researchTypes.map((type) => (
                 <Button
-                  variant={selectedType === "" ? "default" : "outline"}
+                  key={type.name}
+                  variant={selectedType === type.name ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setSelectedType("")}
+                  onClick={() => setSelectedType(type.name)}
                 >
-                  All Types
+                  {type.icon}
+                  <span className="ml-1">{type.name}</span>
                 </Button>
-                {researchTypes.map((type) => (
-                  <Button
-                    key={type.name}
-                    variant={selectedType === type.name ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedType(type.name)}
-                  >
-                    {type.icon}
-                    <span className="ml-1">{type.name}</span>
-                  </Button>
-                ))}
-              </div>
+              ))}
             </div>
 
             {/* Featured Research with Stats Widget */}
