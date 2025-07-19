@@ -161,7 +161,7 @@ export default function TritonLawPage() {
               </div>
               <div className="flex items-center gap-1">
                 <BookOpen className="h-3 w-3" />
-                <span>{calculateReadingTime(legal.content || "")} min read</span>
+                <span>{calculateReadingTime(legal.content || legal.abstract || "")} min read</span>
               </div>
             </div>
           </div>
@@ -206,7 +206,7 @@ export default function TritonLawPage() {
                     </div>
                     <div className="flex items-center gap-1">
               <BookOpen className="h-3 w-3" />
-              <span>{calculateReadingTime(legal.content || "")} min read</span>
+              <span>{calculateReadingTime(legal.content || legal.abstract || "")} min read</span>
             </div>
 
           </div>
