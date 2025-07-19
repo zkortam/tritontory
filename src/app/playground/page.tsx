@@ -184,10 +184,10 @@ export default function PlaygroundPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-900/50 via-blue-900/50 to-green-900/50 border-b border-gray-800">
-        <div className="container mx-auto px-4 py-12">
+      <div className="bg-black border-b border-gray-800">
+        <div className="container mx-auto px-4 py-16">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-blue-400 to-green-400 bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-blue-400 to-green-400 bg-clip-text text-transparent leading-tight">
               Playground
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
@@ -334,47 +334,7 @@ export default function PlaygroundPage() {
           </div>
         </section>
 
-        {/* Stats Section */}
-        <section className="mt-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
-              <CardContent className="p-6 text-center">
-                <div className="p-3 rounded-lg bg-blue-500/20 w-fit mx-auto mb-4">
-                  <TestTube className="h-8 w-8 text-blue-400" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2">12+</h3>
-                <p className="text-gray-400 text-sm">Scientific Tests</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
-              <CardContent className="p-6 text-center">
-                <div className="p-3 rounded-lg bg-purple-500/20 w-fit mx-auto mb-4">
-                  <Users className="h-8 w-8 text-purple-400" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2">1000+</h3>
-                <p className="text-gray-400 text-sm">Tests Taken</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
-              <CardContent className="p-6 text-center">
-                <div className="p-3 rounded-lg bg-green-500/20 w-fit mx-auto mb-4">
-                  <BarChart3 className="h-8 w-8 text-green-400" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2">4</h3>
-                <p className="text-gray-400 text-sm">Categories</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
-              <CardContent className="p-6 text-center">
-                <div className="p-3 rounded-lg bg-pink-500/20 w-fit mx-auto mb-4">
-                  <Award className="h-8 w-8 text-pink-400" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2">100%</h3>
-                <p className="text-gray-400 text-sm">Free Access</p>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+
       </div>
     </div>
   );
