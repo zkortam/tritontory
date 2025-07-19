@@ -110,12 +110,6 @@ const navigationItems = [
     href: "/playground",
     description: "Interactive personality and political tests",
     color: "playground",
-    items: [
-      { title: "Political Tests", href: "/playground", description: "Political orientation assessments" },
-      { title: "Personality Tests", href: "/playground", description: "Big Five and personality analysis" },
-      { title: "Cognitive Tests", href: "/playground", description: "Intelligence and memory assessments" },
-      { title: "Social Tests", href: "/playground", description: "Empathy and leadership evaluations" },
-    ],
   },
   {
     title: "About",
