@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SearchModal } from "@/components/common/SearchModal";
+import { UserMenu } from "@/components/layout/UserMenu";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 import { Menu, Search } from "lucide-react";
@@ -67,6 +68,12 @@ const navigationItems = [
       { title: "Student Rights", href: "/triton-law?category=Student Rights", description: "Student legal issues" },
     ],
   },
+  {
+    title: "About",
+    href: "/about",
+    description: "Learn about our team and mission",
+    color: "tory",
+  },
 ];
 
 export function Navigation() {
@@ -76,7 +83,7 @@ export function Navigation() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black/95 backdrop-blur supports-[backdrop-filter]:bg-black/75">
+      <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black/95 backdrop-blur supports-[backdrop-filter]:bg-black/75 mobile-gpu-accelerated">
         <div className="container flex h-16 items-center px-4">
           {/* Logo */}
           <div className="mr-8">
@@ -89,55 +96,71 @@ export function Navigation() {
               <NavigationMenuList>
                 {navigationItems.map((item) => (
                   <NavigationMenuItem key={item.title}>
-                    <NavigationMenuTrigger
-                      className={cn(
-                        "bg-transparent hover:bg-gray-800 data-[state=open]:bg-gray-800",
-                        pathname.startsWith(item.href) && "text-primary"
-                      )}
-                    >
-                      <Link href={item.href} className="no-underline">
-                        {item.title}
-                      </Link>
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <div className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                        <div className="row-span-3">
-                          <NavigationMenuLink asChild>
-                            <Link
-                              className={cn(
-                                "flex h-full w-full select-none flex-col justify-end rounded-md p-6 no-underline outline-none focus:shadow-md",
-                                `bg-gradient-to-b from-${item.color}-500/20 to-${item.color}-700/20`
-                              )}
-                              href={item.href}
-                            >
-                              <div className="mb-2 mt-4 text-lg font-medium">
-                                {item.title}
-                              </div>
-                              <p className="text-sm leading-tight text-gray-400">
-                                {item.description}
-                              </p>
-                            </Link>
-                          </NavigationMenuLink>
-                        </div>
-                        <div className="grid gap-1">
-                          {item.items.map((subItem) => (
-                            <NavigationMenuLink key={subItem.title} asChild>
-                              <Link
-                                href={subItem.href}
-                                className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-800 focus:bg-gray-800"
-                              >
-                                <div className="text-sm font-medium leading-none">
-                                  {subItem.title}
-                                </div>
-                                <p className="line-clamp-2 text-sm leading-snug text-gray-400">
-                                  {subItem.description}
-                                </p>
-                              </Link>
-                            </NavigationMenuLink>
-                          ))}
-                        </div>
-                      </div>
-                    </NavigationMenuContent>
+                    {item.items ? (
+                      <>
+                        <NavigationMenuTrigger
+                          className={cn(
+                            "bg-transparent hover:bg-gray-800 data-[state=open]:bg-gray-800",
+                            pathname.startsWith(item.href) && "text-primary"
+                          )}
+                        >
+                          <Link href={item.href} className="no-underline">
+                            {item.title}
+                          </Link>
+                        </NavigationMenuTrigger>
+                        <NavigationMenuContent>
+                          <div className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                            <div className="row-span-3">
+                              <NavigationMenuLink asChild>
+                                <Link
+                                  className={cn(
+                                    "flex h-full w-full select-none flex-col justify-end rounded-md p-6 no-underline outline-none focus:shadow-md",
+                                    `bg-gradient-to-b from-${item.color}-500/20 to-${item.color}-700/20`
+                                  )}
+                                  href={item.href}
+                                >
+                                  <div className="mb-2 mt-4 text-lg font-medium">
+                                    {item.title}
+                                  </div>
+                                  <p className="text-sm leading-tight text-gray-400">
+                                    {item.description}
+                                  </p>
+                                </Link>
+                              </NavigationMenuLink>
+                            </div>
+                            <div className="grid gap-1">
+                              {item.items && item.items.map((subItem) => (
+                                <NavigationMenuLink key={subItem.title} asChild>
+                                  <Link
+                                    href={subItem.href}
+                                    className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-800 focus:bg-gray-800"
+                                  >
+                                    <div className="text-sm font-medium leading-none">
+                                      {subItem.title}
+                                    </div>
+                                    <p className="line-clamp-2 text-sm leading-snug text-gray-400">
+                                      {subItem.description}
+                                    </p>
+                                  </Link>
+                                </NavigationMenuLink>
+                              ))}
+                            </div>
+                          </div>
+                        </NavigationMenuContent>
+                      </>
+                    ) : (
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href={item.href}
+                          className={cn(
+                            "block select-none rounded-md px-4 py-2 text-sm font-medium leading-none no-underline outline-none transition-colors hover:bg-gray-800 focus:bg-gray-800",
+                            pathname.startsWith(item.href) && "text-primary"
+                          )}
+                        >
+                          {item.title}
+                        </Link>
+                      </NavigationMenuLink>
+                    )}
                   </NavigationMenuItem>
                 ))}
               </NavigationMenuList>
@@ -159,6 +182,9 @@ export function Navigation() {
                 </kbd>
               </button>
             </div>
+
+            {/* User Menu */}
+            <UserMenu />
           </div>
 
           {/* Mobile Menu */}
@@ -172,6 +198,9 @@ export function Navigation() {
               <span className="flex-1"></span>
             </button>
 
+            {/* Mobile User Menu */}
+            <UserMenu />
+
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
@@ -179,7 +208,7 @@ export function Navigation() {
                   <span className="sr-only">Menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] bg-black border-gray-800">
+              <SheetContent side="right" className="w-[300px] bg-black border-gray-800 mobile-gpu-accelerated">
                 <div className="flex flex-col space-y-4 mt-8">
                   {navigationItems.map((item) => (
                     <div key={item.title} className="space-y-2">
@@ -193,18 +222,20 @@ export function Navigation() {
                       >
                         {item.title}
                       </Link>
-                      <div className="pl-4 space-y-1">
-                        {item.items.map((subItem) => (
-                          <Link
-                            key={subItem.title}
-                            href={subItem.href}
-                            className="block text-sm text-gray-400 hover:text-white transition-colors"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                          >
-                            {subItem.title}
-                          </Link>
-                        ))}
-                      </div>
+                      {item.items && item.items.length > 0 && (
+                        <div className="pl-4 space-y-1">
+                          {item.items.map((subItem) => (
+                            <Link
+                              key={subItem.title}
+                              href={subItem.href}
+                              className="block text-sm text-gray-400 hover:text-white transition-colors"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              {subItem.title}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

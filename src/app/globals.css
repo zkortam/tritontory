@@ -99,6 +99,29 @@
     .overflow-y-auto {
       -webkit-overflow-scrolling: touch;
     }
+    
+    /* Prevent horizontal scroll on mobile */
+    body {
+      overflow-x: hidden;
+    }
+    
+    /* Better mobile tap highlights */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Improve mobile performance */
+    .mobile-optimized {
+      will-change: auto;
+      transform: translateZ(0);
+    }
+  }
+  
+  /* Tablet optimizations */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .tablet-optimized {
+      font-size: 0.95rem;
+    }
   }
 }
 
@@ -188,6 +211,34 @@
   .mobile-grid {
     @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
   }
+  
+  /* Enhanced mobile utilities */
+  .mobile-safe-area {
+    @apply px-4 sm:px-6 lg:px-8;
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  
+  .mobile-bottom-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .mobile-top-safe {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  /* Mobile performance optimizations */
+  .mobile-gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+  
+  /* Mobile scroll improvements */
+  .mobile-smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @keyframes fade-in {
@@ -210,6 +261,19 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
 }
 
 /* Prose styles for article content */

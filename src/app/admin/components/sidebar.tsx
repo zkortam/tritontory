@@ -18,7 +18,8 @@ import {
   ChevronDown,
   Menu,
   X,
-  Database
+  Database,
+  AlertTriangle
 } from "lucide-react";
 
 const navItems = [
@@ -80,6 +81,12 @@ const navItems = [
     title: "Settings",
     href: "/admin/settings",
     icon: Settings,
+  },
+  {
+    title: "News Tickers",
+    href: "/admin/news-tickers",
+    icon: AlertTriangle,
+    color: "text-red-500",
   },
   {
     title: "Firebase Status",

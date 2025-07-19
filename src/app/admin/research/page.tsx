@@ -45,6 +45,7 @@ import { ResearchService } from "@/lib/firebase-service";
 
 import { RequirePermission } from "@/lib/rbac";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function ResearchPage() {
   const [research, setResearch] = useState<Array<{id: string; title: string; abstract: string; authorName: string; department: string; status: string; coverImage?: string; contributors?: string[]; publishedAt: Date; updatedAt: Date}>>([]);
@@ -280,10 +281,11 @@ export default function ResearchPage() {
                     <div className="flex items-center space-x-3">
                       <div className="relative w-16 h-12 bg-gray-800 rounded overflow-hidden">
                         {article.coverImage ? (
-                          <img
+                          <Image
                             src={article.coverImage}
                             alt={article.title}
-                            className="w-full h-full object-cover"
+                            layout="fill"
+                            objectFit="cover"
                           />
                         ) : (
                           <div className="w-full h-full bg-gray-700 flex items-center justify-center">

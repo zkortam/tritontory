@@ -160,7 +160,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-w-[95vw] p-0 bg-gray-900 border-gray-800">
+      <DialogContent className="sm:max-w-[600px] max-w-[95vw] p-0 bg-gray-900 border-gray-800 mobile-gpu-accelerated">
         <DialogHeader className="p-4 md:p-6 pb-0">
           <DialogTitle className="sr-only">Search</DialogTitle>
         </DialogHeader>
@@ -182,7 +182,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </div>
 
         {/* Search Results */}
-        <div className="max-h-[50vh] md:max-h-[400px] overflow-y-auto">
+        <div className="max-h-[50vh] md:max-h-[400px] overflow-y-auto mobile-smooth-scroll">
           {query && !loading && results.length === 0 && (
             <div className="p-4 md:p-6 text-center text-gray-400">
               <Search className="h-8 md:h-12 w-8 md:w-12 mx-auto mb-2 md:mb-4 text-gray-600" />

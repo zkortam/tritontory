@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export type LogoVariant = "default" | "white" | "primary";
@@ -12,17 +13,17 @@ interface LogoProps {
 }
 
 const sizeClasses: Record<LogoSize, string> = {
-  xs: "text-lg",
-  sm: "text-xl",
-  md: "text-2xl",
-  lg: "text-3xl",
-  xl: "text-4xl",
+  xs: "h-6 w-auto",
+  sm: "h-8 w-auto",
+  md: "h-10 w-auto",
+  lg: "h-12 w-auto",
+  xl: "h-16 w-auto",
 };
 
 const variantClasses: Record<LogoVariant, string> = {
-  default: "text-white",
-  white: "text-white",
-  primary: "text-primary",
+  default: "", // Removed filter temporarily
+  white: "", // Removed filter temporarily
+  primary: "", // Removed filter temporarily
 };
 
 export function Logo({
@@ -31,24 +32,28 @@ export function Logo({
   className,
   href = "/"
 }: LogoProps) {
-  const logoText = (
-    <span className={cn(
-      "font-bold tracking-tight",
-      sizeClasses[size],
-      variantClasses[variant],
-      className
-    )}>
-      Triton Tory
-    </span>
+  const logoImage = (
+    <Image
+      src="/logo.png"
+      alt="Triton Tory Media"
+      width={40}
+      height={40}
+      className={cn(
+        sizeClasses[size],
+        variantClasses[variant],
+        className
+      )}
+      priority
+    />
   );
 
   if (href) {
     return (
       <Link href={href} className="no-underline">
-        {logoText}
+        {logoImage}
       </Link>
     );
   }
 
-  return logoText;
+  return logoImage;
 }

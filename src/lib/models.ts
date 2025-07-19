@@ -106,3 +106,15 @@ export interface Settings {
   lastUpdated: Date;
   status: string;
 }
+
+// News Ticker model for breaking news
+export interface NewsTicker {
+  id: string;
+  text: string;
+  priority: 'low' | 'medium' | 'high' | 'breaking';
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  expiresAt?: Date;
+  link?: string;
+}

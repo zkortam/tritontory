@@ -1,74 +1,23 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedHeroBackground } from "@/components/ui/animated-hero-background";
 import { ArticleService, VideoService, ResearchService, LegalService } from "@/lib/firebase-service";
 import { Article, Video, Research, LegalArticle } from "@/lib/models";
 import { Badge } from "@/components/ui/badge";
+import { StockTicker } from "@/components/common/StockTicker";
 import { 
   Newspaper, 
   Video as VideoIcon, 
   Microscope, 
   Scale, 
-  ChevronDown,
   Play
 } from "lucide-react";
 
-// Founders information
-const founders = [
-  {
-    name: "Zakaria Kortam",
-    title: "Founder",
-    bio: "3rd year Electrical Engineering major with a passion for campus journalism and technology.",
-    initials: "ZK",
-    color: "bg-tory-500"
-  },
-  {
-    name: "Dylan Archer",
-    title: "Founder",
-    bio: "3rd year Political Science and History double major focused on bringing informed journalism to UC San Diego.",
-    initials: "DA",
-    color: "bg-today-500"
-  }
-];
 
-// Media sections explained
-const mediaSections = [
-  {
-    title: "Triton Tory News",
-    description: "Campus-focused journalism covering UCSD events, student government, sports, and more. From local happenings to global impacts, get the full story.",
-    icon: Newspaper,
-    gradient: "from-tory-500/20 to-tory-700/20",
-    color: "tory-500"
-  },
-  {
-    title: "Triton Today",
-    description: "Vertical short-form news videos where reporters deliver 30-60 second updates on the most important campus events.",
-    icon: VideoIcon,
-    gradient: "from-today-500/20 to-today-700/20",
-    color: "today-500"
-  },
-  {
-    title: "Science Journal",
-    description: "Highlighting groundbreaking research and scientific discoveries happening across UC San Diego departments and labs.",
-    icon: Microscope,
-    gradient: "from-science-500/20 to-science-700/20",
-    color: "science-500"
-  },
-  {
-    title: "Law Review",
-    description: "Student-led legal analysis on campus policies, broader legal developments, and their implications for the university community.",
-    icon: Scale,
-    gradient: "from-law-500/20 to-law-700/20",
-    color: "law-500"
-  }
-];
 
 export default async function Home() {
   // Fetch real data from Firebase with error handling
-  let featuredArticles: Article[] = [];
   let latestArticles: Article[] = [];
   let latestVideos: Video[] = [];
   let latestResearch: Research[] = [];
@@ -76,31 +25,25 @@ export default async function Home() {
 
   // Fetch each content type individually to handle partial failures
   try {
-    featuredArticles = await ArticleService.getArticles(undefined, undefined, true, 4);
-  } catch (error) {
-    console.error("Error fetching featured articles:", error);
-  }
-
-  try {
-    latestArticles = await ArticleService.getArticles(undefined, undefined, false, 3);
+    latestArticles = await ArticleService.getArticles(undefined, undefined, false, 2);
   } catch (error) {
     console.error("Error fetching latest articles:", error);
   }
 
   try {
-    latestVideos = await VideoService.getVideos(undefined, false, 3);
+    latestVideos = await VideoService.getVideos(undefined, false, 1);
   } catch (error) {
     console.error("Error fetching latest videos:", error);
   }
 
   try {
-    latestResearch = await ResearchService.getResearchArticles(undefined, false, 3);
+    latestResearch = await ResearchService.getResearchArticles(undefined, false, 1);
   } catch (error) {
     console.error("Error fetching latest research:", error);
   }
 
   try {
-    latestLegal = await LegalService.getLegalArticles(undefined, false, 3);
+    latestLegal = await LegalService.getLegalArticles(undefined, false, 1);
   } catch (error) {
     console.error("Error fetching latest legal articles:", error);
   }
@@ -111,6 +54,19 @@ export default async function Home() {
       day: 'numeric',
       year: 'numeric'
     }).format(date);
+  };
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    
+    return formatDate(date);
   };
 
   const formatDuration = (seconds: number) => {
@@ -130,307 +86,327 @@ export default async function Home() {
 
   return (
     <div className="pb-20">
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      {/* Stock Ticker */}
+      <StockTicker />
+      
+      {/* Hero Section - News Style */}
+      <section className="relative min-h-screen overflow-hidden pt-16">
         {/* Animated background */}
         <AnimatedHeroBackground />
 
         {/* Hero Content */}
-        <div className="container relative z-10 px-4 md:px-6 flex flex-col items-center text-center space-y-8">
-          <div className="space-y-4 max-w-3xl fade-in">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter">
+        <div className="container relative z-10 mobile-safe-area py-8">
+          {/* Header */}
+          <div className="text-center mb-12 fade-in">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-4">
               Triton Tory Media
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300">
+            <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
               The comprehensive voice of UC San Diego
             </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-4 mt-8 slide-up">
-            <Link href="/triton-tory" className="hero-button tory-gradient">
-              News & Articles
-            </Link>
-            <Link href="/triton-today" className="hero-button today-gradient">
-              Watch Videos
-            </Link>
-            <Link href="/triton-science" className="hero-button science-gradient">
-              Science Journal
-            </Link>
-            <Link href="/triton-law" className="hero-button law-gradient">
-              Law Review
-            </Link>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ChevronDown className="w-6 h-6 text-gray-300" />
-        </div>
-      </section>
-
-      {/* Media Sections Explanation */}
-      <section className="container px-4 md:px-6 py-12 md:py-24">
-        <div className="flex flex-col items-center space-y-4 text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">
-            Your Complete Campus Media Source
-          </h2>
-          <p className="text-xl text-gray-400 max-w-3xl">
-            Four distinct platforms, one unified mission: keeping the UCSD community informed, engaged, and connected.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {mediaSections.map((section, index) => (
-            <Card key={index} className={`bg-gray-900 border-gray-800 hover:border-${section.color} transition-colors`}>
-              <CardHeader className="text-center">
-                <div className={`w-16 h-16 mx-auto mb-4 p-3 rounded-lg bg-gradient-to-br ${section.gradient}`}>
-                  <section.icon className="w-full h-full text-white" />
-                </div>
-                <CardTitle className="text-xl">{section.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-400 text-center">{section.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured Content */}
-      <section className="container px-4 md:px-6 py-12 md:py-24">
-        <div className="flex flex-col items-center space-y-4 text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">
-            Featured Stories
-          </h2>
-          <p className="text-xl text-gray-400 max-w-3xl">
-            The latest and most important stories from across our platforms.
-          </p>
-        </div>
-
-        {/* Featured Articles Grid */}
-        {featuredArticles.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {featuredArticles.map((article) => (
-              <Card key={article.id} className="bg-gray-900 border-gray-800 hover:border-tory-500 transition-colors group">
-                <div className="relative aspect-video overflow-hidden rounded-t-lg">
-                  <Image
-                    src={article.coverImage || `https://via.placeholder.com/800x450/001429/FFFFFF?text=${article.title.slice(0, 20)}`}
-                    alt={article.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-2 left-2">
-                    <Badge className="bg-tory-500 text-white">Featured</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle className="line-clamp-2 text-lg">{article.title}</CardTitle>
-                  <CardDescription className="line-clamp-2">{article.excerpt}</CardDescription>
-                </CardHeader>
-                <CardFooter className="flex justify-between items-center">
-                  <span className="text-sm text-gray-400">{formatDate(article.publishedAt)}</span>
-                  <Link href={`/triton-tory/${article.id}`}>
-                    <Button variant="ghost" size="sm" className="text-tory-400 hover:text-tory-300">
-                      Read More
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Latest Content Tabs */}
-        <Tabs defaultValue="articles" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-gray-900 border-gray-800">
-            <TabsTrigger value="articles" className="data-[state=active]:bg-tory-500 data-[state=active]:text-white">
-              Articles
-            </TabsTrigger>
-            <TabsTrigger value="videos" className="data-[state=active]:bg-today-500 data-[state=active]:text-white">
-              Videos
-            </TabsTrigger>
-            <TabsTrigger value="research" className="data-[state=active]:bg-science-500 data-[state=active]:text-white">
-              Research
-            </TabsTrigger>
-            <TabsTrigger value="legal" className="data-[state=active]:bg-law-500 data-[state=active]:text-white">
-              Legal
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="articles" className="mt-6">
-            {latestArticles.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {latestArticles.map((article) => (
-                  <Card key={article.id} className="bg-gray-900 border-gray-800 hover:border-tory-500 transition-colors">
-                    <div className="relative aspect-video overflow-hidden rounded-t-lg">
-                      <Image
-                        src={article.coverImage || `https://picsum.photos/800/450?random=${article.id}`}
-                        alt={article.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <CardHeader>
-                      <CardTitle className="line-clamp-2">{article.title}</CardTitle>
-                      <CardDescription className="line-clamp-2">{article.excerpt}</CardDescription>
-                    </CardHeader>
-                    <CardFooter>
-                      <Link href={`/triton-tory/${article.id}`} className="w-full">
-                        <Button variant="outline" className="w-full border-tory-500 text-tory-400 hover:bg-tory-500 hover:text-white">
-                          Read Article
-                        </Button>
-                      </Link>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-400">No articles available at the moment.</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="videos" className="mt-6">
-            {latestVideos.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {latestVideos.map((video) => (
-                  <Card key={video.id} className="bg-gray-900 border-gray-800 hover:border-today-500 transition-colors">
-                    <div className="relative aspect-video overflow-hidden rounded-t-lg">
-                      <Image
-                        src={video.thumbnailUrl}
-                        alt={video.title}
-                        fill
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <div className="w-12 h-12 bg-today-500 rounded-full flex items-center justify-center">
-                          <Play className="w-6 h-6 text-white ml-1" />
+          {/* 3-Column News Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+            {/* Column 1: Campus News */}
+            <div className="space-y-6">
+              {latestArticles.length > 0 ? (
+                latestArticles.map((article) => (
+                  <Link key={article.id} href={`/triton-tory/${article.id}`} className="block">
+                    <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-tory-500 transition-all duration-300 h-[280px] cursor-pointer group relative">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-tory-500 rounded-full"></div>
+                          <Badge className="bg-tory-500 text-white text-xs">
+                            {article.category || 'Campus'}
+                          </Badge>
+                        </div>
+                        <CardTitle className="text-lg line-clamp-2 group-hover:text-tory-300 transition-colors">{article.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0 pb-16">
+                        <p className="text-sm text-gray-400 line-clamp-3">
+                          {article.excerpt}
+                        </p>
+                      </CardContent>
+                      <div className="absolute bottom-0 left-0 right-0 p-6 pt-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">{formatTimeAgo(article.publishedAt)}</span>
+                          <span className="text-xs text-tory-400 group-hover:text-tory-300 transition-colors">Read More →</span>
                         </div>
                       </div>
-                      <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
-                        {formatDuration(video.duration)}
+                    </Card>
+                  </Link>
+                ))
+              ) : (
+                // Fallback content when no articles are available
+                <>
+                  <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-tory-500 transition-all duration-300 h-[280px] relative">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-tory-500 rounded-full"></div>
+                        <Badge className="bg-tory-500 text-white text-xs">Campus</Badge>
+                      </div>
+                      <CardTitle className="text-lg line-clamp-2">Welcome to Triton Tory Media</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 pb-16">
+                      <p className="text-sm text-gray-400 line-clamp-3">
+                        Stay tuned for the latest campus news, events, and stories from UC San Diego.
+                      </p>
+                    </CardContent>
+                    <div className="absolute bottom-0 left-0 right-0 p-6 pt-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Coming soon</span>
+                        <span className="text-xs text-tory-400">Explore</span>
                       </div>
                     </div>
-                    <CardHeader>
-                      <CardTitle className="line-clamp-2">{video.title}</CardTitle>
-                      <CardDescription className="line-clamp-2">{video.description}</CardDescription>
-                    </CardHeader>
-                    <CardFooter className="flex justify-between items-center">
-                      <span className="text-sm text-gray-400">{formatViews(video.views)} views</span>
-                      <Link href={`/triton-today/${video.id}`}>
-                        <Button variant="outline" size="sm" className="border-today-500 text-today-400 hover:bg-today-500 hover:text-white">
-                          Watch
-                        </Button>
-                      </Link>
-                    </CardFooter>
                   </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-400">No videos available at the moment.</p>
-              </div>
-            )}
-          </TabsContent>
 
-          <TabsContent value="research" className="mt-6">
-            {latestResearch.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {latestResearch.map((research) => (
-                  <Card key={research.id} className="bg-gray-900 border-gray-800 hover:border-science-500 transition-colors">
-                    <div className="relative aspect-video overflow-hidden rounded-t-lg">
-                                              <Image
-                          src={research.coverImage || `https://picsum.photos/800/450?random=${research.id}`}
-                          alt={research.title}
+                  <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-tory-500 transition-all duration-300 h-[280px] relative">
+                    <CardHeader className="pb-3">
+                      <Badge className="bg-tory-500 text-white text-xs w-fit">Campus</Badge>
+                      <CardTitle className="text-lg line-clamp-2">Student Journalism at UCSD</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 pb-16">
+                      <p className="text-sm text-gray-400 line-clamp-3">
+                        Our team of student reporters is working hard to bring you the most important stories from campus.
+                      </p>
+                    </CardContent>
+                    <div className="absolute bottom-0 left-0 right-0 p-6 pt-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Coming soon</span>
+                        <span className="text-xs text-tory-400">Learn More</span>
+                      </div>
+                    </div>
+                  </Card>
+                </>
+              )}
+            </div>
+
+            {/* Column 2: Local News */}
+            <div className="space-y-6">
+              {latestResearch.length > 0 ? (
+                latestResearch.map((research) => (
+                  <Link key={research.id} href={`/triton-science/${research.id}`} className="block">
+                    <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-blue-500 transition-all duration-300 h-[280px] cursor-pointer group relative">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <Badge className="bg-blue-500 text-white text-xs">Research</Badge>
+                        </div>
+                        <CardTitle className="text-lg line-clamp-2 group-hover:text-blue-300 transition-colors">{research.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0 pb-16">
+                        <p className="text-sm text-gray-400 line-clamp-3">
+                          {research.abstract}
+                        </p>
+                      </CardContent>
+                      <div className="absolute bottom-0 left-0 right-0 p-6 pt-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">{formatTimeAgo(research.publishedAt)}</span>
+                          <span className="text-xs text-blue-400 group-hover:text-blue-300 transition-colors">Read More →</span>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                ))
+              ) : (
+                <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-blue-500 transition-all duration-300 h-[280px] relative">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <Badge className="bg-blue-500 text-white text-xs">Research</Badge>
+                    </div>
+                    <CardTitle className="text-lg line-clamp-2">Scientific Discoveries</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 pb-16">
+                    <p className="text-sm text-gray-400 line-clamp-3">
+                      Explore groundbreaking research and discoveries happening across UC San Diego.
+                    </p>
+                  </CardContent>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 pt-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Coming soon</span>
+                      <span className="text-xs text-blue-400">Explore</span>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {latestLegal.length > 0 ? (
+                latestLegal.map((legal) => (
+                  <Link key={legal.id} href={`/triton-law/${legal.id}`} className="block">
+                    <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-blue-500 transition-all duration-300 h-[280px] cursor-pointer group relative">
+                      <CardHeader className="pb-3">
+                        <Badge className="bg-blue-500 text-white text-xs w-fit">Legal</Badge>
+                        <CardTitle className="text-lg line-clamp-2 group-hover:text-blue-300 transition-colors">{legal.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0 pb-16">
+                        <p className="text-sm text-gray-400 line-clamp-3">
+                          {legal.abstract}
+                        </p>
+                      </CardContent>
+                      <div className="absolute bottom-0 left-0 right-0 p-6 pt-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">{formatTimeAgo(legal.publishedAt)}</span>
+                          <span className="text-xs text-blue-400 group-hover:text-blue-300 transition-colors">Read More →</span>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                ))
+              ) : (
+                <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-blue-500 transition-all duration-300 h-[280px] relative">
+                  <CardHeader className="pb-3">
+                    <Badge className="bg-blue-500 text-white text-xs w-fit">Legal</Badge>
+                    <CardTitle className="text-lg line-clamp-2">Legal Analysis</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 pb-16">
+                    <p className="text-sm text-gray-400 line-clamp-3">
+                      Student-led legal analysis on campus policies and broader legal developments.
+                    </p>
+                  </CardContent>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 pt-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Coming soon</span>
+                      <span className="text-xs text-blue-400">Explore</span>
+                    </div>
+                  </div>
+                </Card>
+              )}
+            </div>
+
+            {/* Column 3: Latest Video */}
+            <div>
+              {latestVideos.length > 0 ? (
+                latestVideos.map((video) => (
+                  <Link key={video.id} href={`/triton-today/${video.id}`} className="block">
+                    <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-today-500 transition-all duration-300 h-[572px] cursor-pointer group relative">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-today-500 rounded-full"></div>
+                          <Badge className="bg-today-500 text-white text-xs">Latest Video</Badge>
+                        </div>
+                        <CardTitle className="text-lg line-clamp-2 group-hover:text-today-300 transition-colors">{video.title}</CardTitle>
+                      </CardHeader>
+                      <div className="relative aspect-video overflow-hidden rounded-lg mx-4 mb-4">
+                        <Image
+                          src={video.thumbnailUrl || "https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80"}
+                          alt={video.title}
                           fill
                           className="object-cover"
                         />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <div className="w-16 h-16 bg-today-500 rounded-full flex items-center justify-center hover:scale-110 transition-transform cursor-pointer">
+                            <Play className="w-8 h-8 text-white ml-1" />
+                          </div>
+                        </div>
+                        <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+                          {formatDuration(video.duration)}
+                        </div>
+                      </div>
+                      <CardContent className="pt-0 pb-16">
+                        <p className="text-sm text-gray-400 line-clamp-3">
+                          {video.description}
+                        </p>
+                      </CardContent>
+                      <div className="absolute bottom-0 left-0 right-0 p-6 pt-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">{formatTimeAgo(video.publishedAt)} • {formatViews(video.views)} views</span>
+                          <span className="text-xs text-today-400 group-hover:text-today-300 transition-colors">Watch Now →</span>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                ))
+              ) : (
+                // Fallback content when no videos are available
+                <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-today-500 transition-all duration-300 h-[572px] relative">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-today-500 rounded-full"></div>
+                      <Badge className="bg-today-500 text-white text-xs">Video Content</Badge>
                     </div>
-                    <CardHeader>
-                      <CardTitle className="line-clamp-2">{research.title}</CardTitle>
-                      <CardDescription className="line-clamp-2">{research.abstract}</CardDescription>
-                    </CardHeader>
-                    <CardFooter>
-                      <Link href={`/triton-science/${research.id}`} className="w-full">
-                        <Button variant="outline" className="w-full border-science-500 text-science-400 hover:bg-science-500 hover:text-white">
-                          Read Research
-                        </Button>
-                      </Link>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-400">No research articles available at the moment.</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="legal" className="mt-6">
-            {latestLegal.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {latestLegal.map((legal) => (
-                  <Card key={legal.id} className="bg-gray-900 border-gray-800 hover:border-law-500 transition-colors">
-                    <div className="relative aspect-video overflow-hidden rounded-t-lg">
-                      <Image
-                        src={legal.coverImage}
-                        alt={legal.title}
-                        fill
-                        className="object-cover"
-                      />
+                    <CardTitle className="text-lg line-clamp-2">Triton Today Videos</CardTitle>
+                  </CardHeader>
+                  <div className="relative aspect-video overflow-hidden rounded-lg mx-4 mb-4">
+                    <Image
+                      src="https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80"
+                      alt="Video Placeholder"
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <div className="w-16 h-16 bg-today-500 rounded-full flex items-center justify-center">
+                        <VideoIcon className="w-8 h-8 text-white" />
+                      </div>
                     </div>
-                    <CardHeader>
-                      <CardTitle className="line-clamp-2">{legal.title}</CardTitle>
-                      <CardDescription className="line-clamp-2">{legal.abstract}</CardDescription>
-                    </CardHeader>
-                    <CardFooter>
-                      <Link href={`/triton-law/${legal.id}`} className="w-full">
-                        <Button variant="outline" className="w-full border-law-500 text-law-400 hover:bg-law-500 hover:text-white">
-                          Read Analysis
-                        </Button>
-                      </Link>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-400">No legal articles available at the moment.</p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </section>
+                  </div>
+                  <CardContent className="pt-0 pb-16">
+                    <p className="text-sm text-gray-400 line-clamp-3">
+                      Short-form news videos and visual storytelling from our student reporters.
+                    </p>
+                  </CardContent>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 pt-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Coming soon</span>
+                      <span className="text-xs text-today-400">Explore</span>
+                    </div>
+                  </div>
+                </Card>
+              )}
+            </div>
+          </div>
 
-      {/* Founders Section */}
-      <section className="container px-4 md:px-6 py-12 md:py-24">
-        <div className="flex flex-col items-center space-y-4 text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">
-            Meet Our Founders
-          </h2>
-          <p className="text-xl text-gray-400 max-w-3xl">
-            The passionate students behind Triton Tory Media, dedicated to bringing quality journalism to UC San Diego.
-          </p>
-        </div>
+          {/* Quick Navigation Tiles */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 mobile-gpu-accelerated">
+            <Link href="/triton-tory" className="group">
+              <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-tory-500 transition-all duration-300 h-full">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-4 p-3 rounded-lg bg-gradient-to-br from-tory-500 to-tory-600 group-hover:scale-110 transition-transform">
+                    <Newspaper className="w-full h-full text-white" />
+                  </div>
+                  <h3 className="font-semibold text-white mb-2">News & Articles</h3>
+                  <p className="text-sm text-gray-400">Latest campus news and in-depth reporting</p>
+                </CardContent>
+              </Card>
+            </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {founders.map((founder, index) => (
-            <Card key={index} className="bg-gray-900 border-gray-800 text-center">
-              <CardHeader>
-                <div className={`w-32 h-32 mx-auto mb-4 rounded-full flex items-center justify-center ${founder.color}`}>
-                  <span className="text-4xl font-bold text-white">{founder.initials}</span>
-                </div>
-                <CardTitle className="text-2xl">{founder.name}</CardTitle>
-                <CardDescription className="text-lg text-white">{founder.title}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-400">{founder.bio}</p>
-              </CardContent>
-            </Card>
-          ))}
+            <Link href="/triton-today" className="group">
+              <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-today-500 transition-all duration-300 h-full">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-4 p-3 rounded-lg bg-gradient-to-br from-today-500 to-today-600 group-hover:scale-110 transition-transform">
+                    <VideoIcon className="w-full h-full text-white" />
+                  </div>
+                  <h3 className="font-semibold text-white mb-2">Video Content</h3>
+                  <p className="text-sm text-gray-400">Visual storytelling and multimedia journalism</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/triton-science" className="group">
+              <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-science-500 transition-all duration-300 h-full">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-4 p-3 rounded-lg bg-gradient-to-br from-science-500 to-science-600 group-hover:scale-110 transition-transform">
+                    <Microscope className="w-full h-full text-white" />
+                  </div>
+                  <h3 className="font-semibold text-white mb-2">Science Journal</h3>
+                  <p className="text-sm text-gray-400">Research highlights and scientific discoveries</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/triton-law" className="group">
+              <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-law-500 transition-all duration-300 h-full">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-4 p-3 rounded-lg bg-gradient-to-br from-law-500 to-law-600 group-hover:scale-110 transition-transform">
+                    <Scale className="w-full h-full text-white" />
+                  </div>
+                  <h3 className="font-semibold text-white mb-2">Law Review</h3>
+                  <p className="text-sm text-gray-400">Legal analysis and policy discussions</p>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
         </div>
       </section>
     </div>

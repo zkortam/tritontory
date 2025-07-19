@@ -27,14 +27,6 @@ export default function AdminCommentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredComments, setFilteredComments] = useState<Comment[]>([]);
 
-  useEffect(() => {
-    fetchComments();
-  }, [activeTab]);
-
-  useEffect(() => {
-    filterComments();
-  }, [comments, searchTerm]);
-
   const fetchComments = useCallback(async () => {
     try {
       setLoading(true);
@@ -62,6 +54,14 @@ export default function AdminCommentsPage() {
     );
     setFilteredComments(filtered);
   }, [comments, searchTerm]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
+
+  useEffect(() => {
+    filterComments();
+  }, [filterComments]);
 
   const handleModeration = async (commentId: string, action: 'approve' | 'reject') => {
     try {

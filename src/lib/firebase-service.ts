@@ -23,7 +23,7 @@ import {
   deleteObject
 } from "firebase/storage";
 import { db, storage } from "./firebase";
-import { Article, Video, Research, LegalArticle, User, Comment, Settings } from "./models";
+import { Article, Video, Research, LegalArticle, User, Comment, Settings, NewsTicker } from "./models";
 
 // Convert Firestore timestamp to Date
 const convertTimestampToDate = (timestamp: Timestamp): Date => {
@@ -976,6 +976,129 @@ export const CommentService = {
   },
 };
 
+// News Ticker Service for Breaking News
+export const NewsTickerService = {
+  // Get all active news tickers
+  getActiveTickers: async (): Promise<NewsTicker[]> => {
+    try {
+      const tickersQuery = collection(db, "newsTickers");
+      const q = query(
+        tickersQuery,
+        where("isActive", "==", true),
+        orderBy("priority", "desc"),
+        orderBy("createdAt", "desc")
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const tickers: NewsTicker[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        tickers.push({
+          ...data,
+          id: doc.id,
+          createdAt: convertTimestampToDate(data.createdAt),
+          updatedAt: convertTimestampToDate(data.updatedAt),
+          expiresAt: data.expiresAt ? convertTimestampToDate(data.expiresAt) : undefined,
+        } as NewsTicker);
+      });
+      
+      return tickers;
+    } catch (error) {
+      console.error("Error fetching news tickers:", error);
+      return [];
+    }
+  },
+
+  // Get all news tickers for admin
+  getAllTickers: async (): Promise<NewsTicker[]> => {
+    try {
+      const tickersQuery = collection(db, "newsTickers");
+      const q = query(tickersQuery, orderBy("createdAt", "desc"));
+      
+      const querySnapshot = await getDocs(q);
+      const tickers: NewsTicker[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        tickers.push({
+          ...data,
+          id: doc.id,
+          createdAt: convertTimestampToDate(data.createdAt),
+          updatedAt: convertTimestampToDate(data.updatedAt),
+          expiresAt: data.expiresAt ? convertTimestampToDate(data.expiresAt) : undefined,
+        } as NewsTicker);
+      });
+      
+      return tickers;
+    } catch (error) {
+      console.error("Error fetching all news tickers:", error);
+      return [];
+    }
+  },
+
+  // Create a new news ticker
+  createTicker: async (ticker: Omit<NewsTicker, "id" | "createdAt" | "updatedAt">): Promise<string> => {
+    try {
+      const docRef = await addDoc(collection(db, "newsTickers"), {
+        ...ticker,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      
+      return docRef.id;
+    } catch (error) {
+      console.error("Error creating news ticker:", error);
+      throw error;
+    }
+  },
+
+  // Update a news ticker
+  updateTicker: async (id: string, ticker: Partial<NewsTicker>): Promise<void> => {
+    try {
+      const docRef = doc(db, "newsTickers", id);
+      
+      // Filter out undefined values
+      const cleanTicker = Object.fromEntries(
+        Object.entries(ticker).filter(([, value]) => value !== undefined)
+      );
+      
+      await updateDoc(docRef, {
+        ...cleanTicker,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error updating news ticker:", error);
+      throw error;
+    }
+  },
+
+  // Delete a news ticker
+  deleteTicker: async (id: string): Promise<void> => {
+    try {
+      const docRef = doc(db, "newsTickers", id);
+      await deleteDoc(docRef);
+    } catch (error) {
+      console.error("Error deleting news ticker:", error);
+      throw error;
+    }
+  },
+
+  // Toggle ticker active status
+  toggleTickerStatus: async (id: string, isActive: boolean): Promise<void> => {
+    try {
+      const docRef = doc(db, "newsTickers", id);
+      await updateDoc(docRef, {
+        isActive,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error toggling ticker status:", error);
+      throw error;
+    }
+  },
+};
+
 // Test export to verify module resolution
 export const TEST_EXPORT = {
   test: () => "Firebase service is working",
@@ -987,5 +1110,6 @@ export const TEST_EXPORT = {
     UserService: typeof UserService,
     SettingsService: typeof SettingsService,
     CommentService: typeof CommentService,
+    NewsTickerService: typeof NewsTickerService,
   }
 };

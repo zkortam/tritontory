@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { CommentService } from "@/lib/firebase-service";
 import { Comment } from "@/lib/models";
@@ -44,12 +44,7 @@ export function Comments({ contentId, contentType, showModeration = false }: Com
   const [editingComment, setEditingComment] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
 
-  // Fetch comments
-  useEffect(() => {
-    fetchComments();
-  }, [contentId, contentType]);
-
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -73,7 +68,12 @@ export function Comments({ contentId, contentType, showModeration = false }: Com
     } finally {
       setLoading(false);
     }
-  };
+  }, [contentId, contentType, showModeration]);
+
+  // Fetch comments
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
