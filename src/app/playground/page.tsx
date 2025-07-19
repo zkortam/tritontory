@@ -267,7 +267,7 @@ export default function PlaygroundPage() {
               variant={selectedCategory === "all" ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedCategory("all")}
-              className={selectedCategory === "all" ? "bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600" : ""}
+              className={selectedCategory === "all" ? "bg-purple-500 hover:bg-purple-600" : ""}
             >
               All Tests
             </Button>
@@ -277,7 +277,7 @@ export default function PlaygroundPage() {
                 variant={selectedCategory === category.id ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(category.id)}
-                className={selectedCategory === category.id ? `${category.color} hover:${category.color.replace('500', '600')}` : ""}
+                className={selectedCategory === category.id ? "bg-purple-500 hover:bg-purple-600" : ""}
               >
                 {category.icon}
                 <span className="ml-1">{category.name}</span>
