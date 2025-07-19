@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { VideoService } from "@/lib/firebase-service";
 import { Video } from "@/lib/models";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { 
   Play, 
   Pause, 
@@ -14,8 +13,6 @@ import {
   Calendar,
   User
 } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 
 export default function TritonTodayPage() {
@@ -150,7 +147,7 @@ export default function TritonTodayPage() {
     return () => {
       observer.disconnect();
     };
-  }, [videos.length]);
+  }, [videos.length, handleScroll]);
 
   // Add touch/swipe support
   useEffect(() => {

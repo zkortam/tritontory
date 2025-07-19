@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
   ArrowLeft, 
-  ArrowRight, 
   Brain, 
   Eye, 
   BarChart3,
@@ -19,10 +18,7 @@ import {
   RotateCcw,
   Share2,
   Download,
-  Star,
   TestTube,
-  User,
-  AlertTriangle,
   Lightbulb
 } from "lucide-react";
 
@@ -31,15 +27,15 @@ interface MemoryTask {
   type: 'digit-span' | 'visual-memory' | 'pattern-recall' | 'word-list';
   title: string;
   description: string;
-  data: any;
-  answer: any;
+  data: string | number[][] | string[];
+  answer: string | number[][] | string[];
   timeLimit: number; // in seconds
   difficulty: number;
 }
 
 interface Answer {
   taskId: number;
-  userAnswer: any;
+  userAnswer: string | number[][] | string[];
   isCorrect: boolean;
   timeSpent: number;
   score: number;
@@ -376,7 +372,9 @@ export default function MemoryTest() {
       isCorrect = JSON.stringify(userWords) === JSON.stringify(task.answer);
     } else {
       // For digit span and pattern recall
-      isCorrect = userInput.replace(/[^0-9★●■▲]/g, '') === task.answer.replace(/[^0-9★●■▲]/g, '');
+      const userAnswer = typeof userInput === 'string' ? userInput : '';
+      const correctAnswer = typeof task.answer === 'string' ? task.answer : '';
+      isCorrect = userAnswer.replace(/[^0-9★●■▲]/g, '') === correctAnswer.replace(/[^0-9★●■▲]/g, '');
     }
     
     // Calculate score based on accuracy and speed
@@ -737,7 +735,9 @@ export default function MemoryTest() {
                   
                   {currentTaskData.type === 'visual-memory' ? (
                     <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto">
-                      {currentTaskData.data.map((row: number[], rowIndex: number) => (
+                      {Array.isArray(currentTaskData.data) && 
+                       currentTaskData.data.every(row => Array.isArray(row)) &&
+                       (currentTaskData.data as number[][]).map((row: number[], rowIndex: number) => (
                         row.map((cell: number, colIndex: number) => (
                           <div
                             key={`${rowIndex}-${colIndex}`}
@@ -750,7 +750,9 @@ export default function MemoryTest() {
                     </div>
                   ) : currentTaskData.type === 'word-list' ? (
                     <div className="space-y-2">
-                      {currentTaskData.data.map((word: string, index: number) => (
+                      {Array.isArray(currentTaskData.data) && 
+                       currentTaskData.data.every(item => typeof item === 'string') &&
+                       (currentTaskData.data as string[]).map((word: string, index: number) => (
                         <div key={index} className="text-lg font-medium">
                           {index + 1}. {word}
                         </div>

@@ -19,10 +19,7 @@ import {
   RotateCcw,
   Share2,
   Download,
-  Star,
   TestTube,
-  User,
-  AlertTriangle,
   Lightbulb
 } from "lucide-react";
 

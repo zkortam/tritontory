@@ -20,7 +20,6 @@ import {
   Download,
   Star,
   TestTube,
-  User,
   AlertTriangle,
   Lightbulb,
   Users

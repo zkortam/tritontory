@@ -9,7 +9,6 @@ import { Progress } from "@/components/ui/progress";
 import { 
   ArrowLeft, 
   ArrowRight, 
-  Skull, 
   Brain, 
   Target,
   Clock,

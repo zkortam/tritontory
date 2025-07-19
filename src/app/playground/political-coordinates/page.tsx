@@ -10,7 +10,6 @@ import {
   ArrowLeft, 
   ArrowRight, 
   Compass, 
-  Globe, 
   Target,
   Clock,
   Brain,

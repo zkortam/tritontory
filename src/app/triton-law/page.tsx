@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { LegalService } from "@/lib/firebase-service";
 import type { LegalArticle } from "@/lib/models";
 import { 
@@ -17,24 +17,12 @@ import {
   Calendar,
   TrendingUp,
   Search,
-  Filter,
   ArrowRight,
-  Clock,
   Building,
-  Target,
-  Lightbulb,
-  Globe,
   Shield,
   Heart,
-  MapPin,
   AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Zap,
-  Database,
-  User,
-  Briefcase,
-  Library
+  Briefcase
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { calculateReadingTime } from "@/lib/utils";
@@ -43,7 +31,7 @@ export default function TritonLawPage() {
   const [legalArticles, setLegalArticles] = useState<LegalArticle[]>([]);
   const [featuredLegal, setFeaturedLegal] = useState<LegalArticle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -198,7 +186,7 @@ export default function TritonLawPage() {
                   </div>
   );
 
-  const renderCategorySection = (title: string, legal: LegalArticle[], icon: React.ReactNode, color: string) => (
+  const renderCategorySection = (title: string, legal: LegalArticle[], icon: React.ReactNode) => (
     <section className="mb-12">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -308,8 +296,7 @@ export default function TritonLawPage() {
                 return renderCategorySection(
                   category.name, 
                   categoryLegal, 
-                  category.icon, 
-                  category.color
+                  category.icon
                 );
               })}
             </div>

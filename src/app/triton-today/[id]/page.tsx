@@ -17,7 +17,7 @@ import {
   VolumeX, 
   Heart, 
   MessageCircle, 
-  Share2,
+
   Eye,
   Calendar,
   User,

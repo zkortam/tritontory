@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ResearchService } from "@/lib/firebase-service";
 import type { Research } from "@/lib/models";
 import { 
@@ -23,19 +23,11 @@ import {
   BookOpen,
   FileText,
   Search,
-  Filter,
   ArrowRight,
-  Clock,
   Star,
   Building,
   GraduationCap,
   Target,
-  Lightbulb,
-  TestTube,
-  Calculator,
-  Globe,
-  Shield,
-  Heart,
   Eye,
   Download
 } from "lucide-react";

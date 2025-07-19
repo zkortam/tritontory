@@ -1,21 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { Logo } from "@/components/ui/logo";
 
 export default function LogoTestPage() {
   const [logoStatus, setLogoStatus] = useState<Record<string, 'loading' | 'success' | 'error'>>({});
 
-  const logoSources = [
+  const logoSources = useMemo(() => [
     "/logo-small.png",
     "/logo-small.webp",
     "/logo.png",
     "/logo.svg"
-  ];
+  ], []);
 
   const testLogo = (src: string) => {
     return new Promise<boolean>((resolve) => {
-      const img = new Image();
+      const img = new window.Image();
       img.onload = () => {
         setLogoStatus(prev => ({ ...prev, [src]: 'success' }));
         resolve(true);
@@ -95,9 +96,11 @@ export default function LogoTestPage() {
           {logoSources.map((src) => (
             <div key={src} className="border border-gray-700 rounded-lg p-4">
               <h3 className="text-sm font-mono mb-2">{src}</h3>
-              <img 
+              <Image 
                 src={src} 
                 alt={`Test ${src}`}
+                width={200}
+                height={80}
                 className="w-full h-20 object-contain"
                 onLoad={() => console.log(`Direct img loaded: ${src}`)}
                 onError={() => console.error(`Direct img failed: ${src}`)}
