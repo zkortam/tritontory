@@ -433,7 +433,7 @@ export default function TritonTodayPage() {
             </div>
 
             {/* Video Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
               {videos.map((video) => (
                 <div
                   key={video.id}
@@ -449,29 +449,35 @@ export default function TritonTodayPage() {
                       loop
                       playsInline
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    
+                    {/* Duration Badge */}
                     <div className="absolute top-2 right-2">
                       <Badge className="bg-black/80 text-white text-xs">
                         {formatDuration(video.duration)}
                       </Badge>
                     </div>
-                    <div className="absolute bottom-2 left-2 right-2">
-                      <div className="flex items-center gap-2 text-white text-sm">
-                        <Eye className="w-4 h-4" />
+                    
+                    {/* View Count */}
+                    <div className="absolute top-2 left-2">
+                      <div className="flex items-center gap-1 text-white text-xs bg-black/50 px-2 py-1 rounded">
+                        <Eye className="w-3 h-3" />
                         <span>{formatViews(video.views)}</span>
                       </div>
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-white font-semibold text-lg mb-2 line-clamp-2">
-                      {video.title}
-                    </h3>
-                    <p className="text-gray-400 text-sm line-clamp-2 mb-3">
-                      {video.description}
-                    </p>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span>{video.authorName}</span>
-                      <span>{formatDistanceToNow(video.publishedAt, { addSuffix: true })}</span>
+                    
+                    {/* Video Info Overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-white font-semibold text-sm mb-1 line-clamp-2">
+                        {video.title}
+                      </h3>
+                      <p className="text-gray-300 text-xs line-clamp-2 mb-2">
+                        {video.description}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-gray-400">
+                        <span className="truncate">{video.authorName}</span>
+                        <span>{formatDistanceToNow(video.publishedAt, { addSuffix: true })}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
