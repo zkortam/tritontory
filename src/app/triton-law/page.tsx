@@ -94,31 +94,31 @@ export default function TritonLawPage() {
 
   // Legal category configurations
   const legalCategories = [
-    { name: "Campus Policy", icon: <Building className="h-5 w-5" />, color: "bg-blue-500", count: legalArticles.filter(l => l.category === "Campus Policy").length },
-    { name: "Student Rights", icon: <Shield className="h-5 w-5" />, color: "bg-green-500", count: legalArticles.filter(l => l.category === "Student Rights").length },
-    { name: "Supreme Court", icon: <Gavel className="h-5 w-5" />, color: "bg-purple-500", count: legalArticles.filter(l => l.category === "Supreme Court").length },
-    { name: "Constitutional Law", icon: <BookOpen className="h-5 w-5" />, color: "bg-red-500", count: legalArticles.filter(l => l.category === "Constitutional Law").length },
-    { name: "Administrative Law", icon: <Briefcase className="h-5 w-5" />, color: "bg-orange-500", count: legalArticles.filter(l => l.category === "Administrative Law").length },
-    { name: "Civil Rights", icon: <Heart className="h-5 w-5" />, color: "bg-pink-500", count: legalArticles.filter(l => l.category === "Civil Rights").length },
-    { name: "Criminal Law", icon: <AlertTriangle className="h-5 w-5" />, color: "bg-yellow-500", count: legalArticles.filter(l => l.category === "Criminal Law").length },
+    { name: "Campus Policy", icon: <Building className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Campus Policy").length },
+    { name: "Student Rights", icon: <Shield className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Student Rights").length },
+    { name: "Supreme Court", icon: <Gavel className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Supreme Court").length },
+    { name: "Constitutional Law", icon: <BookOpen className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Constitutional Law").length },
+    { name: "Administrative Law", icon: <Briefcase className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Administrative Law").length },
+    { name: "Civil Rights", icon: <Heart className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Civil Rights").length },
+    { name: "Criminal Law", icon: <AlertTriangle className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Criminal Law").length },
   ];
 
   const jurisdictions = [
-    { name: "Campus", icon: <Building className="h-4 w-4" />, color: "bg-blue-500" },
-    { name: "State", icon: <MapPin className="h-4 w-4" />, color: "bg-green-500" },
-    { name: "Federal", icon: <Globe className="h-4 w-4" />, color: "bg-purple-500" },
-    { name: "Supreme Court", icon: <Gavel className="h-4 w-4" />, color: "bg-red-500" },
-    { name: "International", icon: <Globe className="h-4 w-4" />, color: "bg-orange-500" },
+    { name: "Campus", icon: <Building className="h-4 w-4 text-white" />, color: "bg-crimson-500" },
+    { name: "State", icon: <MapPin className="h-4 w-4 text-white" />, color: "bg-crimson-500" },
+    { name: "Federal", icon: <Globe className="h-4 w-4 text-white" />, color: "bg-crimson-500" },
+    { name: "Supreme Court", icon: <Gavel className="h-4 w-4 text-white" />, color: "bg-crimson-500" },
+    { name: "International", icon: <Globe className="h-4 w-4 text-white" />, color: "bg-crimson-500" },
   ];
 
   const renderFeaturedLegalCard = (legal: LegalArticle) => (
     <Card key={legal.id} className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 hover:border-crimson-500/50 transition-all duration-300 overflow-hidden group">
       <Link href={`/triton-law/${legal.id}`} className="block">
         <div className="relative aspect-[16/9] overflow-hidden">
-          <Image
+                  <Image
             src={legal.coverImage || `https://picsum.photos/800/450?random=${legal.id}`}
-            alt={legal.title}
-            fill
+                    alt={legal.title}
+                    fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
@@ -126,16 +126,16 @@ export default function TritonLawPage() {
           {/* Category Badge */}
           <div className="absolute top-4 left-4">
             <Badge className="bg-crimson-500/90 text-white text-xs font-medium">
-              {legal.category}
-            </Badge>
-          </div>
+                      {legal.category}
+                    </Badge>
+                  </div>
 
           {/* Legal Analysis Badge */}
           <div className="absolute top-4 right-4">
             <Badge variant="outline" className="bg-black/80 text-white text-xs">
-              Legal Analysis
-            </Badge>
-          </div>
+                      Legal Analysis
+                    </Badge>
+                  </div>
 
           {/* Content */}
           <div className="absolute bottom-4 left-4 right-4">
@@ -148,10 +148,10 @@ export default function TritonLawPage() {
               </p>
             )}
           </div>
-        </div>
+                </div>
         
         <CardContent className="p-4">
-          <div className="flex items-center justify-between text-sm text-gray-400">
+                  <div className="flex items-center justify-between text-sm text-gray-400">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="font-medium">{legal.authorName}</span>
@@ -216,11 +216,11 @@ export default function TritonLawPage() {
             </h4>
           </Link>
           <div className="flex items-center gap-3 text-xs text-gray-400">
-            <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1">
               <Users className="h-3 w-3" />
-              <span>{legal.authorName}</span>
-            </div>
-            <div className="flex items-center gap-1">
+                      <span>{legal.authorName}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
               <BookOpen className="h-3 w-3" />
               <span>10 min read</span>
             </div>
@@ -238,10 +238,8 @@ export default function TritonLawPage() {
     <section className="mb-12">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${color} bg-opacity-20`}>
-            <div className={`${color.replace('bg-', 'text-')}`}>
-              {icon}
-            </div>
+          <div className="p-2 rounded-lg bg-crimson-500">
+            {icon}
           </div>
           <h2 className="text-xl font-bold text-white">{title}</h2>
           <Badge variant="outline" className="text-xs">{legal.length} analyses</Badge>
@@ -313,10 +311,10 @@ export default function TritonLawPage() {
                 return l.publishedAt > monthAgo;
               }).length}
             </span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
   );
 
   return (
@@ -343,13 +341,13 @@ export default function TritonLawPage() {
           </div>
         ) : searchQuery ? (
           // Search Results
-          <section>
+      <section>
             <div className="flex items-center gap-3 mb-8">
               <Search className="h-6 w-6 text-crimson-500" />
               <h2 className="text-2xl font-bold">Search Results</h2>
               <Badge variant="outline" className="ml-2">
                 {filteredLegal.length} results
-              </Badge>
+                  </Badge>
             </div>
             
             {filteredLegal.length === 0 ? (
@@ -420,9 +418,9 @@ export default function TritonLawPage() {
                 <div className="mt-auto">
                   {renderLegalStatsWidget()}
                 </div>
-              </div>
-            </div>
-
+                  </div>
+        </div>
+        
             {/* Category Sections */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {legalCategories.map((category) => {

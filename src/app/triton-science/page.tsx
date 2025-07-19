@@ -107,10 +107,10 @@ export default function TritonSciencePage() {
     <Card key={research.id} className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 hover:border-science-500/50 transition-all duration-300 overflow-hidden group">
       <Link href={`/triton-science/${research.id}`} className="block">
         <div className="relative aspect-[16/9] overflow-hidden">
-          <Image
-            src={research.coverImage || `https://picsum.photos/800/450?random=${research.id}`}
-            alt={research.title}
-            fill
+                  <Image
+                    src={research.coverImage || `https://picsum.photos/800/450?random=${research.id}`}
+                    alt={research.title}
+                    fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
@@ -125,9 +125,9 @@ export default function TritonSciencePage() {
           {/* Research Type Badge */}
           <div className="absolute top-4 right-4">
             <Badge variant="outline" className="bg-black/80 text-white text-xs">
-              Research
-            </Badge>
-          </div>
+                      Research
+                    </Badge>
+                  </div>
 
           {/* Content */}
           <div className="absolute bottom-4 left-4 right-4">
@@ -194,25 +194,25 @@ export default function TritonSciencePage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <Badge className="bg-science-500 text-white text-xs font-medium">
-              {research.department}
-            </Badge>
+                      {research.department}
+                    </Badge>
             <Badge variant="outline" className="text-xs">
               Research
             </Badge>
             <span className="text-xs text-gray-500">•</span>
             <span className="text-xs text-gray-500">{formatDistanceToNow(research.publishedAt, { addSuffix: true })}</span>
-          </div>
+                  </div>
           <Link href={`/triton-science/${research.id}`} className="group">
             <h4 className="font-semibold text-white group-hover:text-science-400 transition-colors line-clamp-2 text-sm leading-tight mb-2">
               {research.title}
             </h4>
           </Link>
           <div className="flex items-center gap-3 text-xs text-gray-400">
-            <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1">
               <Users className="h-3 w-3" />
-              <span>{research.authorName}</span>
-            </div>
-            <div className="flex items-center gap-1">
+                      <span>{research.authorName}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
               <BookOpen className="h-3 w-3" />
               <span>6 min read</span>
             </div>
@@ -305,10 +305,10 @@ export default function TritonSciencePage() {
                 return r.publishedAt > monthAgo;
               }).length}
             </span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
   );
 
   return (
@@ -335,13 +335,13 @@ export default function TritonSciencePage() {
           </div>
         ) : searchQuery ? (
           // Search Results
-          <section>
+      <section>
             <div className="flex items-center gap-3 mb-8">
               <Search className="h-6 w-6 text-science-500" />
               <h2 className="text-2xl font-bold">Search Results</h2>
               <Badge variant="outline" className="ml-2">
                 {filteredResearch.length} results
-              </Badge>
+                  </Badge>
             </div>
             
             {filteredResearch.length === 0 ? (
@@ -410,9 +410,9 @@ export default function TritonSciencePage() {
                 <div className="mt-auto">
                   {renderResearchStatsWidget()}
                 </div>
-              </div>
-            </div>
-
+                  </div>
+        </div>
+        
             {/* Department Sections */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {departments.map((dept) => {
