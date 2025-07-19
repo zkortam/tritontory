@@ -148,23 +148,28 @@ export function Navigation() {
                               <NavigationMenuLink asChild>
                                 <Link
                                   className={cn(
-                                    "flex h-full w-full select-none flex-col justify-end rounded-md p-6 no-underline outline-none focus:shadow-md",
+                                    "flex h-full w-full select-none flex-col justify-between rounded-md p-6 no-underline outline-none focus:shadow-md",
                                     getBackgroundGradient(item.color)
                                   )}
                                   href={item.href}
                                 >
-                                  <div className="flex items-center mb-2 mt-4">
+                                  {/* Icon at the top */}
+                                  <div className="flex justify-center">
                                     {(() => {
                                       const IconComponent = getSectionIcon(item.color);
-                                      return <IconComponent className="h-6 w-6 mr-3 text-white/80" />;
+                                      return <IconComponent className="h-8 w-8 text-white/80" />;
                                     })()}
-                                    <div className="text-lg font-medium">
+                                  </div>
+                                  
+                                  {/* Content at the bottom */}
+                                  <div>
+                                    <div className="text-lg font-medium mb-2">
                                       {item.title}
                                     </div>
+                                    <p className="text-sm leading-tight text-gray-400">
+                                      {item.description}
+                                    </p>
                                   </div>
-                                  <p className="text-sm leading-tight text-gray-400">
-                                    {item.description}
-                                  </p>
                                 </Link>
                               </NavigationMenuLink>
                             </div>
