@@ -11,8 +11,6 @@ import {
   Pause, 
   Volume2, 
   VolumeX, 
-  Heart, 
-  MessageCircle, 
   Eye,
   Calendar,
   User
@@ -30,7 +28,7 @@ export default function TritonTodayPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [likedVideos, setLikedVideos] = useState<Set<string>>(new Set());
+
   const [isScrollLocked, setIsScrollLocked] = useState(true);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -91,17 +89,7 @@ export default function TritonTodayPage() {
     }
   };
 
-  const handleLike = (videoId: string) => {
-    setLikedVideos(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(videoId)) {
-        newSet.delete(videoId);
-      } else {
-        newSet.add(videoId);
-      }
-      return newSet;
-    });
-  };
+
 
 
 
@@ -273,7 +261,7 @@ export default function TritonTodayPage() {
             data-video-index={index}
             className="shorts-item"
           >
-            <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-4xl mx-auto px-4 gap-6 h-full">
+            <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-4xl mx-auto px-4 gap-6 h-full pb-[30px]">
               {/* Video Player */}
               <div className="relative flex-shrink-0">
                 <video
@@ -369,23 +357,7 @@ export default function TritonTodayPage() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex md:flex-col gap-6 justify-center md:justify-start">
-                  <button
-                    onClick={() => handleLike(video.id)}
-                    className="flex flex-col items-center gap-2 text-white hover:text-red-500 transition-colors"
-                  >
-                    <Heart 
-                      className={`w-10 h-10 ${likedVideos.has(video.id) ? 'fill-red-500 text-red-500' : ''}`} 
-                    />
-                    <span className="text-sm font-medium">{video.views}</span>
-                  </button>
-                  
-                  <button className="flex flex-col items-center gap-2 text-white hover:text-today-400 transition-colors">
-                    <MessageCircle className="w-10 h-10" />
-                    <span className="text-sm font-medium">Comment</span>
-                  </button>
-                </div>
+
               </div>
             </div>
           </div>
