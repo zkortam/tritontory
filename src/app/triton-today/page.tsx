@@ -57,8 +57,17 @@ export default function TritonTodayPage() {
     videoRefs.current.forEach((videoRef, index) => {
       if (videoRef && index !== currentVideoIndex) {
         videoRef.pause();
+        videoRef.currentTime = 0; // Reset to beginning
       }
     });
+
+    // Play current video
+    const currentVideo = videoRefs.current[currentVideoIndex];
+    if (currentVideo) {
+      currentVideo.play().catch(() => {
+        // Auto-play failed, that's okay
+      });
+    }
   }, [currentVideoIndex]);
 
   const handleVideoClick = () => {
@@ -113,6 +122,43 @@ export default function TritonTodayPage() {
       }
     }
   };
+
+  // Add intersection observer for autoplay when video enters viewport
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const videoIndex = parseInt(entry.target.getAttribute('data-video-index') || '0');
+          
+          if (entry.isIntersecting) {
+            // Video is now visible - play it and update current index
+            setCurrentVideoIndex(videoIndex);
+          } else {
+            // Video is not visible - pause it
+            const videoRef = videoRefs.current[videoIndex];
+            if (videoRef) {
+              videoRef.pause();
+              videoRef.currentTime = 0;
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.5, // Video must be 50% visible to be considered "in view"
+        rootMargin: '0px'
+      }
+    );
+
+    // Observe all video containers
+    const videoContainers = document.querySelectorAll('[data-video-index]');
+    videoContainers.forEach((container) => {
+      observer.observe(container);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [videos.length]);
 
   // Add touch/swipe support
   useEffect(() => {
@@ -217,13 +263,13 @@ export default function TritonTodayPage() {
       {/* Video Container */}
       <div 
         ref={containerRef}
-        className="h-screen overflow-y-auto shorts-container scrollbar-hide flex items-center justify-center"
+        className="video-container shorts-container scrollbar-hide"
       >
         {videos.map((video, index) => (
           <div
             key={video.id}
             data-video-index={index}
-            className="h-screen flex items-center justify-center relative shorts-item w-full"
+            className="shorts-item relative"
           >
             <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-4xl mx-auto px-4 gap-6">
               {/* Video Player */}
@@ -246,8 +292,8 @@ export default function TritonTodayPage() {
                     }
                   }}
                   onLoadedMetadata={() => {
-                    // Auto-play the first video
-                    if (index === 0 && !isPlaying) {
+                    // Auto-play if this is the first video and no video is currently playing
+                    if (index === 0 && currentVideoIndex === 0) {
                       const videoElement = videoRefs.current[index];
                       if (videoElement) {
                         videoElement.play().catch(() => {
