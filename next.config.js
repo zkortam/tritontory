@@ -15,7 +15,7 @@ const nextConfig = {
         hostname: 'images.unsplash.com',
       },
     ],
-    unoptimized: false,
+    unoptimized: true, // This helps with static images on Vercel
     formats: ['image/webp', 'image/avif'],
   },
 }

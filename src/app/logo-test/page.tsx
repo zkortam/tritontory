@@ -5,11 +5,10 @@ import { Logo } from "@/components/ui/logo";
 
 export default function LogoTestPage() {
   const [logoStatus, setLogoStatus] = useState<Record<string, 'loading' | 'success' | 'error'>>({});
-  const [testResults, setTestResults] = useState<string[]>([]);
 
   const logoSources = [
-    "/logo-small.webp",
-    "/logo-small.png", 
+    "/logo-small.png",
+    "/logo-small.webp", 
     "/logo.png",
     "/logo.svg"
   ];
@@ -19,12 +18,10 @@ export default function LogoTestPage() {
       const img = new Image();
       img.onload = () => {
         setLogoStatus(prev => ({ ...prev, [src]: 'success' }));
-        setTestResults(prev => [...prev, `✅ ${src} - Loaded successfully`]);
         resolve(true);
       };
       img.onerror = () => {
         setLogoStatus(prev => ({ ...prev, [src]: 'error' }));
-        setTestResults(prev => [...prev, `❌ ${src} - Failed to load`]);
         resolve(false);
       };
       img.src = src;
@@ -33,7 +30,6 @@ export default function LogoTestPage() {
 
   useEffect(() => {
     const runTests = async () => {
-      setTestResults([]);
       setLogoStatus({});
       
       for (const src of logoSources) {
@@ -89,18 +85,6 @@ export default function LogoTestPage() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Test Results */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Test Results</h2>
-        <div className="bg-gray-900 p-4 rounded-lg">
-          <pre className="text-sm space-y-1">
-            {testResults.map((result, index) => (
-              <div key={index}>{result}</div>
-            ))}
-          </pre>
         </div>
       </div>
 

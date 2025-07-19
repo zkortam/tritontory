@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -24,9 +23,9 @@ const sizeClasses: Record<LogoSize, string> = {
 };
 
 const variantClasses: Record<LogoVariant, string> = {
-  default: "", // Removed filter temporarily
-  white: "", // Removed filter temporarily
-  primary: "", // Removed filter temporarily
+  default: "",
+  white: "",
+  primary: "",
 };
 
 // Inline SVG fallback logo
@@ -51,44 +50,27 @@ export function Logo({
   href = "/"
 }: LogoProps) {
   const [imageError, setImageError] = useState(false);
-  const [currentSrc, setCurrentSrc] = useState(0);
   
-  // Array of logo sources to try in order (smallest first for faster loading)
-  const logoSources = [
-    "/logo-tiny.png",
-    "/logo-small.webp",
-    "/logo-small.png", 
-    "/logo.png",
-    "/logo.svg"
-  ];
+  // Use the most reliable logo source
+  const logoSrc = "/logo-small.png";
 
   const logoImage = imageError ? (
     <InlineLogo size={size} className={className} />
   ) : (
-    <Image
-      src={logoSources[currentSrc]}
+    <img
+      src={logoSrc}
       alt="Triton Tory Media"
-      width={40}
-      height={40}
       className={cn(
         sizeClasses[size],
         variantClasses[variant],
         className
       )}
-      priority
-      unoptimized={false}
       onLoad={() => {
-        console.log(`Logo loaded successfully from: ${logoSources[currentSrc]}`);
+        console.log(`Logo loaded successfully from: ${logoSrc}`);
       }}
-      onError={() => {
-        console.error(`Logo failed to load from: ${logoSources[currentSrc]}`);
-        if (currentSrc < logoSources.length - 1) {
-          console.log(`Trying next source: ${logoSources[currentSrc + 1]}`);
-          setCurrentSrc(currentSrc + 1);
-        } else {
-          console.error('All logo sources failed, using SVG fallback');
-          setImageError(true);
-        }
+      onError={(e) => {
+        console.error(`Logo failed to load from: ${logoSrc}`, e);
+        setImageError(true);
       }}
     />
   );
