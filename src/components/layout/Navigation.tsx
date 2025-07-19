@@ -17,8 +17,40 @@ import { SearchModal } from "@/components/common/SearchModal";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
-import { Menu, Search, Shield } from "lucide-react";
+import { Menu, Search, Shield, Newspaper, Video, Microscope, Scale } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+
+// Function to get background gradient classes for each section
+const getBackgroundGradient = (color: string) => {
+  switch (color) {
+    case 'tory':
+      return 'bg-gradient-to-b from-blue-500/20 to-blue-700/20';
+    case 'today':
+      return 'bg-gradient-to-b from-purple-500/20 to-purple-700/20';
+    case 'science':
+      return 'bg-gradient-to-b from-green-500/20 to-green-700/20';
+    case 'law':
+      return 'bg-gradient-to-b from-red-500/20 to-red-700/20';
+    default:
+      return 'bg-gradient-to-b from-gray-500/20 to-gray-700/20';
+  }
+};
+
+// Function to get icon for each section
+const getSectionIcon = (color: string) => {
+  switch (color) {
+    case 'tory':
+      return Newspaper;
+    case 'today':
+      return Video;
+    case 'science':
+      return Microscope;
+    case 'law':
+      return Scale;
+    default:
+      return Newspaper;
+  }
+};
 
 const navigationItems = [
   {
@@ -117,12 +149,18 @@ export function Navigation() {
                                 <Link
                                   className={cn(
                                     "flex h-full w-full select-none flex-col justify-end rounded-md p-6 no-underline outline-none focus:shadow-md",
-                                    `bg-gradient-to-b from-${item.color}-500/20 to-${item.color}-700/20`
+                                    getBackgroundGradient(item.color)
                                   )}
                                   href={item.href}
                                 >
-                                  <div className="mb-2 mt-4 text-lg font-medium">
-                                    {item.title}
+                                  <div className="flex items-center mb-2 mt-4">
+                                    {(() => {
+                                      const IconComponent = getSectionIcon(item.color);
+                                      return <IconComponent className="h-6 w-6 mr-3 text-white/80" />;
+                                    })()}
+                                    <div className="text-lg font-medium">
+                                      {item.title}
+                                    </div>
                                   </div>
                                   <p className="text-sm leading-tight text-gray-400">
                                     {item.description}
