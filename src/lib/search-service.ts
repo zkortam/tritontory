@@ -32,6 +32,7 @@ export interface SearchResult {
   coverImage?: string;
   thumbnailUrl?: string;
   views?: number;
+  likes: number;
   department?: string;
 }
 
@@ -73,6 +74,7 @@ export class SearchService {
             publishedAt: article.publishedAt,
             authorName: article.authorName,
             coverImage: article.coverImage,
+            likes: article.likes || 0,
           });
         }
       });
@@ -107,6 +109,7 @@ export class SearchService {
             authorName: video.authorName,
             thumbnailUrl: video.thumbnailUrl,
             views: video.views,
+            likes: video.likes || 0,
           });
         }
       });
@@ -141,6 +144,7 @@ export class SearchService {
             authorName: research.authorName,
             coverImage: research.coverImage,
             department: research.department,
+            likes: research.likes || 0,
           });
         }
       });
@@ -174,6 +178,7 @@ export class SearchService {
             publishedAt: legal.publishedAt,
             authorName: legal.authorName,
             coverImage: legal.coverImage,
+            likes: legal.likes || 0,
           });
         }
       });
@@ -249,6 +254,7 @@ export class SearchService {
             category: content[categoryField] as string,
             publishedAt: content.publishedAt as Date,
             authorName: content.authorName as string,
+            likes: (content.likes as number) || 0,
           };
 
           // Add type-specific fields
@@ -362,4 +368,7 @@ export class SearchService {
       return [];
     }
   }
-} 
+}
+
+// Export EnhancedSearchService from firebase-service
+export { EnhancedSearchService } from "./firebase-service"; 

@@ -73,7 +73,7 @@ export default function TritonLawPage() {
     { name: "Student Rights", icon: <Shield className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Student Rights").length },
     { name: "Supreme Court", icon: <Gavel className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Supreme Court").length },
     { name: "Constitutional Law", icon: <BookOpen className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Constitutional Law").length },
-    { name: "Administrative Law", icon: <Briefcase className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Administrative Law").length },
+    { name: "Admin Law", icon: <Briefcase className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Administrative Law").length },
     { name: "Civil Rights", icon: <Heart className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Civil Rights").length },
     { name: "Criminal Law", icon: <AlertTriangle className="h-5 w-5 text-white" />, color: "bg-crimson-500", count: legalArticles.filter(l => l.category === "Criminal Law").length },
   ];

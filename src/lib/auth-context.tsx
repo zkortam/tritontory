@@ -13,6 +13,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
+import { useRouter } from "next/navigation";
 
 interface UserRole {
   role: 'admin' | 'editor' | 'author' | 'viewer';
@@ -24,13 +25,16 @@ interface AuthContextType {
   user: User | null;
   userRole: UserRole | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<UserCredential>;
-  signInWithGoogle: () => Promise<UserCredential>;
+  signIn: (email: string, password: string, redirectTo?: string) => Promise<UserCredential>;
+  signInWithGoogle: (redirectTo?: string) => Promise<UserCredential>;
   signOut: () => Promise<void>;
-  createUser: (email: string, password: string) => Promise<UserCredential>;
+  createUser: (email: string, password: string, redirectTo?: string) => Promise<UserCredential>;
   hasRole: (requiredRole: UserRole['role']) => boolean;
   hasPermission: (permission: string) => boolean;
   isAdmin: () => boolean;
+  setRedirectUrl: (url: string) => void;
+  getRedirectUrl: () => string | null;
+  clearRedirectUrl: () => void;
 }
 
 // Create the auth context
@@ -53,6 +57,9 @@ const AuthContext = createContext<AuthContextType>({
   hasRole: () => false,
   hasPermission: () => false,
   isAdmin: () => false,
+  setRedirectUrl: () => {},
+  getRedirectUrl: () => null,
+  clearRedirectUrl: () => {},
 });
 
 // Create a provider component
@@ -60,6 +67,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [redirectUrl, setRedirectUrlState] = useState<string | null>(null);
+  const router = useRouter();
+
+  // Redirect URL management
+  const setRedirectUrl = (url: string) => {
+    setRedirectUrlState(url);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('authRedirectUrl', url);
+    }
+  };
+
+  const getRedirectUrl = (): string | null => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('authRedirectUrl') || redirectUrl;
+    }
+    return redirectUrl;
+  };
+
+  const clearRedirectUrl = () => {
+    setRedirectUrlState(null);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('authRedirectUrl');
+    }
+  };
+
+  // Handle redirect after successful authentication
+  const handleSuccessfulAuth = () => {
+    const redirectTo = getRedirectUrl();
+    if (redirectTo && redirectTo !== '/auth') {
+      clearRedirectUrl();
+      router.push(redirectTo);
+    } else {
+      router.push('/');
+    }
+  };
 
   // Fetch user role from Firestore
   const fetchUserRole = async (userId: string) => {
@@ -93,6 +135,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(user);
       if (user) {
         await fetchUserRole(user.uid);
+        // Handle redirect after successful authentication
+        handleSuccessfulAuth();
       } else {
         setUserRole(null);
       }
@@ -104,12 +148,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Sign in function
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, redirectTo?: string) => {
+    if (redirectTo) {
+      setRedirectUrl(redirectTo);
+    }
     return signInWithEmailAndPassword(auth, email, password);
   };
 
   // Google sign in function
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (redirectTo?: string) => {
+    if (redirectTo) {
+      setRedirectUrl(redirectTo);
+    }
     const provider = new GoogleAuthProvider();
     return signInWithPopup(auth, provider);
   };
@@ -120,7 +170,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Create user function
-  const createUser = async (email: string, password: string) => {
+  const createUser = async (email: string, password: string, redirectTo?: string) => {
+    if (redirectTo) {
+      setRedirectUrl(redirectTo);
+    }
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
@@ -177,6 +230,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     hasRole,
     hasPermission,
     isAdmin,
+    setRedirectUrl,
+    getRedirectUrl,
+    clearRedirectUrl,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -185,4 +241,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 // Custom hook to use the auth context
 export function useAuth() {
   return useContext(AuthContext);
+}
+
+// Hook to automatically track current page for redirect after auth
+export function useRedirectOnAuth() {
+  const { setRedirectUrl } = useAuth();
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname + window.location.search;
+      // Don't set redirect for auth page itself
+      if (currentPath !== '/auth') {
+        setRedirectUrl(currentPath);
+      }
+    }
+  }, [setRedirectUrl]);
 }

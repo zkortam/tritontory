@@ -83,6 +83,8 @@ export default function CreateVideoPage() {
         authorId: user.uid,
         authorName: user.displayName || user.email || 'Anonymous',
         duration: 0, // Will be calculated on backend
+        likes: 0,
+        likedBy: [],
       };
 
       await VideoService.createVideo(videoData, videoFile, thumbnailFile);

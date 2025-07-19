@@ -6,6 +6,7 @@ import { ArticleService, VideoService, ResearchService, LegalService } from "@/l
 import { Article, Video, Research, LegalArticle } from "@/lib/models";
 import { Badge } from "@/components/ui/badge";
 import { StockTicker } from "@/components/common/StockTicker";
+import SportsBanner from "@/components/SportsBanner";
 import { 
   Newspaper, 
   Video as VideoIcon, 
@@ -104,6 +105,13 @@ export default async function Home() {
             <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
               The comprehensive voice of UC San Diego
             </p>
+          </div>
+          
+          {/* Sports Banner - Positioned under the title */}
+          <div className="flex justify-center mb-8">
+            <div className="w-1/2 max-w-lg" style={{ width: 'calc(50% + 150px)', minHeight: '100px' }}>
+              <SportsBanner style="minimal" />
+            </div>
           </div>
 
           {/* 3-Column News Grid Layout */}

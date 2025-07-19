@@ -10,8 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { cn } from "@/lib/utils";
-import { Search, ArrowRight, Hash, Calendar, User } from "lucide-react";
+import { Search, ArrowRight, User, Filter, X, TrendingUp, Eye } from "lucide-react";
 import { SearchService, SearchResult } from "@/lib/search-service";
 
 interface SearchModalProps {
@@ -33,14 +36,47 @@ const typeLabels = {
   legal: "Legal",
 };
 
+const dateRangeOptions = [
+  { value: "all", label: "All Time" },
+  { value: "today", label: "Today" },
+  { value: "week", label: "This Week" },
+  { value: "month", label: "This Month" },
+  { value: "year", label: "This Year" },
+];
+
+const popularityOptions = [
+  { value: "recent", label: "Most Recent" },
+  { value: "most-liked", label: "Most Liked" },
+  { value: "most-viewed", label: "Most Viewed" },
+];
+
+const contentTypeOptions = [
+  { value: "all", label: "All Content" },
+  { value: "article", label: "Articles" },
+  { value: "video", label: "Videos" },
+  { value: "research", label: "Research" },
+  { value: "legal", label: "Legal" },
+];
+
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    dateRange: "all",
+    category: "",
+    author: "",
+    tags: [] as string[],
+    popularity: "recent",
+    contentType: "all",
+  });
   const router = useRouter();
 
-  // Search function using real Firebase data
+  // Search function using enhanced faceted search
   const performSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([]);
@@ -51,13 +87,63 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
     try {
       const searchResults = await SearchService.searchAll(searchQuery, 20);
-      setResults(searchResults);
+      
+      // Apply basic filters
+      let filteredResults = searchResults;
+      
+      if (filters.contentType && filters.contentType !== "all") {
+        filteredResults = filteredResults.filter(result => result.type === filters.contentType);
+      }
+      
+      if (filters.category) {
+        filteredResults = filteredResults.filter(result => 
+          result.category.toLowerCase().includes(filters.category.toLowerCase())
+        );
+      }
+      
+      if (filters.author) {
+        filteredResults = filteredResults.filter(result => 
+          result.authorName.toLowerCase().includes(filters.author.toLowerCase())
+        );
+      }
+
+      setResults(filteredResults);
       setSelectedIndex(0);
+
+      // Track search query (simplified)
+      console.log('Search tracked:', { searchQuery, resultsCount: filteredResults.length, filters });
     } catch (error) {
       console.error("Search error:", error);
       setResults([]);
     } finally {
       setLoading(false);
+    }
+  }, [filters]);
+
+  // Get search suggestions
+  const getSuggestions = useCallback(async (searchQuery: string) => {
+    if (!searchQuery.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      // Simple suggestions for now
+      const suggestions = [
+        'campus news',
+        'sports',
+        'student government',
+        'san diego',
+        'california',
+        'national'
+      ].filter(suggestion =>
+        suggestion.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 5);
+      
+      setSuggestions(suggestions);
+    } catch (error) {
+      console.error("Error getting suggestions:", error);
+      setSuggestions([]);
     }
   }, []);
 
@@ -70,6 +156,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return () => clearTimeout(timeoutId);
   }, [query, performSearch]);
 
+  // Debounced suggestions
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      getSuggestions(query);
+    }, 200);
+
+    return () => clearTimeout(timeoutId);
+  }, [query, getSuggestions]);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -78,9 +173,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
-          setSelectedIndex((prev) =>
-            prev < results.length - 1 ? prev + 1 : prev
-          );
+          if (showSuggestions && suggestions.length > 0) {
+            setSelectedIndex((prev) =>
+              prev < suggestions.length - 1 ? prev + 1 : prev
+            );
+          } else {
+            setSelectedIndex((prev) =>
+              prev < results.length - 1 ? prev + 1 : prev
+            );
+          }
           break;
         case "ArrowUp":
           e.preventDefault();
@@ -88,7 +189,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           break;
         case "Enter":
           e.preventDefault();
-          if (results[selectedIndex]) {
+          if (showSuggestions && suggestions[selectedIndex]) {
+            setQuery(suggestions[selectedIndex]);
+            setShowSuggestions(false);
+          } else if (results[selectedIndex]) {
             const result = results[selectedIndex];
             let url = "";
             
@@ -119,7 +223,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, results, selectedIndex, router, onClose]);
+  }, [isOpen, results, suggestions, selectedIndex, showSuggestions, router, onClose]);
 
   // Global keyboard shortcut
   useEffect(() => {
@@ -131,6 +235,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           setQuery("");
           setResults([]);
           setSelectedIndex(0);
+          setShowSuggestions(false);
         }
       }
     };
@@ -145,6 +250,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       setQuery("");
       setResults([]);
       setSelectedIndex(0);
+      setShowSuggestions(false);
+      setShowFilters(false);
     }
   }, [isOpen]);
 
@@ -158,9 +265,36 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return date.toLocaleDateString();
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setQuery(suggestion);
+    setShowSuggestions(false);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      dateRange: "all",
+      category: "",
+      author: "",
+      tags: [],
+      popularity: "recent",
+      contentType: "all",
+    });
+  };
+
+  const hasActiveFilters = () => {
+    return (
+      filters.dateRange !== "all" ||
+      filters.category !== "" ||
+      filters.author !== "" ||
+      filters.tags.length > 0 ||
+      filters.popularity !== "recent" ||
+      filters.contentType !== "all"
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-w-[95vw] p-0 bg-gray-900 border-gray-800 mobile-gpu-accelerated">
+      <DialogContent className="sm:max-w-[800px] max-w-[95vw] p-0 bg-gray-900 border-gray-800 mobile-gpu-accelerated">
         <DialogHeader className="p-4 md:p-6 pb-0">
           <DialogTitle className="sr-only">Search</DialogTitle>
         </DialogHeader>
@@ -170,16 +304,172 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           <Input
             placeholder="Search articles, videos, research, and legal analysis..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => setShowSuggestions(true)}
             className="border-0 border-b border-gray-700 rounded-none bg-transparent px-12 md:px-12 py-4 md:py-6 text-base md:text-lg focus-visible:ring-0 focus-visible:ring-offset-0"
             autoFocus
           />
-          {loading && (
-            <div className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2">
+          <div className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className={cn(
+                "h-8 w-8 p-0",
+                showFilters && "bg-gray-800"
+              )}
+            >
+              <Filter className="h-4 w-4" />
+            </Button>
+            {loading && (
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-600 border-t-primary"></div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <div className="border-b border-gray-700 p-4 md:p-6 bg-gray-800/50">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Date Range */}
+              <div>
+                <label className="text-sm font-medium text-gray-300 mb-2 block">Date Range</label>
+                <Select
+                  value={filters.dateRange}
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, dateRange: value }))}
+                >
+                  <SelectTrigger className="bg-gray-700 border-gray-600">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {dateRangeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Content Type */}
+              <div>
+                <label className="text-sm font-medium text-gray-300 mb-2 block">Content Type</label>
+                <Select
+                  value={filters.contentType}
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, contentType: value }))}
+                >
+                  <SelectTrigger className="bg-gray-700 border-gray-600">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {contentTypeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Popularity */}
+              <div>
+                <label className="text-sm font-medium text-gray-300 mb-2 block">Sort By</label>
+                <Select
+                  value={filters.popularity}
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, popularity: value }))}
+                >
+                  <SelectTrigger className="bg-gray-700 border-gray-600">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {popularityOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="text-sm font-medium text-gray-300 mb-2 block">Category</label>
+                <Input
+                  placeholder="Enter category..."
+                  value={filters.category}
+                  onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                  className="bg-gray-700 border-gray-600"
+                />
+              </div>
+
+              {/* Author */}
+              <div>
+                <label className="text-sm font-medium text-gray-300 mb-2 block">Author</label>
+                <Input
+                  placeholder="Enter author name..."
+                  value={filters.author}
+                  onChange={(e) => setFilters(prev => ({ ...prev, author: e.target.value }))}
+                  className="bg-gray-700 border-gray-600"
+                />
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label className="text-sm font-medium text-gray-300 mb-2 block">Tags</label>
+                <Input
+                  placeholder="Enter tags (comma separated)..."
+                  value={filters.tags.join(", ")}
+                  onChange={(e) => {
+                    const tags = e.target.value.split(",").map(tag => tag.trim()).filter(tag => tag);
+                    setFilters(prev => ({ ...prev, tags }));
+                  }}
+                  className="bg-gray-700 border-gray-600"
+                />
+              </div>
+            </div>
+
+            {/* Clear Filters */}
+            {hasActiveFilters() && (
+              <div className="mt-4 flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="text-gray-400 border-gray-600 hover:bg-gray-700"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Search Suggestions */}
+        {showSuggestions && suggestions.length > 0 && query && (
+          <div className="border-b border-gray-700">
+            <div className="p-2">
+              {suggestions.map((suggestion, index) => (
+                <button
+                  key={suggestion}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className={cn(
+                    "w-full text-left px-3 py-2 rounded-md text-sm hover:bg-gray-800 transition-colors",
+                    index === selectedIndex && "bg-gray-800"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-gray-400" />
+                    <span>{suggestion}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Search Results */}
         <div className="max-h-[50vh] md:max-h-[400px] overflow-y-auto mobile-smooth-scroll">
@@ -187,6 +477,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             <div className="p-4 md:p-6 text-center text-gray-400">
               <Search className="h-8 md:h-12 w-8 md:w-12 mx-auto mb-2 md:mb-4 text-gray-600" />
               <p className="text-sm md:text-base">No results found for &ldquo;{query}&rdquo;</p>
+              {hasActiveFilters() && (
+                <p className="text-xs text-gray-500 mt-2">Try adjusting your filters</p>
+              )}
             </div>
           )}
 
@@ -217,52 +510,45 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       onClose();
                     }}
                     className={cn(
-                      "w-full text-left p-3 md:p-4 rounded-lg transition-colors",
-                      index === selectedIndex
-                        ? "bg-gray-800"
-                        : "hover:bg-gray-800/50"
+                      "w-full text-left p-3 rounded-lg hover:bg-gray-800 transition-colors",
+                      index === selectedIndex && "bg-gray-800"
                     )}
                   >
-                    <div className="flex items-start gap-2 md:gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className={cn("w-2 h-2 rounded-full mt-2 flex-shrink-0", typeColors[result.type])} />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 md:gap-2 mb-1">
-                          <Badge
-                            className={cn(
-                              "text-white text-xs",
-                              typeColors[result.type]
-                            )}
-                          >
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge className={cn("text-xs", typeColors[result.type])}>
                             {typeLabels[result.type]}
                           </Badge>
-                          {result.category && (
-                            <span className="text-xs text-gray-400 flex items-center gap-1">
-                              <Hash className="h-3 w-3" />
-                              {result.category}
-                            </span>
-                          )}
+                          <span className="text-xs text-gray-400">{formatDate(result.publishedAt)}</span>
                         </div>
-                        <h3 className="font-medium line-clamp-1 mb-1 text-sm md:text-base">
+                        <h4 className="font-medium text-white mb-1 line-clamp-1">
                           {result.title}
-                        </h3>
-                        {(result.excerpt || result.description || result.abstract) && (
-                          <p className="text-xs md:text-sm text-gray-400 line-clamp-2 mb-2">
-                            {result.excerpt || result.description || result.abstract}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-2 md:gap-3 text-xs text-gray-500">
-                          {result.authorName && (
-                            <span className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              {result.authorName}
-                            </span>
+                        </h4>
+                        <p className="text-sm text-gray-400 line-clamp-2 mb-2">
+                          {result.excerpt || result.description || result.abstract}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <User className="h-3 w-3" />
+                            <span>{result.authorName}</span>
+                          </div>
+                          {result.views && (
+                            <div className="flex items-center gap-1">
+                              <Eye className="h-3 w-3" />
+                              <span>{result.views}</span>
+                            </div>
                           )}
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {formatDate(result.publishedAt)}
-                          </span>
+                          {result.likes > 0 && (
+                            <div className="flex items-center gap-1">
+                              <TrendingUp className="h-3 w-3" />
+                              <span>{result.likes}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0" />
+                      <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0 mt-2" />
                     </div>
                   </button>
                 );
@@ -289,6 +575,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 <span className="hidden sm:inline">to close</span>
               </span>
             </div>
+            {results.length > 0 && (
+              <div className="text-xs text-gray-500">
+                {results.length} result{results.length !== 1 ? 's' : ''}
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>

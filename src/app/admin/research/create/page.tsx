@@ -93,6 +93,8 @@ export default function CreateResearchPage() {
         tags: form.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
         authorId: user.uid,
         authorName: user.displayName || user.email || 'Anonymous',
+        likes: 0,
+        likedBy: [],
       };
 
       await ResearchService.createResearchArticle(researchData, coverImageFile || undefined);

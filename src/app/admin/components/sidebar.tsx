@@ -19,7 +19,8 @@ import {
   Menu,
   X,
   Database,
-  AlertTriangle
+  AlertTriangle,
+  Trophy
 } from "lucide-react";
 
 const navItems = [
@@ -87,6 +88,12 @@ const navItems = [
     href: "/admin/news-tickers",
     icon: AlertTriangle,
     color: "text-red-500",
+  },
+  {
+    title: "Sports Banner",
+    href: "/admin/sports-banner",
+    icon: Trophy,
+    color: "text-green-500",
   },
   {
     title: "Firebase Status",

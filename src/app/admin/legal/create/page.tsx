@@ -27,7 +27,7 @@ const categories = [
   "Civil Rights",
   "Privacy Law",
   "Intellectual Property",
-  "Administrative Law",
+  "Admin Law",
   "Criminal Law",
   "Environmental Law",
   "Other"
@@ -89,6 +89,8 @@ export default function CreateLegalPage() {
         tags: form.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
         authorId: user.uid,
         authorName: user.displayName || user.email || 'Anonymous',
+        likes: 0,
+        likedBy: [],
       };
 
       await LegalService.createLegalArticle(legalData, coverImageFile || undefined);

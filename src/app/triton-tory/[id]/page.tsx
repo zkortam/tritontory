@@ -11,13 +11,17 @@ import { ArticleService } from "@/lib/firebase-service";
 import { Article } from "@/lib/models";
 import { Comments } from "@/components/common/Comments";
 import { SocialShare } from "@/components/common/SocialShare";
+import { LikeButton } from "@/components/common/LikeButton";
+import { FollowButton } from "@/components/common/FollowButton";
 import { AnalyticsService } from "@/lib/analytics-service";
-import { ArrowLeft, Calendar, User, Tag, BookOpen } from "lucide-react";
+import { useRedirectOnAuth } from "@/lib/auth-context";
+import { ArrowLeft, Calendar, User, Tag, BookOpen, Heart } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { calculateReadingTime } from "@/lib/utils";
 
 export default function ArticlePage() {
   const params = useParams();
+  useRedirectOnAuth(); // Track current page for redirect after auth
   const [article, setArticle] = useState<Article | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,7 +153,12 @@ export default function ArticlePage() {
           <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400 mb-6">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4" />
-              <span>{article.authorName}</span>
+              <Link 
+                href={`/profile/${article.authorId}`}
+                className="hover:text-tory-400 transition-colors cursor-pointer"
+              >
+                {article.authorName}
+              </Link>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
@@ -159,10 +168,31 @@ export default function ArticlePage() {
               <BookOpen className="w-4 h-4" />
               <span>{calculateReadingTime(article.content)} min read</span>
             </div>
+            {article.likes > 0 && (
+              <div className="flex items-center gap-2">
+                <Heart className="w-4 h-4" />
+                <span>{article.likes} likes</span>
+              </div>
+            )}
           </div>
 
           {/* Article Actions */}
-          <div className="flex gap-3 mb-8">
+          <div className="flex flex-wrap items-center gap-3 mb-8">
+            <LikeButton
+              contentId={article.id}
+              contentType="article"
+              initialLikes={article.likes || 0}
+              size="md"
+              variant="outline"
+            />
+            <FollowButton
+              targetId={article.authorId}
+              followType="user"
+              size="default"
+              variant="outline"
+            >
+              Follow Author
+            </FollowButton>
             <SocialShare
               contentId={article.id}
               contentType="article"

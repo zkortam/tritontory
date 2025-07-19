@@ -18,7 +18,7 @@ import {
   Loader2
 } from "lucide-react";
 import { UserService } from "@/lib/firebase-service";
-import { User } from "@/lib/models";
+import { UserProfile as User } from "@/lib/models";
 
 
 

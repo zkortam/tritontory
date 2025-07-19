@@ -1,5 +1,5 @@
 
-import { Article, Video, Research, LegalArticle, User, Comment, ContentAnalytics } from './models';
+import { Article, Video, Research, LegalArticle, UserProfile as User, Comment, ContentAnalytics } from './models';
 
 // Simple mock data generators
 export const createMockArticle = (overrides: Partial<Article> = {}): Article => ({
@@ -17,6 +17,8 @@ export const createMockArticle = (overrides: Partial<Article> = {}): Article => 
   status: 'published',
   publishedAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
+  likes: 0,
+  likedBy: [],
   ...overrides,
 });
 
@@ -36,6 +38,8 @@ export const createMockVideo = (overrides: Partial<Video> = {}): Video => ({
   status: 'published',
   publishedAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
+  likes: 0,
+  likedBy: [],
   ...overrides,
 });
 
@@ -55,6 +59,8 @@ export const createMockResearch = (overrides: Partial<Research> = {}): Research 
   status: 'published',
   publishedAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
+  likes: 0,
+  likedBy: [],
   ...overrides,
 });
 
@@ -73,6 +79,8 @@ export const createMockLegalArticle = (overrides: Partial<LegalArticle> = {}): L
   status: 'published',
   publishedAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
+  likes: 0,
+  likedBy: [],
   ...overrides,
 });
 
@@ -82,6 +90,28 @@ export const createMockUser = (overrides: Partial<User> = {}): User => ({
   email: 'test@example.com',
   role: 'viewer',
   joinedAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  followers: [],
+  following: [],
+  followingTopics: [],
+  followingAuthors: [],
+  readingHistory: [],
+  authoredContent: [],
+  preferences: {
+    emailNotifications: false,
+    pushNotifications: false,
+    newsletterSubscription: false,
+    theme: 'light',
+    language: 'en',
+    timezone: 'UTC',
+  },
+  stats: {
+    totalArticles: 0,
+    totalViews: 0,
+    totalLikes: 0,
+    totalFollowers: 0,
+    totalFollowing: 0,
+  },
   ...overrides,
 });
 
@@ -95,19 +125,24 @@ export const createMockComment = (overrides: Partial<Comment> = {}): Comment => 
   status: 'approved',
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
+  replies: [],
+  depth: 0,
+  likes: 0,
+  likedBy: [],
+  isEdited: false,
   ...overrides,
 });
 
 export const createMockContentAnalytics = (overrides: Partial<ContentAnalytics> = {}): ContentAnalytics => ({
   contentId: 'test-article-1',
   contentType: 'article',
-  views: 100,
-  uniqueViews: 80,
-  shares: 20,
-  likes: 50,
-  comments: 10,
-  averageReadTime: 3,
-  completionRate: 0.75,
+  views: 0,
+  uniqueViews: 0,
+  shares: 0,
+  likes: 0,
+  comments: 0,
+  averageReadTime: 0,
+  completionRate: 0,
   ...overrides,
 });
 
@@ -171,10 +206,10 @@ export const mockServiceResponses = {
   analytics: {
     getContentAnalytics: createMockContentAnalytics(),
     getAnalyticsSummary: {
-      totalViews: 1000,
-      totalShares: 200,
-      totalLikes: 500,
-      totalComments: 100,
+      totalViews: 0,
+      totalShares: 0,
+      totalLikes: 0,
+      totalComments: 0,
       topContent: [createMockContentAnalytics()],
       recentActivity: [],
     },

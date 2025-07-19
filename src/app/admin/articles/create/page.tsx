@@ -104,6 +104,8 @@ export default function CreateArticlePage() {
         tags: form.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
         authorId: user.uid,
         authorName: user.displayName || user.email || 'Anonymous',
+        likes: 0,
+        likedBy: [],
       };
 
       await ArticleService.createArticle(articleData, coverImageFile || undefined);

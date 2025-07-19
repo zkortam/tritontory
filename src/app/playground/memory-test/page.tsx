@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,7 +70,7 @@ export default function MemoryTest() {
   const [userInput, setUserInput] = useState("");
   const [countdown, setCountdown] = useState<number | null>(null);
 
-  const memoryTasks: MemoryTask[] = [
+  const memoryTasks: MemoryTask[] = useMemo(() => [
     // Digit Span Tests
     {
       id: 1,
@@ -328,7 +328,7 @@ export default function MemoryTest() {
       timeLimit: 18,
       difficulty: 6
     }
-  ];
+  ], []);
 
   useEffect(() => {
     if (!timeStarted) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/lib/auth-context";
+import { useAuth, useRedirectOnAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -11,6 +11,7 @@ import { useState } from "react";
 
 export default function ProfilePage() {
   const { user, userRole } = useAuth();
+  useRedirectOnAuth(); // Track current page for redirect after auth
   const [isEditing, setIsEditing] = useState(false);
 
   if (!user) {

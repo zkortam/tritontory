@@ -26,7 +26,7 @@ import { db } from "@/lib/firebase";
 import Link from "next/link";
 
 export default function AuthPage() {
-  const { signIn, createUser, signInWithGoogle } = useAuth();
+  const { signIn, createUser, signInWithGoogle, getRedirectUrl } = useAuth();
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +59,8 @@ export default function AuthPage() {
     }
 
     try {
-      const userCredential = await createUser(signUpData.email, signUpData.password);
+      const redirectTo = getRedirectUrl();
+      const userCredential = await createUser(signUpData.email, signUpData.password, redirectTo || undefined);
       
       // Create user profile in Firestore
       await setDoc(doc(db, "users", userCredential.user.uid), {
@@ -88,7 +89,8 @@ export default function AuthPage() {
     setError("");
 
     try {
-      await signIn(signInData.email, signInData.password);
+      const redirectTo = getRedirectUrl();
+      await signIn(signInData.email, signInData.password, redirectTo || undefined);
       setIsSignInOpen(false);
       setSignInData({ email: "", password: "" });
     } catch (error: unknown) {
@@ -104,7 +106,8 @@ export default function AuthPage() {
     setError("");
 
     try {
-      await signInWithGoogle();
+      const redirectTo = getRedirectUrl();
+      await signInWithGoogle(redirectTo || undefined);
       setIsSignInOpen(false);
     } catch (error: unknown) {
       setError((error as Error).message || "Failed to sign in with Google");
