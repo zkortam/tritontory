@@ -664,17 +664,17 @@ export default function MemoryTest() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-6 md:py-8 max-w-4xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <Link href="/playground" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-4">
+        <div className="text-center mb-6 md:mb-8">
+          <Link href="/playground" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-3 md:mb-4">
             <ArrowLeft className="h-4 w-4" />
             Back to Playground
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Memory Test</h1>
-          <p className="text-gray-400 mb-4">Evaluate your short-term and working memory</p>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">Memory Test</h1>
+          <p className="text-gray-400 mb-3 md:mb-4">Evaluate your short-term and working memory</p>
           
-          <div className="flex items-center justify-center gap-6 text-sm text-gray-400">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-gray-400">
             <div className="flex items-center gap-1">
               <Target className="h-4 w-4" />
               <span>{memoryTasks.length} tasks</span>
@@ -691,7 +691,7 @@ export default function MemoryTest() {
         </div>
 
         {/* Progress */}
-        <div className="mb-8">
+        <div className="mb-6 md:mb-8">
           <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
             <span>Task {currentTask + 1} of {memoryTasks.length}</span>
             <span>{Math.round(progress)}% complete</span>
@@ -700,10 +700,10 @@ export default function MemoryTest() {
         </div>
 
         {/* Task Card */}
-        <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 mb-8">
-          <CardContent className="p-8">
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-4">
+        <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 mb-6 md:mb-8">
+          <CardContent className="p-4 md:p-8">
+            <div className="mb-4 md:mb-6">
+              <div className="flex flex-wrap items-center gap-2 mb-3 md:mb-4">
                 <Badge className="bg-green-500/90 text-white text-xs">
                   {currentTaskData.type.replace('-', ' ').toUpperCase()}
                 </Badge>
@@ -711,25 +711,25 @@ export default function MemoryTest() {
                   Difficulty: {currentTaskData.difficulty}/7
                 </Badge>
               </div>
-              <h2 className="text-xl md:text-2xl font-semibold mb-2">{currentTaskData.title}</h2>
-              <p className="text-gray-400 mb-4">{currentTaskData.description}</p>
+              <h2 className="text-lg md:text-xl lg:text-2xl font-semibold mb-2">{currentTaskData.title}</h2>
+              <p className="text-gray-400 mb-3 md:mb-4">{currentTaskData.description}</p>
             </div>
 
             {/* Display Data */}
             {showData && (
-              <div className="mb-6 p-6 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <div className="mb-4 md:mb-6 p-4 md:p-6 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                 <div className="text-center">
-                  <h3 className="text-lg font-semibold mb-4 text-blue-400">Remember This:</h3>
+                  <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 text-blue-400">Remember This:</h3>
                   
                   {currentTaskData.type === 'visual-memory' ? (
-                    <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto">
+                    <div className="grid grid-cols-4 gap-1 md:gap-2 max-w-xs mx-auto">
                       {Array.isArray(currentTaskData.data) && 
                        currentTaskData.data.every(row => Array.isArray(row)) &&
                        (currentTaskData.data as number[][]).map((row: number[], rowIndex: number) => (
                         row.map((cell: number, colIndex: number) => (
                           <div
                             key={`${rowIndex}-${colIndex}`}
-                            className={`w-12 h-12 border-2 border-gray-600 ${
+                            className={`w-8 h-8 md:w-12 md:h-12 border-2 border-gray-600 ${
                               cell === 1 ? 'bg-white' : 'bg-gray-800'
                             }`}
                           />
@@ -747,7 +747,7 @@ export default function MemoryTest() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-3xl font-bold text-blue-400">
+                    <div className="text-2xl md:text-3xl font-bold text-blue-400">
                       {currentTaskData.data}
                     </div>
                   )}
@@ -757,39 +757,39 @@ export default function MemoryTest() {
 
             {/* Input Section */}
             {!showData && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-green-400">Your Answer:</h3>
+              <div className="space-y-3 md:space-y-4">
+                <h3 className="text-base md:text-lg font-semibold text-green-400">Your Answer:</h3>
                 
                 {currentTaskData.type === 'visual-memory' ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <p className="text-sm text-gray-400">Enter 1 for filled squares, 0 for empty squares (4 rows, 4 columns):</p>
                     <textarea
                       value={userInput}
                       onChange={(e) => setUserInput(e.target.value)}
                       placeholder="Example:&#10;1001&#10;0110&#10;1001&#10;0110"
-                      className="w-full h-32 p-3 bg-gray-800 border border-gray-600 rounded-lg text-white resize-none"
+                      className="w-full h-24 md:h-32 p-3 bg-gray-800 border border-gray-600 rounded-lg text-white resize-none text-sm md:text-base"
                     />
                   </div>
                 ) : currentTaskData.type === 'word-list' ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <p className="text-sm text-gray-400">Enter the words in order, separated by commas:</p>
                     <input
                       type="text"
                       value={userInput}
                       onChange={(e) => setUserInput(e.target.value)}
                       placeholder="word1, word2, word3, ..."
-                      className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white"
+                      className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm md:text-base"
                     />
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <p className="text-sm text-gray-400">Enter your answer:</p>
                     <input
                       type="text"
                       value={userInput}
                       onChange={(e) => setUserInput(e.target.value)}
                       placeholder="Enter your answer here..."
-                      className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-center text-xl"
+                      className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-center text-lg md:text-xl"
                     />
                   </div>
                 )}
@@ -808,9 +808,9 @@ export default function MemoryTest() {
         </Card>
 
         {/* Info */}
-        <div className="mt-8 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+        <div className="mt-6 md:mt-8 p-3 md:p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
+            <Info className="h-4 w-4 md:h-5 md:w-5 text-green-400 mt-0.5 flex-shrink-0" />
             <div className="text-sm text-gray-300">
               <p className="font-medium text-green-400 mb-1">About This Memory Test</p>
               <p>

@@ -160,15 +160,15 @@ export default function PlaygroundPage() {
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <div className="bg-black border-b border-gray-800">
-        <div className="container mx-auto px-4 py-20">
+        <div className="container mx-auto px-4 py-12 md:py-20">
           <div className="text-center">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-blue-400 to-green-400 bg-clip-text text-transparent leading-tight pb-2">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-purple-400 via-blue-400 to-green-400 bg-clip-text text-transparent leading-tight pb-2">
               Playground
             </h1>
-            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-300 mb-6 md:mb-8 max-w-2xl mx-auto px-4">
               Discover yourself through scientifically-backed personality tests, political assessments, and cognitive evaluations
             </p>
-            <div className="flex items-center justify-center gap-4 text-sm text-gray-400">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-sm text-gray-400 px-4">
               <div className="flex items-center gap-1">
                 <TestTube className="h-4 w-4" />
                 <span>Scientific Research</span>
@@ -186,13 +186,13 @@ export default function PlaygroundPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
         {/* Featured Tests */}
-        <section className="mb-12">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold">Featured Tests</h2>
+        <section className="mb-8 md:mb-12">
+          <div className="mb-6 md:mb-8">
+            <h2 className="text-xl md:text-2xl font-bold">Featured Tests</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {featuredTests.map((test) => (
               <Card key={test.id} className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 hover:border-purple-500/50 transition-all duration-300 group">
                 <Link href={`/playground/${test.id}`} className="block">
@@ -236,8 +236,8 @@ export default function PlaygroundPage() {
         </section>
 
         {/* Category Filters */}
-        <section className="mb-8">
-          <div className="flex flex-wrap justify-center gap-2">
+        <section className="mb-6 md:mb-8">
+          <div className="flex flex-wrap justify-center gap-2 px-2">
             <Button
               variant={selectedCategory === "all" ? "default" : "outline"}
               size="sm"
@@ -263,7 +263,7 @@ export default function PlaygroundPage() {
 
         {/* All Tests Grid */}
         <section>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {filteredTests.map((test) => (
               <Card key={test.id} className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 hover:border-purple-500/50 transition-all duration-300 group">
                 <Link href={`/playground/${test.id}`} className="block">

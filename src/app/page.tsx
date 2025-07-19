@@ -107,13 +107,13 @@ export default async function Home() {
           </div>
 
           {/* 3-Column News Grid Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
             {/* Column 1: Campus News */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {latestArticles.length > 0 ? (
                 latestArticles.map((article) => (
                   <Link key={article.id} href={`/triton-tory/${article.id}`} className="block">
-                    <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-tory-500 transition-all duration-300 h-[280px] cursor-pointer group relative">
+                    <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-tory-500 transition-all duration-300 h-[240px] md:h-[280px] cursor-pointer group relative">
                       <CardHeader className="pb-3">
                         <div className="flex items-center space-x-2">
                           <div className="w-2 h-2 bg-tory-500 rounded-full"></div>
@@ -140,7 +140,7 @@ export default async function Home() {
               ) : (
                 // Fallback content when no articles are available
                 <>
-                  <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-tory-500 transition-all duration-300 h-[280px] relative">
+                  <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-tory-500 transition-all duration-300 h-[240px] md:h-[280px] relative">
                     <CardHeader className="pb-3">
                       <div className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-tory-500 rounded-full"></div>
@@ -161,7 +161,7 @@ export default async function Home() {
                     </div>
                   </Card>
 
-                  <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-tory-500 transition-all duration-300 h-[280px] relative">
+                  <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-tory-500 transition-all duration-300 h-[240px] md:h-[280px] relative">
                     <CardHeader className="pb-3">
                       <Badge className="bg-tory-500 text-white text-xs w-fit">Campus</Badge>
                       <CardTitle className="text-lg line-clamp-2">Student Journalism at UCSD</CardTitle>
@@ -183,7 +183,7 @@ export default async function Home() {
             </div>
 
             {/* Column 2: Local News */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {latestResearch.length > 0 ? (
                 latestResearch.map((research) => (
                   <Link key={research.id} href={`/triton-science/${research.id}`} className="block">
@@ -210,7 +210,7 @@ export default async function Home() {
                   </Link>
                 ))
               ) : (
-                <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-blue-500 transition-all duration-300 h-[280px] relative">
+                <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-blue-500 transition-all duration-300 h-[240px] md:h-[280px] relative">
                   <CardHeader className="pb-3">
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -255,7 +255,7 @@ export default async function Home() {
                   </Link>
                 ))
               ) : (
-                <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-blue-500 transition-all duration-300 h-[280px] relative">
+                <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-blue-500 transition-all duration-300 h-[240px] md:h-[280px] relative">
                   <CardHeader className="pb-3">
                     <Badge className="bg-blue-500 text-white text-xs w-fit">Legal</Badge>
                     <CardTitle className="text-lg line-clamp-2">Legal Analysis</CardTitle>
@@ -280,7 +280,7 @@ export default async function Home() {
               {latestVideos.length > 0 ? (
                 latestVideos.map((video) => (
                   <Link key={video.id} href={`/triton-today/${video.id}`} className="block">
-                    <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-today-500 transition-all duration-300 h-[572px] cursor-pointer group relative">
+                    <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-today-500 transition-all duration-300 h-[480px] md:h-[572px] cursor-pointer group relative">
                       <CardHeader className="pb-3">
                         <div className="flex items-center space-x-2">
                           <div className="w-2 h-2 bg-today-500 rounded-full"></div>
@@ -320,7 +320,7 @@ export default async function Home() {
                 ))
               ) : (
                 // Fallback content when no videos are available
-                <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-today-500 transition-all duration-300 h-[572px] relative">
+                <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-today-500 transition-all duration-300 h-[480px] md:h-[572px] relative">
                   <CardHeader className="pb-3">
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-today-500 rounded-full"></div>
@@ -358,51 +358,51 @@ export default async function Home() {
           </div>
 
           {/* Quick Navigation Tiles */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 mobile-gpu-accelerated">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8 mobile-gpu-accelerated">
             <Link href="/triton-tory" className="group">
               <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-tory-500 transition-all duration-300 h-full">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 p-3 rounded-lg bg-gradient-to-br from-tory-500 to-tory-600 group-hover:scale-110 transition-transform">
+                <CardContent className="p-4 md:p-6 text-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 p-2 md:p-3 rounded-lg bg-gradient-to-br from-tory-500 to-tory-600 group-hover:scale-110 transition-transform">
                     <Newspaper className="w-full h-full text-white" />
                   </div>
-                  <h3 className="font-semibold text-white mb-2">News & Articles</h3>
-                  <p className="text-sm text-gray-400">Latest campus news and in-depth reporting</p>
+                  <h3 className="font-semibold text-white mb-1 md:mb-2 text-sm md:text-base">News & Articles</h3>
+                  <p className="text-xs md:text-sm text-gray-400">Latest campus news and in-depth reporting</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link href="/triton-today" className="group">
               <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-today-500 transition-all duration-300 h-full">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 p-3 rounded-lg bg-gradient-to-br from-today-500 to-today-600 group-hover:scale-110 transition-transform">
+                <CardContent className="p-4 md:p-6 text-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 p-2 md:p-3 rounded-lg bg-gradient-to-br from-today-500 to-today-600 group-hover:scale-110 transition-transform">
                     <VideoIcon className="w-full h-full text-white" />
                   </div>
-                  <h3 className="font-semibold text-white mb-2">Video Content</h3>
-                  <p className="text-sm text-gray-400">Visual storytelling and multimedia journalism</p>
+                  <h3 className="font-semibold text-white mb-1 md:mb-2 text-sm md:text-base">Video Content</h3>
+                  <p className="text-xs md:text-sm text-gray-400">Visual storytelling and multimedia journalism</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link href="/triton-science" className="group">
               <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-science-500 transition-all duration-300 h-full">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 p-3 rounded-lg bg-gradient-to-br from-science-500 to-science-600 group-hover:scale-110 transition-transform">
+                <CardContent className="p-4 md:p-6 text-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 p-2 md:p-3 rounded-lg bg-gradient-to-br from-science-500 to-science-600 group-hover:scale-110 transition-transform">
                     <Microscope className="w-full h-full text-white" />
                   </div>
-                  <h3 className="font-semibold text-white mb-2">Science Journal</h3>
-                  <p className="text-sm text-gray-400">Research highlights and scientific discoveries</p>
+                  <h3 className="font-semibold text-white mb-1 md:mb-2 text-sm md:text-base">Science Journal</h3>
+                  <p className="text-xs md:text-sm text-gray-400">Research highlights and scientific discoveries</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link href="/triton-law" className="group">
               <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700 hover:border-law-500 transition-all duration-300 h-full">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 p-3 rounded-lg bg-gradient-to-br from-law-500 to-law-600 group-hover:scale-110 transition-transform">
+                <CardContent className="p-4 md:p-6 text-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 p-2 md:p-3 rounded-lg bg-gradient-to-br from-law-500 to-law-600 group-hover:scale-110 transition-transform">
                     <Scale className="w-full h-full text-white" />
                   </div>
-                  <h3 className="font-semibold text-white mb-2">Law Review</h3>
-                  <p className="text-sm text-gray-400">Legal analysis and policy discussions</p>
+                  <h3 className="font-semibold text-white mb-1 md:mb-2 text-sm md:text-base">Law Review</h3>
+                  <p className="text-xs md:text-sm text-gray-400">Legal analysis and policy discussions</p>
                 </CardContent>
               </Card>
             </Link>
