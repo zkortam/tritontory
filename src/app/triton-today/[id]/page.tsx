@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { VideoService } from "@/lib/firebase-service";
 import { Video } from "@/lib/models";
@@ -39,6 +39,7 @@ export default function VideoPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     async function fetchVideo() {
@@ -74,23 +75,31 @@ export default function VideoPage() {
     fetchVideo();
   }, [params.id]);
 
+  // Auto-play video when it loads
+  useEffect(() => {
+    if (video && videoRef.current) {
+      videoRef.current.play().catch(() => {
+        // Auto-play failed, that's okay
+        console.log("Auto-play failed, user interaction required");
+      });
+    }
+  }, [video]);
+
   const handleVideoClick = () => {
-    const videoElement = document.querySelector('video') as HTMLVideoElement;
-    if (videoElement) {
+    if (videoRef.current) {
       if (isPlaying) {
-        videoElement.pause();
+        videoRef.current.pause();
         setIsPlaying(false);
       } else {
-        videoElement.play();
+        videoRef.current.play();
         setIsPlaying(true);
       }
     }
   };
 
   const handleMuteToggle = () => {
-    const videoElement = document.querySelector('video') as HTMLVideoElement;
-    if (videoElement) {
-      videoElement.muted = !isMuted;
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
     }
   };
@@ -162,11 +171,14 @@ export default function VideoPage() {
           <div className="lg:col-span-2">
             <div className="relative">
               <video
+                ref={videoRef}
                 src={video.videoUrl}
                 poster={video.thumbnailUrl}
                 className="w-full aspect-[9/16] max-w-md mx-auto object-cover rounded-lg"
                 loop
                 playsInline
+                autoPlay
+                muted={isMuted}
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
               />
