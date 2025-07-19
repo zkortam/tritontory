@@ -33,6 +33,7 @@ export default function TritonTodayPage() {
   const [showLibrary, setShowLibrary] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [showVideoPopup, setShowVideoPopup] = useState(false);
+  const [videoDurations, setVideoDurations] = useState<{ [key: string]: number }>({});
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const popupVideoRef = useRef<HTMLVideoElement>(null);
@@ -211,9 +212,29 @@ export default function TritonTodayPage() {
     };
   }, [isScrollLocked]);
 
-  const formatDuration = (seconds: number) => {
+  const formatDuration = (seconds: number, videoIndex?: number, videoId?: string) => {
+    // If duration is 0 or undefined, try to get it from stored durations first
+    if ((!seconds || seconds === 0) && videoId && videoDurations[videoId]) {
+      seconds = videoDurations[videoId];
+    }
+    
+    // If still no duration, try to get it from the video element
+    if (!seconds || seconds === 0) {
+      if (videoIndex !== undefined) {
+        const videoElement = videoRefs.current[videoIndex];
+        if (videoElement && videoElement.duration && !isNaN(videoElement.duration)) {
+          seconds = videoElement.duration;
+        }
+      }
+    }
+    
+    // If still no valid duration, return "0:00"
+    if (!seconds || seconds === 0 || isNaN(seconds)) {
+      return "0:00";
+    }
+    
     const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+    const remainingSeconds = Math.floor(seconds % 60);
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
@@ -299,9 +320,17 @@ export default function TritonTodayPage() {
                     }
                   }}
                   onLoadedMetadata={() => {
+                    // Capture video duration when metadata is loaded
+                    const videoElement = videoRefs.current[index];
+                    if (videoElement && videoElement.duration && !isNaN(videoElement.duration)) {
+                      setVideoDurations(prev => ({
+                        ...prev,
+                        [video.id]: videoElement.duration
+                      }));
+                    }
+                    
                     // Auto-play if this is the first video and no video is currently playing
                     if (index === 0 && currentVideoIndex === 0) {
-                      const videoElement = videoRefs.current[index];
                       if (videoElement) {
                         videoElement.play().catch(() => {
                           // Auto-play failed, that's okay
@@ -336,7 +365,7 @@ export default function TritonTodayPage() {
                 {/* Duration Badge */}
                 <div className="absolute top-4 left-4">
                   <Badge className="bg-black/80 text-white text-xs">
-                    {formatDuration(video.duration)}
+                    {formatDuration(video.duration, index, video.id)}
                   </Badge>
                 </div>
 
@@ -454,7 +483,7 @@ export default function TritonTodayPage() {
                     {/* Duration Badge */}
                     <div className="absolute top-2 right-2">
                       <Badge className="bg-black/80 text-white text-xs">
-                        {formatDuration(video.duration)}
+                        {formatDuration(video.duration, videos.indexOf(video), video.id)}
                       </Badge>
                     </div>
                     
@@ -551,7 +580,7 @@ export default function TritonTodayPage() {
               {/* Duration Badge */}
               <div className="absolute top-4 left-16">
                 <Badge className="bg-black/80 text-white text-xs">
-                  {formatDuration(selectedVideo.duration)}
+                  {formatDuration(selectedVideo.duration, videos.indexOf(selectedVideo), selectedVideo.id)}
                 </Badge>
               </div>
             </div>
