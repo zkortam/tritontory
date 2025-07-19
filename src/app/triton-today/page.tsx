@@ -132,9 +132,11 @@ export default function TritonTodayPage() {
           
           if (entry.isIntersecting) {
             // Video is now visible - play it and update current index
+            console.log(`Video ${videoIndex} is now visible`);
             setCurrentVideoIndex(videoIndex);
           } else {
             // Video is not visible - pause it
+            console.log(`Video ${videoIndex} is no longer visible`);
             const videoRef = videoRefs.current[videoIndex];
             if (videoRef) {
               videoRef.pause();
@@ -144,7 +146,7 @@ export default function TritonTodayPage() {
         });
       },
       {
-        threshold: 0.5, // Video must be 50% visible to be considered "in view"
+        threshold: 0.8, // Video must be 80% visible to be considered "in view"
         rootMargin: '0px'
       }
     );
@@ -269,9 +271,9 @@ export default function TritonTodayPage() {
           <div
             key={video.id}
             data-video-index={index}
-            className="shorts-item relative"
+            className="shorts-item"
           >
-            <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-4xl mx-auto px-4 gap-6">
+            <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-4xl mx-auto px-4 gap-6 h-full">
               {/* Video Player */}
               <div className="relative flex-shrink-0">
                 <video
