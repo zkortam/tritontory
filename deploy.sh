@@ -4,6 +4,11 @@ echo "🚀 Starting deployment preparation..."
 
 # Check if all logo files exist
 echo "📁 Checking logo files..."
+if [ ! -f "public/logo-tiny.png" ]; then
+    echo "❌ logo-tiny.png not found!"
+    exit 1
+fi
+
 if [ ! -f "public/logo-small.png" ]; then
     echo "❌ logo-small.png not found!"
     exit 1

@@ -17,7 +17,8 @@ import { SearchModal } from "@/components/common/SearchModal";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
-import { Menu, Search } from "lucide-react";
+import { Menu, Search, Shield } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 const navigationItems = [
   {
@@ -80,6 +81,7 @@ export function Navigation() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { isAdmin } = useAuth();
 
   return (
     <>
@@ -183,6 +185,16 @@ export function Navigation() {
               </button>
             </div>
 
+            {/* Admin Portal Button */}
+            {isAdmin() && (
+              <Button asChild size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                <Link href="/admin">
+                  <Shield className="mr-2 h-4 w-4" />
+                  Admin Portal
+                </Link>
+              </Button>
+            )}
+
             {/* User Menu */}
             <UserMenu />
           </div>
@@ -238,6 +250,20 @@ export function Navigation() {
                       )}
                     </div>
                   ))}
+                  
+                  {/* Admin Portal Link for Mobile */}
+                  {isAdmin() && (
+                    <div className="pt-4 border-t border-gray-800">
+                      <Link
+                        href="/admin"
+                        className="flex items-center text-lg font-medium text-purple-400 hover:text-purple-300 transition-colors"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin Portal
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

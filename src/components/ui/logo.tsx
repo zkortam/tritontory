@@ -29,6 +29,21 @@ const variantClasses: Record<LogoVariant, string> = {
   primary: "", // Removed filter temporarily
 };
 
+// Inline SVG fallback logo
+const InlineLogo = ({ size, className }: { size: LogoSize; className?: string }) => (
+  <svg
+    viewBox="0 0 200 200"
+    className={cn(sizeClasses[size], className)}
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" strokeWidth="4"/>
+    <text x="100" y="110" textAnchor="middle" fontSize="24" fontWeight="bold" fill="currentColor">
+      TT
+    </text>
+  </svg>
+);
+
 export function Logo({
   variant = "default",
   size = "md",
@@ -36,36 +51,46 @@ export function Logo({
   href = "/"
 }: LogoProps) {
   const [imageError, setImageError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState(0);
+  
+  // Array of logo sources to try in order (smallest first for faster loading)
+  const logoSources = [
+    "/logo-tiny.png",
+    "/logo-small.webp",
+    "/logo-small.png", 
+    "/logo.png",
+    "/logo.svg"
+  ];
 
   const logoImage = imageError ? (
-    <span className={cn(
-      'font-bold text-white inline-block',
-      sizeClasses[size],
-      className
-    )}>
-      Triton Tory
-    </span>
+    <InlineLogo size={size} className={className} />
   ) : (
-    <picture>
-      <source srcSet="/logo-small.webp" type="image/webp" />
-      <Image
-        src="/logo-small.png"
-        alt="Triton Tory Media"
-        width={40}
-        height={40}
-        className={cn(
-          sizeClasses[size],
-          variantClasses[variant],
-          className
-        )}
-        priority
-        unoptimized={false}
-        onError={() => {
-          console.error('Logo failed to load, using text fallback');
+    <Image
+      src={logoSources[currentSrc]}
+      alt="Triton Tory Media"
+      width={40}
+      height={40}
+      className={cn(
+        sizeClasses[size],
+        variantClasses[variant],
+        className
+      )}
+      priority
+      unoptimized={false}
+      onLoad={() => {
+        console.log(`Logo loaded successfully from: ${logoSources[currentSrc]}`);
+      }}
+      onError={() => {
+        console.error(`Logo failed to load from: ${logoSources[currentSrc]}`);
+        if (currentSrc < logoSources.length - 1) {
+          console.log(`Trying next source: ${logoSources[currentSrc + 1]}`);
+          setCurrentSrc(currentSrc + 1);
+        } else {
+          console.error('All logo sources failed, using SVG fallback');
           setImageError(true);
-        }}
-      />
-    </picture>
+        }
+      }}
+    />
   );
 
   if (href) {
