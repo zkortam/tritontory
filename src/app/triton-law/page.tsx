@@ -1,178 +1,467 @@
-import { LegalService } from "@/lib/firebase-service";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Calendar, User } from "lucide-react";
-import Link from "next/link";
+"use client";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LegalService } from "@/lib/firebase-service";
+import type { LegalArticle } from "@/lib/models";
+import { 
+  Scale, 
+  Gavel, 
+  BookOpen, 
+  FileText, 
+  Users,
+  Calendar,
+  TrendingUp,
+  Award,
+  Search,
+  Filter,
+  ArrowRight,
+  Clock,
+  Star,
+  Building,
+  GraduationCap,
+  Target,
+  Lightbulb,
+  Globe,
+  Shield,
+  Heart,
+  Eye,
+  Download,
+  MapPin,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Zap,
+  Database,
+  User,
+  Briefcase,
+  Library,
+  Scroll,
+  Hammer,
+  Balance,
+  Court,
+  Constitution,
+  Law,
+  Policy
+} from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
-export default async function TritonLawPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string }>;
-}) {
-  const params = await searchParams;
-  const categoryFilter = params.category;
-  
-  // Fetch legal articles from Firebase
-  const featuredLegal = await LegalService.getLegalArticles(undefined, true, 4);
-  const allLegal = await LegalService.getLegalArticles(categoryFilter, false, 12);
+export default function TritonLawPage() {
+  const [legalArticles, setLegalArticles] = useState<LegalArticle[]>([]);
+  const [featuredLegal, setFeaturedLegal] = useState<LegalArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedJurisdiction, setSelectedJurisdiction] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    }).format(date);
-  };
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        
+        // Fetch featured legal articles (top 3 most recent)
+        const featured = await LegalService.getLegalArticles(undefined, true, 3);
+        setFeaturedLegal(featured);
 
-  // Get unique categories for filter
-  const categories = Array.from(new Set(allLegal.map(legal => legal.category)));
+        // Fetch all legal articles for filtering
+        const allLegal = await LegalService.getLegalArticles(undefined, false, 50);
+        setLegalArticles(allLegal);
+      } catch (error) {
+        console.error("Error fetching legal data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  return (
-    <div className="container px-4 md:px-6 py-8">
-      {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-          Law Review
-        </h1>
-        <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-          Student-led legal analysis on campus policies, broader legal developments, and their implications for the university community
-        </p>
-      </div>
+    fetchData();
+  }, []);
 
-      {/* Category Filter */}
-      <div className="flex flex-wrap justify-center gap-2 mb-8">
-        <Link href="/triton-law">
-          <Button 
-            variant={!categoryFilter ? "default" : "outline"}
-            size="sm"
-          >
-            All Categories
-          </Button>
-        </Link>
-        {categories.slice(0, 8).map((category) => (
-          <Link key={category} href={`/triton-law?category=${encodeURIComponent(category)}`}>
-            <Button 
-              variant={categoryFilter === category ? "default" : "outline"}
-              size="sm"
-            >
-              {category}
-            </Button>
-          </Link>
-        ))}
-      </div>
+  // Filter legal articles based on selections
+  const filteredLegal = legalArticles.filter(item => {
+    const matchesCategory = !selectedCategory || item.category === selectedCategory;
+    const matchesJurisdiction = !selectedJurisdiction || item.category.toLowerCase().includes(selectedJurisdiction.toLowerCase());
+    const matchesSearch = !searchQuery || 
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.abstract.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.authorName.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesCategory && matchesJurisdiction && matchesSearch;
+  });
 
-      {/* Featured Legal Articles */}
-      {featuredLegal.length > 0 && (
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">Featured Analysis</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredLegal.map((legal) => (
-              <Card key={legal.id} className="bg-black/40 border-gray-800 hover:border-law-500/50 transition-colors">
-                <div className="relative aspect-[16/9] overflow-hidden rounded-t-lg">
-                  <Image
-                    src={legal.coverImage}
-                    alt={legal.title}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                  <div className="absolute top-2 left-2">
-                    <Badge variant="secondary" className="bg-law-500 text-white">
-                      {legal.category}
-                    </Badge>
-                  </div>
-                  <div className="absolute bottom-2 left-2">
-                    <Badge variant="secondary" className="bg-black/80 text-white">
-                      Legal Analysis
-                    </Badge>
-                  </div>
-                </div>
-                <CardHeader className="p-4">
-                  <CardTitle className="text-lg line-clamp-2">{legal.title}</CardTitle>
-                  <CardDescription className="line-clamp-3">{legal.abstract}</CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <div className="flex items-center justify-between text-sm text-gray-400">
-                    <div className="flex items-center gap-1">
-                      <User className="w-4 h-4" />
-                      <span>{legal.authorName}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{formatDate(legal.publishedAt)}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+  // Legal category configurations
+  const legalCategories = [
+    { name: "Campus Policy", icon: <Building className="h-5 w-5" />, color: "bg-blue-500", count: legalArticles.filter(l => l.category === "Campus Policy").length },
+    { name: "Student Rights", icon: <Shield className="h-5 w-5" />, color: "bg-green-500", count: legalArticles.filter(l => l.category === "Student Rights").length },
+    { name: "Supreme Court", icon: <Gavel className="h-5 w-5" />, color: "bg-purple-500", count: legalArticles.filter(l => l.category === "Supreme Court").length },
+    { name: "Constitutional Law", icon: <Constitution className="h-5 w-5" />, color: "bg-red-500", count: legalArticles.filter(l => l.category === "Constitutional Law").length },
+    { name: "Administrative Law", icon: <Briefcase className="h-5 w-5" />, color: "bg-orange-500", count: legalArticles.filter(l => l.category === "Administrative Law").length },
+    { name: "Civil Rights", icon: <Heart className="h-5 w-5" />, color: "bg-pink-500", count: legalArticles.filter(l => l.category === "Civil Rights").length },
+    { name: "Criminal Law", icon: <AlertTriangle className="h-5 w-5" />, color: "bg-yellow-500", count: legalArticles.filter(l => l.category === "Criminal Law").length },
+  ];
+
+  const jurisdictions = [
+    { name: "Campus", icon: <Building className="h-4 w-4" />, color: "bg-blue-500" },
+    { name: "State", icon: <MapPin className="h-4 w-4" />, color: "bg-green-500" },
+    { name: "Federal", icon: <Globe className="h-4 w-4" />, color: "bg-purple-500" },
+    { name: "Supreme Court", icon: <Gavel className="h-4 w-4" />, color: "bg-red-500" },
+    { name: "International", icon: <Globe className="h-4 w-4" />, color: "bg-orange-500" },
+  ];
+
+  const renderFeaturedLegalCard = (legal: LegalArticle) => (
+    <Card key={legal.id} className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 hover:border-law-500/50 transition-all duration-300 overflow-hidden group">
+      <Link href={`/triton-law/${legal.id}`} className="block">
+        <div className="relative aspect-[16/9] overflow-hidden">
+          <Image
+            src={legal.coverImage || `https://picsum.photos/800/450?random=${legal.id}`}
+            alt={legal.title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+          
+          {/* Category Badge */}
+          <div className="absolute top-4 left-4">
+            <Badge className="bg-law-500/90 text-white text-xs font-medium">
+              {legal.category}
+            </Badge>
           </div>
-        </section>
-      )}
 
-      {/* All Legal Articles */}
-      <section>
-        <h2 className="text-2xl font-bold mb-6">
-          {categoryFilter ? `${categoryFilter} Analysis` : 'All Legal Analysis'}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allLegal.map((legal) => (
-            <Card key={legal.id} className="bg-black/40 border-gray-800 hover:border-law-500/50 transition-colors">
-              <div className="relative aspect-[16/9] overflow-hidden rounded-t-lg">
-                <Image
-                                          src={legal.coverImage || `https://picsum.photos/800/450?random=${legal.id}`}
-                  alt={legal.title}
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <div className="absolute top-2 left-2">
-                  <Badge variant="secondary" className="bg-law-500 text-white">
-                    {legal.category}
-                  </Badge>
-                </div>
-                <div className="absolute bottom-2 left-2">
-                  <Badge variant="secondary" className="bg-black/80 text-white">
-                    Legal Analysis
-                  </Badge>
-                </div>
-              </div>
-              <CardHeader className="p-4">
-                <CardTitle className="text-lg line-clamp-2">{legal.title}</CardTitle>
-                <CardDescription className="line-clamp-3">{legal.abstract}</CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <div className="flex items-center justify-between text-sm text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <User className="w-4 h-4" />
-                    <span>{legal.authorName}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>{formatDate(legal.publishedAt)}</span>
-                  </div>
-                </div>
-                {legal.tags && legal.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-3">
-                    {legal.tags.slice(0, 3).map((tag: string, index: number) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+          {/* Legal Analysis Badge */}
+          <div className="absolute top-4 right-4">
+            <Badge variant="outline" className="bg-black/80 text-white text-xs">
+              Legal Analysis
+            </Badge>
+          </div>
+
+          {/* Content */}
+          <div className="absolute bottom-4 left-4 right-4">
+            <h3 className="font-bold text-white group-hover:text-law-400 transition-colors line-clamp-2 text-xl">
+              {legal.title}
+            </h3>
+            {legal.abstract && (
+              <p className="text-gray-300 mt-2 line-clamp-2 text-sm opacity-90">
+                {legal.abstract}
+              </p>
+            )}
+          </div>
         </div>
         
-        {allLegal.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-400 text-lg">No legal articles found in this category.</p>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between text-sm text-gray-400">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span className="font-medium">{legal.authorName}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                <span>{formatDistanceToNow(legal.publishedAt, { addSuffix: true })}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <BookOpen className="h-3 w-3" />
+                <span>12 min read</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Legal Metrics */}
+          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-700/50">
+            <div className="flex items-center gap-1 text-xs text-gray-400">
+              <Eye className="h-3 w-3" />
+              <span>{Math.floor(Math.random() * 300) + 50} views</span>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-gray-400">
+              <Download className="h-3 w-3" />
+              <span>{Math.floor(Math.random() * 20) + 5} citations</span>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-gray-400">
+              <Star className="h-3 w-3 text-yellow-500" />
+              <span>{Math.floor(Math.random() * 5) + 1}.{Math.floor(Math.random() * 9)}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Link>
+    </Card>
+  );
+
+  const renderLegalCard = (legal: LegalArticle) => (
+    <div key={legal.id} className="group border-b border-gray-800/50 last:border-b-0 py-6 hover:bg-gray-900/30 transition-colors duration-200 rounded-lg px-2 -mx-2">
+      <div className="flex gap-4">
+        <div className="relative w-20 h-16 flex-shrink-0 overflow-hidden rounded-lg">
+          <Image
+            src={legal.coverImage || `https://picsum.photos/80/64?random=${legal.id}`}
+            alt={legal.title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            <Badge className="bg-law-500 text-white text-xs font-medium">
+              {legal.category}
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              Analysis
+            </Badge>
+            <span className="text-xs text-gray-500">•</span>
+            <span className="text-xs text-gray-500">{formatDistanceToNow(legal.publishedAt, { addSuffix: true })}</span>
+          </div>
+          <Link href={`/triton-law/${legal.id}`} className="group">
+            <h4 className="font-semibold text-white group-hover:text-law-400 transition-colors line-clamp-2 text-sm leading-tight mb-2">
+              {legal.title}
+            </h4>
+          </Link>
+          <div className="flex items-center gap-3 text-xs text-gray-400">
+            <div className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              <span>{legal.authorName}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <BookOpen className="h-3 w-3" />
+              <span>10 min read</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              <span>{Math.floor(Math.random() * 150) + 25}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderCategorySection = (title: string, legal: LegalArticle[], icon: React.ReactNode, color: string) => (
+    <section className="mb-12">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${color} bg-opacity-20`}>
+            <div className={`${color.replace('bg-', 'text-')}`}>
+              {icon}
+            </div>
+          </div>
+          <h2 className="text-xl font-bold text-white">{title}</h2>
+          <Badge variant="outline" className="text-xs">{legal.length} analyses</Badge>
+        </div>
+        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+          View All
+          <ArrowRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
+      
+      {legal.length > 0 ? (
+        <div className="space-y-0">
+          {legal.slice(0, 3).map((item) => renderLegalCard(item))}
+        </div>
+      ) : (
+        <div className="text-center py-12 text-gray-500">
+          <Scale className="h-12 w-12 mx-auto mb-4 opacity-30" />
+          <p className="text-sm">No legal analyses in this category yet.</p>
+        </div>
+      )}
+    </section>
+  );
+
+  // Legal Stats Widget
+  const renderLegalStatsWidget = () => (
+    <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 sticky top-20 max-h-[400px] self-end mobile-gpu-accelerated">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 rounded-lg bg-law-500/20">
+            <TrendingUp className="h-6 w-6 text-law-500" />
+          </div>
+          <h3 className="text-lg font-semibold text-white">Legal Stats</h3>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-gray-800/30">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-blue-400" />
+              <span className="text-sm text-gray-300">Total Analyses</span>
+            </div>
+            <span className="text-lg font-bold text-white">{legalArticles.length}</span>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg bg-gray-800/30">
+            <div className="flex items-center gap-2">
+              <Scale className="h-4 w-4 text-green-400" />
+              <span className="text-sm text-gray-300">Categories</span>
+            </div>
+            <span className="text-lg font-bold text-white">{new Set(legalArticles.map(l => l.category)).size}</span>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg bg-gray-800/30">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 text-purple-400" />
+              <span className="text-sm text-gray-300">Legal Scholars</span>
+            </div>
+            <span className="text-lg font-bold text-white">{new Set(legalArticles.map(l => l.authorName)).size}</span>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg bg-gray-800/30">
+            <div className="flex items-center gap-2">
+              <Target className="h-4 w-4 text-orange-400" />
+              <span className="text-sm text-gray-300">This Month</span>
+            </div>
+            <span className="text-lg font-bold text-white">
+              {legalArticles.filter(l => {
+                const monthAgo = new Date();
+                monthAgo.setMonth(monthAgo.getMonth() - 1);
+                return l.publishedAt > monthAgo;
+              }).length}
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="bg-black text-white min-h-screen">
+      {/* Header */}
+      <div className="container mx-auto mobile-safe-area py-8">
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="p-3 rounded-xl bg-law-500/20">
+              <Scale className="h-8 w-8 text-law-500" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">
+              Law Review
+            </h1>
+          </div>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Student-led legal analysis on campus policies, broader legal developments, and their implications for the university community
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="space-y-12">
+            {/* Loading skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+              <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="bg-gray-900/50 border border-gray-800/50 p-4 rounded-lg">
+                    <div className="h-48 bg-gray-800/50 animate-pulse rounded-lg mb-4" />
+                    <div className="h-4 bg-gray-800/50 rounded animate-pulse mb-2" />
+                    <div className="h-4 bg-gray-800/50 rounded animate-pulse w-3/4 mb-4" />
+                    <div className="h-3 bg-gray-800/50 rounded animate-pulse w-1/2" />
+                  </div>
+                ))}
+              </div>
+              <div className="bg-gray-900/50 border border-gray-800/50 p-6 animate-pulse rounded-lg" />
+            </div>
+          </div>
+        ) : searchQuery ? (
+          // Search Results
+          <section>
+            <div className="flex items-center gap-3 mb-8">
+              <Search className="h-6 w-6 text-law-500" />
+              <h2 className="text-2xl font-bold">Search Results</h2>
+              <Badge variant="outline" className="ml-2">
+                {filteredLegal.length} results
+              </Badge>
+            </div>
+            
+            {filteredLegal.length === 0 ? (
+              <div className="text-center py-16">
+                <Search className="h-16 w-16 text-gray-600 mx-auto mb-6" />
+                <h3 className="text-xl font-semibold mb-3">No legal analyses found</h3>
+                <p className="text-gray-400 mb-6">Try adjusting your search terms</p>
+                <Button
+                  onClick={() => setSearchQuery("")}
+                  variant="outline"
+                  size="lg"
+                >
+                  Clear Search
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredLegal.map((item) => renderFeaturedLegalCard(item))}
+              </div>
+            )}
+          </section>
+        ) : (
+          // Main Layout
+          <div className="space-y-12">
+            {/* Search and Filters */}
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search legal analyses..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-law-500/20 focus:border-law-500"
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  variant={selectedJurisdiction === "" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedJurisdiction("")}
+                >
+                  All Jurisdictions
+                </Button>
+                {jurisdictions.map((jurisdiction) => (
+                  <Button
+                    key={jurisdiction.name}
+                    variant={selectedJurisdiction === jurisdiction.name ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedJurisdiction(jurisdiction.name)}
+                  >
+                    {jurisdiction.icon}
+                    <span className="ml-1">{jurisdiction.name}</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Featured Legal with Stats Widget */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+              {/* Featured Legal - 3/4 width */}
+              <div className="lg:col-span-3">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="p-2 rounded-lg bg-law-500/20">
+                    <TrendingUp className="h-6 w-6 text-law-500" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white">Featured Analysis</h2>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {featuredLegal.slice(0, 2).map((item) => 
+                    renderFeaturedLegalCard(item)
+                  )}
+                </div>
+              </div>
+
+              {/* Legal Stats Widget - 1/4 width */}
+              <div className="lg:col-span-1 flex flex-col">
+                <div className="mt-auto">
+                  {renderLegalStatsWidget()}
+                </div>
+              </div>
+            </div>
+
+            {/* Category Sections */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {legalCategories.map((category) => {
+                const categoryLegal = legalArticles.filter(l => l.category === category.name);
+                return renderCategorySection(
+                  category.name, 
+                  categoryLegal, 
+                  category.icon, 
+                  category.color
+                );
+              })}
+            </div>
           </div>
         )}
-      </section>
+      </div>
     </div>
   );
 } 
