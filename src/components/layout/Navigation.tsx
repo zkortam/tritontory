@@ -153,24 +153,23 @@ export function Navigation() {
                                   )}
                                   href={item.href}
                                 >
-                                  {/* Icon positioned with title and description */}
-                                  <div className="flex flex-col">
-                                    <div className="flex items-center mb-2">
-                                      {(() => {
-                                        const IconComponent = getSectionIcon(item.color);
-                                        return <IconComponent className="h-6 w-6 mr-3 text-white/80" />;
-                                      })()}
-                                      <div className="text-lg font-medium">
-                                        {item.title}
-                                      </div>
+                                  {/* Icon centered in the middle */}
+                                  <div className="flex justify-center items-center flex-1">
+                                    {(() => {
+                                      const IconComponent = getSectionIcon(item.color);
+                                      return <IconComponent className="h-8 w-8 text-white/80" />;
+                                    })()}
+                                  </div>
+                                  
+                                  {/* Content at the bottom */}
+                                  <div>
+                                    <div className="text-lg font-medium mb-2">
+                                      {item.title}
                                     </div>
                                     <p className="text-sm leading-tight text-gray-400">
                                       {item.description}
                                     </p>
                                   </div>
-                                  
-                                  {/* Spacer for 10px top margin */}
-                                  <div className="h-2.5"></div>
                                 </Link>
                               </NavigationMenuLink>
                             </div>
