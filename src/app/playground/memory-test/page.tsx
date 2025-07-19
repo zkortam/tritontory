@@ -11,33 +11,19 @@ import {
   ArrowRight, 
   Brain, 
   Eye, 
-  TrendingUp, 
   BarChart3,
   Target,
   Clock,
-  Shield,
   CheckCircle,
   Info,
   RotateCcw,
   Share2,
   Download,
-  Users,
   Star,
-  AlertCircle,
-  BookOpen,
   TestTube,
-  Heart,
-  Zap,
   User,
-  History,
-  Award,
-  Target as TargetIcon,
   AlertTriangle,
-  UserCheck,
-  Brain as BrainIcon,
-  Lightbulb,
-  Puzzle,
-  Timer
+  Lightbulb
 } from "lucide-react";
 
 interface MemoryTask {
@@ -465,9 +451,13 @@ export default function MemoryTest() {
     memoryTasks.forEach(task => {
       const answer = answers.find(a => a.taskId === task.id);
       if (answer) {
-        breakdown[task.type].max++;
+        const breakdownKey = task.type === 'digit-span' ? 'digitSpan' : 
+                           task.type === 'visual-memory' ? 'visualMemory' :
+                           task.type === 'pattern-recall' ? 'patternRecall' :
+                           task.type === 'word-list' ? 'wordList' : 'digitSpan';
+        breakdown[breakdownKey].max++;
         if (answer.isCorrect) {
-          breakdown[task.type].score++;
+          breakdown[breakdownKey].score++;
         }
       }
     });
@@ -836,7 +826,7 @@ export default function MemoryTest() {
               <p>
                 This test evaluates different types of memory: digit span (number sequences), visual memory (patterns), 
                 pattern recall (symbols), and word list memory. Each task has a time limit for memorization, 
-                after which you'll need to recall the information accurately.
+                after which you&apos;ll need to recall the information accurately.
               </p>
             </div>
           </div>

@@ -9,20 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LegalService } from "@/lib/firebase-service";
 import type { LegalArticle } from "@/lib/models";
 import { 
-  Scale, 
+  Scale,
   Gavel, 
   BookOpen, 
   FileText, 
   Users,
   Calendar,
   TrendingUp,
-  Award,
   Search,
   Filter,
   ArrowRight,
   Clock,
   Building,
-  GraduationCap,
   Target,
   Lightbulb,
   Globe,
@@ -36,14 +34,7 @@ import {
   Database,
   User,
   Briefcase,
-  Library,
-  FileText as Scroll,
-  Hammer as HammerIcon,
-  Scale as Balance,
-  Building as Court,
-  BookOpen as Constitution,
-  FileText as Law,
-  FileText as Policy
+  Library
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { calculateReadingTime } from "@/lib/utils";
@@ -137,7 +128,7 @@ export default function TritonLawPage() {
                 {legal.abstract}
               </p>
             )}
-          </div>
+                  </div>
                 </div>
         
         <CardContent className="p-4">
@@ -203,8 +194,8 @@ export default function TritonLawPage() {
 
           </div>
         </div>
-      </div>
-    </div>
+                    </div>
+                  </div>
   );
 
   const renderCategorySection = (title: string, legal: LegalArticle[], icon: React.ReactNode, color: string) => (
@@ -269,7 +260,7 @@ export default function TritonLawPage() {
               <Badge variant="outline" className="ml-2">
                 {filteredLegal.length} results
                   </Badge>
-            </div>
+                </div>
             
             {filteredLegal.length === 0 ? (
               <div className="text-center py-16">
@@ -283,7 +274,7 @@ export default function TritonLawPage() {
                 >
                   Clear Search
                 </Button>
-              </div>
+                </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredLegal.map((item) => renderFeaturedLegalCard(item))}
@@ -302,13 +293,13 @@ export default function TritonLawPage() {
                   <TrendingUp className="h-6 w-6 text-crimson-500" />
                 </div>
                 <h2 className="text-2xl font-bold text-white">Featured Analysis</h2>
-              </div>
+                  </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {featuredLegal.slice(0, 2).map((item) => 
                   renderFeaturedLegalCard(item)
                 )}
               </div>
-            </div>
+        </div>
         
             {/* Category Sections */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

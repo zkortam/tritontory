@@ -4,48 +4,26 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Progress } from "@/components/ui/progress";
 import { 
   ArrowLeft, 
   ArrowRight, 
   Crown, 
   Brain, 
-  TrendingUp, 
-  BarChart3,
   Target,
   Clock,
-  Shield,
   CheckCircle,
   Info,
   RotateCcw,
   Share2,
   Download,
-  Eye,
-  Users,
   Star,
-  AlertCircle,
-  BookOpen,
   TestTube,
-  Heart,
-  Zap,
   User,
-  History,
-  Award,
-  Target as TargetIcon,
   AlertTriangle,
-  UserCheck,
-  Brain as BrainIcon,
   Lightbulb,
-  Puzzle,
-  Timer,
-  Smile,
-  Frown,
-  Meh,
-  Command,
-  Users as UsersIcon,
-  Heart as HeartIcon,
-  Target as TargetIcon2
+  Users
 } from "lucide-react";
 
 interface Question {

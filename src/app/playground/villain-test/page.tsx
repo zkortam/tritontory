@@ -11,29 +11,16 @@ import {
   ArrowRight, 
   Skull, 
   Brain, 
-  TrendingUp, 
-  BarChart3,
   Target,
   Clock,
-  Shield,
   CheckCircle,
   Info,
   RotateCcw,
   Share2,
   Download,
-  Eye,
-  Users,
   Star,
-  AlertCircle,
-  BookOpen,
   TestTube,
-  Heart,
-  Zap,
-  Crown,
-  User,
-  History,
-  Award,
-  Target as TargetIcon
+  History
 } from "lucide-react";
 
 interface Question {
@@ -558,7 +545,7 @@ export default function VillainTest() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {results.topMatches.map((figure, index) => (
+                  {results.topMatches.map((figure) => (
                     <div key={figure.name} className="p-4 bg-gray-800/30 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <div className="font-medium">{figure.name}</div>

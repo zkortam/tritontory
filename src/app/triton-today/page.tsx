@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { VideoService } from "@/lib/firebase-service";
 import { Video } from "@/lib/models";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
@@ -18,14 +17,12 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
-import { Comments } from "@/components/common/Comments";
-import { SocialShare } from "@/components/common/SocialShare";
 
 export default function TritonTodayPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
 

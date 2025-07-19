@@ -4,43 +4,27 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Progress } from "@/components/ui/progress";
 import { 
   ArrowLeft, 
   ArrowRight, 
   Heart, 
   Brain, 
-  TrendingUp, 
-  BarChart3,
   Target,
   Clock,
-  Shield,
   CheckCircle,
   Info,
   RotateCcw,
   Share2,
   Download,
-  Eye,
-  Users,
   Star,
-  AlertCircle,
-  BookOpen,
   TestTube,
-  Zap,
   User,
-  History,
-  Award,
-  Target as TargetIcon,
   AlertTriangle,
-  UserCheck,
-  Brain as BrainIcon,
   Lightbulb,
-  Puzzle,
-  Timer,
   Smile,
-  Frown,
-  Meh
+  Frown
 } from "lucide-react";
 
 interface Question {
@@ -590,8 +574,8 @@ export default function EmpathyTest() {
             <div className="text-sm text-gray-300">
               <p className="font-medium text-pink-400 mb-1">About Empathy</p>
               <p>
-                This test measures three types of empathy: Cognitive (understanding others' thoughts), 
-                Affective (feeling others' emotions), and Compassionate (taking action to help). 
+                This test measures three types of empathy: Cognitive (understanding others&apos; thoughts), 
+                Affective (feeling others&apos; emotions), and Compassionate (taking action to help). 
                 Empathy is a key component of emotional intelligence and social relationships.
               </p>
             </div>

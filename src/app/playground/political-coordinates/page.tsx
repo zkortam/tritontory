@@ -4,29 +4,22 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Progress } from "@/components/ui/progress";
 import { 
   ArrowLeft, 
   ArrowRight, 
   Compass, 
   Globe, 
-  TrendingUp, 
-  BarChart3,
-  PieChart,
   Target,
   Clock,
   Brain,
   Shield,
   CheckCircle,
-  XCircle,
-  AlertCircle,
   Info,
   RotateCcw,
   Share2,
   Download,
-  Eye,
-  Users,
   Star
 } from "lucide-react";
 

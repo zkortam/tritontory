@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -57,9 +58,11 @@ export function Logo({
   const logoImage = imageError ? (
     <InlineLogo size={size} className={className} />
   ) : (
-    <img
+    <Image
       src={logoSrc}
       alt="Triton Tory Media"
+      width={200}
+      height={200}
       className={cn(
         sizeClasses[size],
         variantClasses[variant],
@@ -70,7 +73,7 @@ export function Logo({
       }}
       onError={(e) => {
         console.error(`Logo failed to load from: ${logoSrc}`, e);
-        setImageError(true);
+          setImageError(true);
       }}
     />
   );

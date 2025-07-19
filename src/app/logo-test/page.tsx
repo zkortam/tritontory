@@ -8,7 +8,7 @@ export default function LogoTestPage() {
 
   const logoSources = [
     "/logo-small.png",
-    "/logo-small.webp", 
+    "/logo-small.webp",
     "/logo.png",
     "/logo.svg"
   ];
@@ -39,7 +39,7 @@ export default function LogoTestPage() {
     };
 
     runTests();
-  }, []);
+  }, [logoSources]);
 
   const getStatusColor = (status: 'loading' | 'success' | 'error') => {
     switch (status) {

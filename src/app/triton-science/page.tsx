@@ -20,7 +20,6 @@ import {
   Users,
   Calendar,
   TrendingUp,
-  Award,
   BookOpen,
   FileText,
   Search,
@@ -47,7 +46,7 @@ export default function TritonSciencePage() {
   const [research, setResearch] = useState<Research[]>([]);
   const [featuredResearch, setFeaturedResearch] = useState<Research[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [selectedDepartment] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {

@@ -4,31 +4,22 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Progress } from "@/components/ui/progress";
 import { 
   ArrowLeft, 
   ArrowRight, 
   Flag, 
   Brain, 
-  TrendingUp, 
-  BarChart3,
   Target,
   Clock,
-  Shield,
   CheckCircle,
   Info,
   RotateCcw,
   Share2,
   Download,
-  Eye,
-  Users,
   Star,
-  AlertCircle,
-  BookOpen,
-  TestTube,
-  Heart,
-  Zap
+  TestTube
 } from "lucide-react";
 
 interface Question {

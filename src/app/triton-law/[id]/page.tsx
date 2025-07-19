@@ -12,7 +12,7 @@ import { LegalArticle } from "@/lib/models";
 import { Comments } from "@/components/common/Comments";
 import { SocialShare } from "@/components/common/SocialShare";
 import { AnalyticsService } from "@/lib/analytics-service";
-import { ArrowLeft, Calendar, User, Tag, BookOpen, Scale, Gavel, FileText } from "lucide-react";
+import { ArrowLeft, Calendar, User, Tag, BookOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { calculateReadingTime } from "@/lib/utils";
 
