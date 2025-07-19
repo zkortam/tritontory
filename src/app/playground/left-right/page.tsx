@@ -1,0 +1,604 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  Flag, 
+  Brain, 
+  TrendingUp, 
+  BarChart3,
+  Target,
+  Clock,
+  Shield,
+  CheckCircle,
+  Info,
+  RotateCcw,
+  Share2,
+  Download,
+  Eye,
+  Users,
+  Star,
+  AlertCircle,
+  BookOpen,
+  TestTube,
+  Heart,
+  Zap
+} from "lucide-react";
+
+interface Question {
+  id: number;
+  text: string;
+  category: 'lifestyle' | 'personality' | 'social';
+  weight: number;
+  leftTrait: string;
+  rightTrait: string;
+}
+
+interface Answer {
+  questionId: number;
+  value: number; // 1-5 scale: 1 = Strongly Left, 5 = Strongly Right
+}
+
+interface Results {
+  leftScore: number; // 0 to 100 (percentage left-leaning)
+  rightScore: number; // 0 to 100 (percentage right-leaning)
+  orientation: string;
+  description: string;
+  scientificBackground: string;
+  recommendations: string[];
+  geneticFactors: string[];
+}
+
+export default function LeftRightTest() {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<Answer[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  const [results, setResults] = useState<Results | null>(null);
+  const [timeStarted, setTimeStarted] = useState<Date | null>(null);
+  const [timeCompleted, setTimeCompleted] = useState<Date | null>(null);
+
+  const questions: Question[] = [
+    // Lifestyle Questions
+    { 
+      id: 1, 
+      text: "I prefer routine and predictable schedules", 
+      category: 'lifestyle', 
+      weight: 1,
+      leftTrait: "Spontaneous",
+      rightTrait: "Structured"
+    },
+    { 
+      id: 2, 
+      text: "I enjoy trying new foods and cuisines", 
+      category: 'lifestyle', 
+      weight: 1,
+      leftTrait: "Adventurous",
+      rightTrait: "Traditional"
+    },
+    { 
+      id: 3, 
+      text: "I prefer to plan things in advance", 
+      category: 'lifestyle', 
+      weight: 1,
+      leftTrait: "Flexible",
+      rightTrait: "Organized"
+    },
+    { 
+      id: 4, 
+      text: "I like to keep my living space neat and organized", 
+      category: 'lifestyle', 
+      weight: 1,
+      leftTrait: "Creative chaos",
+      rightTrait: "Orderly"
+    },
+    { 
+      id: 5, 
+      text: "I enjoy outdoor activities and nature", 
+      category: 'lifestyle', 
+      weight: 1,
+      leftTrait: "Urban lifestyle",
+      rightTrait: "Rural connection"
+    },
+    
+    // Personality Questions
+    { 
+      id: 6, 
+      text: "I tend to be cautious and avoid risks", 
+      category: 'personality', 
+      weight: 1.5,
+      leftTrait: "Risk-taking",
+      rightTrait: "Risk-averse"
+    },
+    { 
+      id: 7, 
+      text: "I value tradition and established customs", 
+      category: 'personality', 
+      weight: 1.5,
+      leftTrait: "Progressive",
+      rightTrait: "Traditional"
+    },
+    { 
+      id: 8, 
+      text: "I prefer clear rules and guidelines", 
+      category: 'personality', 
+      weight: 1.5,
+      leftTrait: "Flexible",
+      rightTrait: "Rule-following"
+    },
+    { 
+      id: 9, 
+      text: "I enjoy abstract thinking and theoretical discussions", 
+      category: 'personality', 
+      weight: 1,
+      leftTrait: "Analytical",
+      rightTrait: "Practical"
+    },
+    { 
+      id: 10, 
+      text: "I tend to trust authority figures", 
+      category: 'personality', 
+      weight: 1.5,
+      leftTrait: "Questioning",
+      rightTrait: "Respectful"
+    },
+    
+    // Social Questions
+    { 
+      id: 11, 
+      text: "I prefer to work in teams rather than alone", 
+      category: 'social', 
+      weight: 1,
+      leftTrait: "Independent",
+      rightTrait: "Collaborative"
+    },
+    { 
+      id: 12, 
+      text: "I value individual achievement over group success", 
+      category: 'social', 
+      weight: 1.5,
+      leftTrait: "Collective",
+      rightTrait: "Individualistic"
+    },
+    { 
+      id: 13, 
+      text: "I prefer to make decisions based on facts rather than feelings", 
+      category: 'social', 
+      weight: 1,
+      leftTrait: "Emotional",
+      rightTrait: "Logical"
+    },
+    { 
+      id: 14, 
+      text: "I believe in personal responsibility over collective responsibility", 
+      category: 'social', 
+      weight: 1.5,
+      leftTrait: "Communal",
+      rightTrait: "Personal"
+    },
+    { 
+      id: 15, 
+      text: "I prefer stability over change", 
+      category: 'social', 
+      weight: 1.5,
+      leftTrait: "Change-oriented",
+      rightTrait: "Stability-seeking"
+    }
+  ];
+
+  useEffect(() => {
+    if (!timeStarted) {
+      setTimeStarted(new Date());
+    }
+  }, [timeStarted]);
+
+  const handleAnswer = (value: number) => {
+    const newAnswers = [...answers];
+    const existingIndex = newAnswers.findIndex(a => a.questionId === questions[currentQuestion].id);
+    
+    if (existingIndex >= 0) {
+      newAnswers[existingIndex].value = value;
+    } else {
+      newAnswers.push({ questionId: questions[currentQuestion].id, value });
+    }
+    
+    setAnswers(newAnswers);
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    }
+  };
+
+  const previousQuestion = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+    }
+  };
+
+  const calculateResults = (): Results => {
+    let totalScore = 0;
+    let maxScore = 0;
+    
+    questions.forEach(question => {
+      const answer = answers.find(a => a.questionId === question.id);
+      if (answer) {
+        // Convert 1-5 scale to 0-100 (1 = left, 5 = right)
+        const normalizedValue = ((answer.value - 1) / 4) * 100;
+        totalScore += normalizedValue * question.weight;
+        maxScore += 100 * question.weight;
+      }
+    });
+    
+    const rightScore = Math.round((totalScore / maxScore) * 100);
+    const leftScore = 100 - rightScore;
+    
+    // Determine orientation
+    let orientation = "";
+    let description = "";
+    let scientificBackground = "";
+    let recommendations: string[] = [];
+    let geneticFactors: string[] = [];
+    
+    if (rightScore >= 70) {
+      orientation = "Strongly Right-Leaning";
+      description = "Your lifestyle and personality traits align strongly with conservative political orientations. You tend to value tradition, order, and personal responsibility.";
+      scientificBackground = "Research by Hibbing et al. suggests that right-leaning individuals often have higher levels of threat sensitivity and prefer structured, predictable environments.";
+      recommendations = [
+        "Explore conservative political philosophy and its historical development",
+        "Study how traditional values can adapt to modern challenges",
+        "Consider the role of personal responsibility in social policy"
+      ];
+      geneticFactors = [
+        "Higher sensitivity to potential threats",
+        "Preference for structured environments",
+        "Stronger in-group loyalty tendencies"
+      ];
+    } else if (rightScore >= 55) {
+      orientation = "Moderately Right-Leaning";
+      description = "You show a moderate preference for conservative values and traditional approaches, while still being open to some progressive ideas.";
+      scientificBackground = "Moderate conservatives often balance traditional values with practical considerations, showing flexibility in their political thinking.";
+      recommendations = [
+        "Study centrist conservative approaches to governance",
+        "Explore how tradition and progress can be balanced",
+        "Consider evidence-based conservative policies"
+      ];
+      geneticFactors = [
+        "Moderate threat sensitivity",
+        "Balanced preference for order and flexibility",
+        "Mixed in-group and out-group orientations"
+      ];
+    } else if (rightScore >= 45) {
+      orientation = "Centrist";
+      description = "You show a balanced approach, not strongly favoring either left or right political orientations. You likely evaluate issues on a case-by-case basis.";
+      scientificBackground = "Centrists often have moderate levels of the personality traits associated with political orientation, allowing for flexible political thinking.";
+      recommendations = [
+        "Study pragmatic approaches to political problems",
+        "Explore evidence-based policy making",
+        "Consider how compromise can lead to effective solutions"
+      ];
+      geneticFactors = [
+        "Balanced threat sensitivity",
+        "Flexible environmental preferences",
+        "Moderate social orientation"
+      ];
+    } else if (rightScore >= 30) {
+      orientation = "Moderately Left-Leaning";
+      description = "You show a moderate preference for progressive values and social change, while still valuing some traditional approaches.";
+      scientificBackground = "Moderate liberals often balance progressive ideals with practical considerations, showing openness to new ideas while maintaining some traditional values.";
+      recommendations = [
+        "Study progressive political philosophy and its applications",
+        "Explore how social change can be implemented effectively",
+        "Consider evidence-based progressive policies"
+      ];
+      geneticFactors = [
+        "Lower threat sensitivity",
+        "Preference for novel environments",
+        "Stronger out-group empathy"
+      ];
+    } else {
+      orientation = "Strongly Left-Leaning";
+      description = "Your lifestyle and personality traits align strongly with progressive political orientations. You tend to value change, equality, and collective responsibility.";
+      scientificBackground = "Research suggests that left-leaning individuals often have lower threat sensitivity and prefer novel, diverse environments with less rigid structure.";
+      recommendations = [
+        "Explore progressive political philosophy and social movements",
+        "Study how social change has been achieved historically",
+        "Consider the role of collective action in social progress"
+      ];
+      geneticFactors = [
+        "Lower sensitivity to potential threats",
+        "Preference for novel and diverse environments",
+        "Stronger empathy for out-groups"
+      ];
+    }
+    
+    return {
+      leftScore,
+      rightScore,
+      orientation,
+      description,
+      scientificBackground,
+      recommendations,
+      geneticFactors
+    };
+  };
+
+  const handleFinish = () => {
+    setTimeCompleted(new Date());
+    const calculatedResults = calculateResults();
+    setResults(calculatedResults);
+    setShowResults(true);
+  };
+
+  const currentAnswer = answers.find(a => a.questionId === questions[currentQuestion].id);
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const isLastQuestion = currentQuestion === questions.length - 1;
+  const canProceed = currentAnswer !== undefined;
+
+  if (showResults && results) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Link href="/playground" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-4">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Playground
+            </Link>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">Your Political Orientation</h1>
+            <p className="text-gray-400">Based on scientific research linking lifestyle to political preferences</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Results Summary */}
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Flag className="h-6 w-6 text-blue-400" />
+                  Your Results
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-400 mb-2">{results.orientation}</div>
+                  <p className="text-gray-300">{results.description}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-red-500/20 rounded-lg border border-red-500/30">
+                    <div className="text-2xl font-bold text-red-400 mb-1">{results.leftScore}%</div>
+                    <div className="text-sm text-gray-400">Left-Leaning</div>
+                  </div>
+                  <div className="text-center p-4 bg-blue-500/20 rounded-lg border border-blue-500/30">
+                    <div className="text-2xl font-bold text-blue-400 mb-1">{results.rightScore}%</div>
+                    <div className="text-sm text-gray-400">Right-Leaning</div>
+                  </div>
+                </div>
+
+                {timeStarted && timeCompleted && (
+                  <div className="text-center text-sm text-gray-400">
+                    <Clock className="h-4 w-4 inline mr-1" />
+                    Completed in {Math.round((timeCompleted.getTime() - timeStarted.getTime()) / 1000 / 60)} minutes
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Scientific Background */}
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TestTube className="h-6 w-6 text-green-400" />
+                  Scientific Background
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300 mb-4">{results.scientificBackground}</p>
+                <div className="space-y-2">
+                  <h4 className="font-medium text-green-400">Genetic Factors:</h4>
+                  <ul className="text-sm text-gray-400 space-y-1">
+                    {results.geneticFactors.map((factor, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                        {factor}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recommendations */}
+          <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 mt-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-6 w-6 text-purple-400" />
+                Recommendations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {results.recommendations.map((rec, index) => (
+                  <div key={index} className="p-4 bg-gray-800/30 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Star className="h-4 w-4 text-yellow-400" />
+                      <span className="font-medium">Suggestion {index + 1}</span>
+                    </div>
+                    <p className="text-sm text-gray-300">{rec}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap justify-center gap-4 mt-8">
+            <Button
+              onClick={() => {
+                setShowResults(false);
+                setCurrentQuestion(0);
+                setAnswers([]);
+                setResults(null);
+                setTimeStarted(null);
+                setTimeCompleted(null);
+              }}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Retake Test
+            </Button>
+            <Button variant="outline" className="border-gray-600 hover:bg-gray-800">
+              <Share2 className="h-4 w-4 mr-2" />
+              Share Results
+            </Button>
+            <Button variant="outline" className="border-gray-600 hover:bg-gray-800">
+              <Download className="h-4 w-4 mr-2" />
+              Download Report
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <Link href="/playground" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-4">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Playground
+          </Link>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Left vs Right Test</h1>
+          <p className="text-gray-400 mb-4">Based on scientific research linking genetics to political orientation</p>
+          
+          <div className="flex items-center justify-center gap-6 text-sm text-gray-400">
+            <div className="flex items-center gap-1">
+              <Target className="h-4 w-4" />
+              <span>{questions.length} questions</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              <span>3-5 minutes</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <TestTube className="h-4 w-4" />
+              <span>Scientific</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
+            <span>Question {currentQuestion + 1} of {questions.length}</span>
+            <span>{Math.round(progress)}% complete</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+        </div>
+
+        {/* Question Card */}
+        <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 mb-8">
+          <CardContent className="p-8">
+            <div className="text-center mb-8">
+              <h2 className="text-xl md:text-2xl font-semibold mb-4 leading-relaxed">
+                {questions[currentQuestion].text}
+              </h2>
+              <div className="flex items-center justify-center gap-4 text-sm text-gray-400 mb-4">
+                <span className="text-red-400">{questions[currentQuestion].leftTrait}</span>
+                <span>←</span>
+                <span>→</span>
+                <span className="text-blue-400">{questions[currentQuestion].rightTrait}</span>
+              </div>
+              <p className="text-gray-400 text-sm">
+                Rate how much this statement applies to you
+              </p>
+            </div>
+
+            {/* Answer Options */}
+            <div className="space-y-3">
+              {[
+                { value: 1, label: "Strongly Left", color: "bg-red-500" },
+                { value: 2, label: "Left", color: "bg-orange-500" },
+                { value: 3, label: "Neutral", color: "bg-yellow-500" },
+                { value: 4, label: "Right", color: "bg-green-500" },
+                { value: 5, label: "Strongly Right", color: "bg-blue-500" }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleAnswer(option.value)}
+                  className={`w-full p-4 rounded-lg border-2 transition-all duration-200 text-left ${
+                    currentAnswer?.value === option.value
+                      ? `border-${option.color.split('-')[1]}-500 bg-${option.color.split('-')[1]}-500/20`
+                      : 'border-gray-700 hover:border-gray-600 bg-gray-800/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full ${option.color} ${currentAnswer?.value === option.value ? 'ring-2 ring-white' : ''}`}></div>
+                    <span className="font-medium">{option.label}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Navigation */}
+        <div className="flex justify-between">
+          <Button
+            onClick={previousQuestion}
+            disabled={currentQuestion === 0}
+            variant="outline"
+            className="border-gray-600 hover:bg-gray-800 disabled:opacity-50"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Previous
+          </Button>
+
+          {isLastQuestion ? (
+            <Button
+              onClick={handleFinish}
+              disabled={!canProceed}
+              className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50"
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              See Results
+            </Button>
+          ) : (
+            <Button
+              onClick={nextQuestion}
+              disabled={!canProceed}
+              className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50"
+            >
+              Next
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="mt-8 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-gray-300">
+              <p className="font-medium text-green-400 mb-1">Scientific Basis</p>
+              <p>
+                This test is based on research by John R. Hibbing, Kevin B. Smith, and John R. Alford, 
+                who found that political differences are partially rooted in genetics and manifest in lifestyle choices. 
+                The same genes that influence political preferences also affect personality and behavior patterns.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+} 

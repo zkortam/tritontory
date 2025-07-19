@@ -17,7 +17,7 @@ import { SearchModal } from "@/components/common/SearchModal";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
-import { Menu, Search, Shield, Newspaper, Video, Microscope, Scale } from "lucide-react";
+import { Menu, Search, Shield, Newspaper, Video, Microscope, Scale, Brain } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
 // Function to get background gradient classes for each section
@@ -31,6 +31,8 @@ const getBackgroundGradient = (color: string) => {
       return 'bg-gradient-to-b from-green-500/20 to-green-700/20';
     case 'law':
       return 'bg-gradient-to-b from-red-500/20 to-red-700/20';
+    case 'playground':
+      return 'bg-gradient-to-b from-purple-500/20 to-purple-700/20';
     default:
       return 'bg-gradient-to-b from-gray-500/20 to-gray-700/20';
   }
@@ -47,6 +49,8 @@ const getSectionIcon = (color: string) => {
       return Microscope;
     case 'law':
       return Scale;
+    case 'playground':
+      return Brain;
     default:
       return Newspaper;
   }
@@ -99,6 +103,18 @@ const navigationItems = [
       { title: "Campus Policy", href: "/triton-law?category=Campus", description: "University policy analysis" },
       { title: "Supreme Court", href: "/triton-law?category=Supreme Court", description: "High court decisions" },
       { title: "Student Rights", href: "/triton-law?category=Student Rights", description: "Student legal issues" },
+    ],
+  },
+  {
+    title: "Playground",
+    href: "/playground",
+    description: "Interactive personality and political tests",
+    color: "playground",
+    items: [
+      { title: "Political Tests", href: "/playground", description: "Political orientation assessments" },
+      { title: "Personality Tests", href: "/playground", description: "Big Five and personality analysis" },
+      { title: "Cognitive Tests", href: "/playground", description: "Intelligence and memory assessments" },
+      { title: "Social Tests", href: "/playground", description: "Empathy and leadership evaluations" },
     ],
   },
   {

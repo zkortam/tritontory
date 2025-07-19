@@ -1,0 +1,381 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Brain, 
+  TrendingUp, 
+  Users, 
+  Target, 
+  Zap, 
+  Heart, 
+  Shield, 
+  Globe,
+  ArrowRight,
+  Star,
+  Clock,
+  Award,
+  TestTube,
+  Calculator,
+  BookOpen,
+  Eye,
+  BarChart3,
+  PieChart,
+  Activity,
+  Target as TargetIcon,
+  Compass,
+  Flag,
+  Crown,
+  Skull,
+  UserCheck,
+  Brain as BrainIcon,
+  Heart as HeartIcon,
+  Zap as ZapIcon,
+  Shield as ShieldIcon,
+  Globe as GlobeIcon,
+  Star as StarIcon,
+  Clock as ClockIcon,
+  Award as AwardIcon,
+  TestTube as TestTubeIcon,
+  Calculator as CalculatorIcon,
+  BookOpen as BookOpenIcon,
+  Eye as EyeIcon,
+  BarChart3 as BarChart3Icon,
+  PieChart as PieChartIcon,
+  Activity as ActivityIcon
+} from "lucide-react";
+
+export default function PlaygroundPage() {
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  // Quiz categories and their tests
+  const categories = [
+    {
+      id: "political",
+      name: "Political Tests",
+      icon: <Globe className="h-6 w-6" />,
+      color: "bg-blue-500",
+      description: "Discover your political orientation and beliefs",
+      tests: [
+        {
+          id: "political-coordinates",
+          title: "Political Coordinates Test",
+          description: "Find your position on the political spectrum with this unbiased test",
+          icon: <Compass className="h-5 w-5" />,
+          questions: 20,
+          time: "5-10 min",
+          difficulty: "Easy",
+          featured: true
+        },
+        {
+          id: "left-right",
+          title: "Left vs Right Test",
+          description: "Based on scientific research linking genetics to political orientation",
+          icon: <Flag className="h-5 w-5" />,
+          questions: 15,
+          time: "3-5 min",
+          difficulty: "Easy",
+          featured: false
+        }
+      ]
+    },
+    {
+      id: "personality",
+      name: "Personality Tests",
+      icon: <Brain className="h-6 w-6" />,
+      color: "bg-purple-500",
+      description: "Explore your personality traits and characteristics",
+      tests: [
+        {
+          id: "villain-test",
+          title: "Villain Test",
+          description: "Compare yourself with 20 historical figures using Big Five personality theory",
+          icon: <Skull className="h-5 w-5" />,
+          questions: 45,
+          time: "10-15 min",
+          difficulty: "Medium",
+          featured: true
+        },
+        {
+          id: "dark-triad",
+          title: "Dark Triad Test",
+          description: "Measure narcissism, Machiavellianism, and psychopathy traits",
+          icon: <Crown className="h-5 w-5" />,
+          questions: 30,
+          time: "8-12 min",
+          difficulty: "Medium",
+          featured: false
+        }
+      ]
+    },
+    {
+      id: "cognitive",
+      name: "Cognitive Tests",
+      icon: <Target className="h-6 w-6" />,
+      color: "bg-green-500",
+      description: "Test your cognitive abilities and intelligence",
+      tests: [
+        {
+          id: "iq-test",
+          title: "IQ Assessment",
+          description: "Comprehensive intelligence quotient measurement",
+          icon: <Calculator className="h-5 w-5" />,
+          questions: 25,
+          time: "15-20 min",
+          difficulty: "Hard",
+          featured: false
+        },
+        {
+          id: "memory-test",
+          title: "Memory Test",
+          description: "Evaluate your short-term and working memory",
+          icon: <BrainIcon className="h-5 w-5" />,
+          questions: 20,
+          time: "10-15 min",
+          difficulty: "Medium",
+          featured: false
+        }
+      ]
+    },
+    {
+      id: "social",
+      name: "Social Tests",
+      icon: <Users className="h-6 w-6" />,
+      color: "bg-pink-500",
+      description: "Understand your social behavior and relationships",
+      tests: [
+        {
+          id: "empathy-test",
+          title: "Empathy Test",
+          description: "Measure your emotional intelligence and empathy levels",
+          icon: <Heart className="h-5 w-5" />,
+          questions: 18,
+          time: "5-8 min",
+          difficulty: "Easy",
+          featured: false
+        },
+        {
+          id: "leadership-test",
+          title: "Leadership Style",
+          description: "Discover your natural leadership approach",
+          icon: <Crown className="h-5 w-5" />,
+          questions: 22,
+          time: "8-12 min",
+          difficulty: "Medium",
+          featured: false
+        }
+      ]
+    }
+  ];
+
+  const allTests = categories.flatMap(category => 
+    category.tests.map(test => ({ ...test, category: category.name, categoryId: category.id }))
+  );
+
+  const filteredTests = selectedCategory === "all" 
+    ? allTests 
+    : allTests.filter(test => test.categoryId === selectedCategory);
+
+  const featuredTests = allTests.filter(test => test.featured);
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-900/50 via-blue-900/50 to-green-900/50 border-b border-gray-800">
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-blue-400 to-green-400 bg-clip-text text-transparent">
+              Playground
+            </h1>
+            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+              Discover yourself through scientifically-backed personality tests, political assessments, and cognitive evaluations
+            </p>
+            <div className="flex items-center justify-center gap-4 text-sm text-gray-400">
+              <div className="flex items-center gap-1">
+                <TestTube className="h-4 w-4" />
+                <span>Scientific Research</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <BarChart3 className="h-4 w-4" />
+                <span>Detailed Analytics</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Shield className="h-4 w-4" />
+                <span>Privacy Focused</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Featured Tests */}
+        <section className="mb-12">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500">
+              <Star className="h-6 w-6 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold">Featured Tests</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredTests.map((test) => (
+              <Card key={test.id} className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 hover:border-purple-500/50 transition-all duration-300 group">
+                <Link href={`/playground/${test.id}`} className="block">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 rounded-lg bg-purple-500/20">
+                        {test.icon}
+                      </div>
+                      <Badge className="bg-purple-500/90 text-white text-xs">
+                        {test.category}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-lg group-hover:text-purple-400 transition-colors">
+                      {test.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                      {test.description}
+                    </p>
+                    <div className="flex items-center justify-between text-xs text-gray-400">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <Target className="h-3 w-3" />
+                          <span>{test.questions} questions</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{test.time}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Link>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Category Filters */}
+        <section className="mb-8">
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button
+              variant={selectedCategory === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory("all")}
+              className={selectedCategory === "all" ? "bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600" : ""}
+            >
+              All Tests
+            </Button>
+            {categories.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(category.id)}
+                className={selectedCategory === category.id ? `${category.color} hover:${category.color.replace('500', '600')}` : ""}
+              >
+                {category.icon}
+                <span className="ml-1">{category.name}</span>
+              </Button>
+            ))}
+          </div>
+        </section>
+
+        {/* All Tests Grid */}
+        <section>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredTests.map((test) => (
+              <Card key={test.id} className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 hover:border-purple-500/50 transition-all duration-300 group">
+                <Link href={`/playground/${test.id}`} className="block">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 rounded-lg bg-purple-500/20">
+                        {test.icon}
+                      </div>
+                      <Badge className="bg-purple-500/90 text-white text-xs">
+                        {test.category}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-lg group-hover:text-purple-400 transition-colors">
+                      {test.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                      {test.description}
+                    </p>
+                    <div className="flex items-center justify-between text-xs text-gray-400">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <Target className="h-3 w-3" />
+                          <span>{test.questions} questions</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{test.time}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Link>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="mt-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardContent className="p-6 text-center">
+                <div className="p-3 rounded-lg bg-blue-500/20 w-fit mx-auto mb-4">
+                  <TestTube className="h-8 w-8 text-blue-400" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2">12+</h3>
+                <p className="text-gray-400 text-sm">Scientific Tests</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardContent className="p-6 text-center">
+                <div className="p-3 rounded-lg bg-purple-500/20 w-fit mx-auto mb-4">
+                  <Users className="h-8 w-8 text-purple-400" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2">1000+</h3>
+                <p className="text-gray-400 text-sm">Tests Taken</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardContent className="p-6 text-center">
+                <div className="p-3 rounded-lg bg-green-500/20 w-fit mx-auto mb-4">
+                  <BarChart3 className="h-8 w-8 text-green-400" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2">4</h3>
+                <p className="text-gray-400 text-sm">Categories</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardContent className="p-6 text-center">
+                <div className="p-3 rounded-lg bg-pink-500/20 w-fit mx-auto mb-4">
+                  <Award className="h-8 w-8 text-pink-400" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2">100%</h3>
+                <p className="text-gray-400 text-sm">Free Access</p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+} 
