@@ -14,11 +14,9 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-      },
     ],
+    unoptimized: false,
+    formats: ['image/webp', 'image/avif'],
   },
 }
 

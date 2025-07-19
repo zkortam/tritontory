@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export type LogoVariant = "default" | "white" | "primary";
@@ -32,19 +35,37 @@ export function Logo({
   className,
   href = "/"
 }: LogoProps) {
-  const logoImage = (
-    <Image
-      src="/logo.png"
-      alt="Triton Tory Media"
-      width={40}
-      height={40}
-      className={cn(
-        sizeClasses[size],
-        variantClasses[variant],
-        className
-      )}
-      priority
-    />
+  const [imageError, setImageError] = useState(false);
+
+  const logoImage = imageError ? (
+    <span className={cn(
+      'font-bold text-white inline-block',
+      sizeClasses[size],
+      className
+    )}>
+      Triton Tory
+    </span>
+  ) : (
+    <picture>
+      <source srcSet="/logo-small.webp" type="image/webp" />
+      <Image
+        src="/logo-small.png"
+        alt="Triton Tory Media"
+        width={40}
+        height={40}
+        className={cn(
+          sizeClasses[size],
+          variantClasses[variant],
+          className
+        )}
+        priority
+        unoptimized={false}
+        onError={() => {
+          console.error('Logo failed to load, using text fallback');
+          setImageError(true);
+        }}
+      />
+    </picture>
   );
 
   if (href) {

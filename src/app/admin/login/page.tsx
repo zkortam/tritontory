@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -15,11 +15,18 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { signIn, signInWithGoogle, createUser, loading: authLoading } = useAuth();
+  const { signIn, signInWithGoogle, createUser, loading: authLoading, user, isAdmin } = useAuth();
   const router = useRouter();
 
-  // Show loading state while auth is initializing
-  if (authLoading) {
+  // Redirect to admin dashboard if already signed in as admin
+  useEffect(() => {
+    if (!authLoading && user && isAdmin()) {
+      router.push("/admin");
+    }
+  }, [user, authLoading, isAdmin, router]);
+
+  // Show loading state while auth is initializing or redirecting
+  if (authLoading || (user && isAdmin())) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-black">
         <div className="w-full max-w-md space-y-8 rounded-lg bg-gray-900 p-8 shadow-lg">
@@ -27,7 +34,7 @@ export default function AdminLogin() {
             <h1 className="text-2xl font-bold text-white">Triton Tory</h1>
             <h2 className="mt-6 text-center text-2xl font-bold text-white">Admin Portal</h2>
             <p className="mt-2 text-center text-sm text-gray-400">
-              Loading...
+              {authLoading ? "Loading..." : "Redirecting to admin dashboard..."}
             </p>
           </div>
         </div>

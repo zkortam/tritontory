@@ -10,11 +10,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/auth-context";
-import { User, LogOut, Settings, UserPlus } from "lucide-react";
+import { User, LogOut, Settings, UserPlus, Shield } from "lucide-react";
 import Link from "next/link";
 
 export function UserMenu() {
-  const { user, userRole, signOut } = useAuth();
+  const { user, userRole, signOut, isAdmin } = useAuth();
 
   // Handle sign out
   const handleSignOut = async () => {
@@ -75,6 +75,14 @@ export function UserMenu() {
               <span>Settings</span>
             </Link>
           </DropdownMenuItem>
+          {isAdmin() && (
+            <DropdownMenuItem asChild className="text-gray-300 hover:text-white hover:bg-gray-800">
+              <Link href="/admin">
+                <Shield className="mr-2 h-4 w-4" />
+                <span>Admin Portal</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator className="bg-gray-700" />
           <DropdownMenuItem 
             onClick={handleSignOut}
