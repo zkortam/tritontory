@@ -30,8 +30,12 @@ export default function TritonTodayPage() {
   const [isMuted, setIsMuted] = useState(false);
 
   const [isScrollLocked, setIsScrollLocked] = useState(true);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [showVideoPopup, setShowVideoPopup] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const popupVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     async function fetchVideos() {
@@ -222,6 +226,19 @@ export default function TritonTodayPage() {
     return views.toString();
   };
 
+  const handleVideoSelect = (video: Video) => {
+    setSelectedVideo(video);
+    setShowVideoPopup(true);
+  };
+
+  const handleClosePopup = () => {
+    setShowVideoPopup(false);
+    setSelectedVideo(null);
+    if (popupVideoRef.current) {
+      popupVideoRef.current.pause();
+    }
+  };
+
 
 
   if (loading) {
@@ -364,27 +381,197 @@ export default function TritonTodayPage() {
         ))}
       </div>
 
-      {/* Unlock Scroll Button */}
-      <button
-        onClick={() => setIsScrollLocked(!isScrollLocked)}
-        className="fixed bottom-6 right-6 z-50 bg-today-500 hover:bg-today-600 text-white px-4 py-2 rounded-full shadow-lg transition-colors duration-200 flex items-center gap-2"
-      >
-        {isScrollLocked ? (
-          <>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-            </svg>
-            Unlock Scroll
-          </>
-        ) : (
-          <>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-            </svg>
-            Lock Scroll
-          </>
-        )}
-      </button>
+      {/* Control Buttons */}
+      <div className="fixed bottom-6 right-6 z-50 flex gap-3">
+        {/* View Library Button */}
+        <button
+          onClick={() => setShowLibrary(!showLibrary)}
+          className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full shadow-lg transition-colors duration-200 flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          View Library
+        </button>
+
+        {/* Unlock Scroll Button */}
+        <button
+          onClick={() => setIsScrollLocked(!isScrollLocked)}
+          className="bg-today-500 hover:bg-today-600 text-white px-4 py-2 rounded-full shadow-lg transition-colors duration-200 flex items-center gap-2"
+        >
+          {isScrollLocked ? (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+              </svg>
+              Unlock Scroll
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+              </svg>
+              Lock Scroll
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Library View */}
+      {showLibrary && (
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm overflow-y-auto">
+          <div className="container mx-auto px-4 py-8">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-bold text-white">Video Library</h2>
+              <button
+                onClick={() => setShowLibrary(false)}
+                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full transition-colors"
+              >
+                Close
+              </button>
+            </div>
+
+            {/* Video Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {videos.map((video) => (
+                <div
+                  key={video.id}
+                  onClick={() => handleVideoSelect(video)}
+                  className="bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200"
+                >
+                  <div className="relative aspect-[9/16]">
+                    <video
+                      src={video.videoUrl}
+                      poster={video.thumbnailUrl}
+                      className="w-full h-full object-cover"
+                      muted
+                      loop
+                      playsInline
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute top-2 right-2">
+                      <Badge className="bg-black/80 text-white text-xs">
+                        {formatDuration(video.duration)}
+                      </Badge>
+                    </div>
+                    <div className="absolute bottom-2 left-2 right-2">
+                      <div className="flex items-center gap-2 text-white text-sm">
+                        <Eye className="w-4 h-4" />
+                        <span>{formatViews(video.views)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-white font-semibold text-lg mb-2 line-clamp-2">
+                      {video.title}
+                    </h3>
+                    <p className="text-gray-400 text-sm line-clamp-2 mb-3">
+                      {video.description}
+                    </p>
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <span>{video.authorName}</span>
+                      <span>{formatDistanceToNow(video.publishedAt, { addSuffix: true })}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Popup */}
+      {showVideoPopup && selectedVideo && (
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="relative max-w-2xl w-full">
+            {/* Close Button */}
+            <button
+              onClick={handleClosePopup}
+              className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Video Player */}
+            <div className="relative">
+              <video
+                ref={popupVideoRef}
+                src={selectedVideo.videoUrl}
+                poster={selectedVideo.thumbnailUrl}
+                className="w-full aspect-[9/16] object-cover rounded-lg"
+                loop
+                playsInline
+                autoPlay
+                muted={isMuted}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+              />
+              
+              {/* Video Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <button
+                  onClick={() => {
+                    if (popupVideoRef.current) {
+                      if (isPlaying) {
+                        popupVideoRef.current.pause();
+                        setIsPlaying(false);
+                      } else {
+                        popupVideoRef.current.play();
+                        setIsPlaying(true);
+                      }
+                    }
+                  }}
+                  className="bg-black/50 rounded-full p-4 opacity-0 hover:opacity-100 transition-opacity"
+                >
+                  {isPlaying ? (
+                    <Pause className="w-8 h-8 text-white" />
+                  ) : (
+                    <Play className="w-8 h-8 text-white" />
+                  )}
+                </button>
+              </div>
+
+              {/* Mute Button */}
+              <button
+                onClick={handleMuteToggle}
+                className="absolute top-4 left-4 bg-black/50 rounded-full p-2 text-white"
+              >
+                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+              </button>
+
+              {/* Duration Badge */}
+              <div className="absolute top-4 left-16">
+                <Badge className="bg-black/80 text-white text-xs">
+                  {formatDuration(selectedVideo.duration)}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Video Info */}
+            <div className="mt-4 text-white">
+              <h3 className="text-xl font-semibold mb-2">{selectedVideo.title}</h3>
+              <p className="text-gray-300 mb-4">{selectedVideo.description}</p>
+              <div className="flex items-center gap-4 text-sm text-gray-400">
+                <div className="flex items-center gap-1">
+                  <User className="w-4 h-4" />
+                  <span>{selectedVideo.authorName}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>{formatDistanceToNow(selectedVideo.publishedAt, { addSuffix: true })}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Eye className="w-4 h-4" />
+                  <span>{formatViews(selectedVideo.views)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
