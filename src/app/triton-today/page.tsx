@@ -9,15 +9,10 @@ import {
   Pause, 
   Volume2, 
   VolumeX, 
-  Eye,
   Menu,
-  Heart,
-  MessageCircle,
-  Share2,
   ChevronUp,
   ChevronDown,
-  Home,
-  Search
+  Home
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
@@ -162,22 +157,24 @@ export default function TritonTodayPage() {
     document.body.style.width = '100%';
     document.body.style.height = '100%';
 
+    // Hide the navigation header on mobile for this page
+    const header = document.querySelector('header');
+    if (header) {
+      header.style.display = 'none';
+    }
+
     return () => {
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
       document.body.style.height = '';
+      
+      // Restore header visibility when leaving the page
+      if (header) {
+        header.style.display = '';
+      }
     };
   }, []);
-
-  const formatViews = (views: number) => {
-    if (views >= 1000000) {
-      return `${(views / 1000000).toFixed(1)}M`;
-    } else if (views >= 1000) {
-      return `${(views / 1000).toFixed(1)}K`;
-    }
-    return views.toString();
-  };
 
   if (loading) {
     return (
@@ -256,11 +253,6 @@ export default function TritonTodayPage() {
               <Home className="w-5 h-5" />
             </Link>
 
-            {/* Search Button */}
-            <button className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
-              <Search className="w-5 h-5" />
-            </button>
-
             {/* Menu Button */}
             <button 
               onClick={() => setShowMenu(!showMenu)}
@@ -274,21 +266,6 @@ export default function TritonTodayPage() {
         {/* Right Side Controls - TikTok Style */}
         <div className={`absolute right-4 bottom-20 z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           <div className="flex flex-col items-center space-y-6">
-            {/* Like Button */}
-            <button className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
-              <Heart className="w-6 h-6" />
-            </button>
-
-            {/* Comment Button */}
-            <button className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
-              <MessageCircle className="w-6 h-6" />
-            </button>
-
-            {/* Share Button */}
-            <button className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
-              <Share2 className="w-6 h-6" />
-            </button>
-
             {/* Mute Button */}
             <button
               onClick={handleMuteToggle}
@@ -326,10 +303,6 @@ export default function TritonTodayPage() {
                 </div>
                 
                 <div className="flex items-center space-x-4 text-sm text-gray-300">
-                  <div className="flex items-center space-x-1">
-                    <Eye className="w-4 h-4" />
-                    <span>{formatViews(currentVideo.views)}</span>
-                  </div>
                   <Badge className="bg-today-500/90 text-white text-xs">
                     {currentVideo.category}
                   </Badge>
@@ -337,27 +310,18 @@ export default function TritonTodayPage() {
               </div>
             </div>
 
-            {/* Progress Bar */}
-            <div className="w-full bg-white/20 rounded-full h-1 mb-4">
-              <div 
-                className="bg-today-500 h-1 rounded-full transition-all duration-100"
-                style={{ 
-                  width: `${(currentVideoIndex / (videos.length - 1)) * 100}%` 
-                }}
-              />
-            </div>
-
-            {/* Navigation Dots */}
-            <div className="flex justify-center space-x-2">
-              {videos.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentVideoIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                    index === currentVideoIndex ? 'bg-today-500' : 'bg-white/30'
-                  }`}
-                />
-              ))}
+            {/* Swipe Indicators */}
+            <div className={`absolute left-1/2 transform -translate-x-1/2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+              {currentVideoIndex > 0 && (
+                <div className="absolute top-20 text-white/60">
+                  <ChevronUp className="w-6 h-6" />
+                </div>
+              )}
+              {currentVideoIndex < videos.length - 1 && (
+                <div className="absolute bottom-32 text-white/60">
+                  <ChevronDown className="w-6 h-6" />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -376,19 +340,6 @@ export default function TritonTodayPage() {
           </button>
         </div>
 
-        {/* Swipe Indicators */}
-        <div className={`absolute left-1/2 transform -translate-x-1/2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          {currentVideoIndex > 0 && (
-            <div className="absolute top-20 text-white/60">
-              <ChevronUp className="w-6 h-6" />
-            </div>
-          )}
-          {currentVideoIndex < videos.length - 1 && (
-            <div className="absolute bottom-32 text-white/60">
-              <ChevronDown className="w-6 h-6" />
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Floating Menu - Mobile Only */}

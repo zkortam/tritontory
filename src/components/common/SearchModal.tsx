@@ -165,10 +165,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return () => clearTimeout(timeoutId);
   }, [query, getSuggestions]);
 
-  // Keyboard navigation
+  // Keyboard navigation - disabled on mobile to prevent conflicts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
+
+      // Check if it's a mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) return; // Disable keyboard navigation on mobile
 
       switch (e.key) {
         case "ArrowDown":
@@ -225,9 +229,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, results, suggestions, selectedIndex, showSuggestions, router, onClose]);
 
-  // Global keyboard shortcut
+  // Global keyboard shortcut - disabled on mobile
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if it's a mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) return; // Disable keyboard shortcuts on mobile
+
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         if (!isOpen) {
@@ -294,12 +302,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] max-w-[95vw] p-0 bg-gray-900 border-gray-800 mobile-gpu-accelerated">
-        <DialogHeader className="p-4 md:p-6 pb-0">
+      <DialogContent className="sm:max-w-[800px] max-w-[95vw] max-h-[90vh] p-0 bg-gray-900 border-gray-800 mobile-gpu-accelerated fixed inset-4 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] flex flex-col mobile-search-modal">
+        <DialogHeader className="p-4 md:p-6 pb-0 flex-shrink-0">
           <DialogTitle className="sr-only">Search</DialogTitle>
         </DialogHeader>
 
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           <Search className="absolute left-4 md:left-6 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
             placeholder="Search articles, videos, research, and legal analysis..."
@@ -309,8 +317,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               setShowSuggestions(true);
             }}
             onFocus={() => setShowSuggestions(true)}
-            className="border-0 border-b border-gray-700 rounded-none bg-transparent px-12 md:px-12 py-4 md:py-6 text-base md:text-lg focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="border-0 border-b border-gray-700 rounded-none bg-transparent px-12 md:px-12 py-4 md:py-6 text-base md:text-lg focus-visible:ring-0 focus-visible:ring-offset-0 mobile-accessible-text mobile-search-input"
             autoFocus
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
           />
           <div className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 flex items-center gap-2">
             <Button
@@ -318,7 +330,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
-                "h-8 w-8 p-0",
+                "h-10 w-10 p-0 mobile-touch-target",
                 showFilters && "bg-gray-800"
               )}
             >
@@ -330,10 +342,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           </div>
         </div>
 
-        {/* Filters Panel */}
+        {/* Filters Panel - Mobile Optimized */}
         {showFilters && (
-          <div className="border-b border-gray-700 p-4 md:p-6 bg-gray-800/50">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="border-b border-gray-700 p-4 md:p-6 bg-gray-800/50 flex-shrink-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Date Range */}
               <div>
                 <label className="text-sm font-medium text-gray-300 mb-2 block">Date Range</label>
@@ -341,7 +353,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   value={filters.dateRange}
                   onValueChange={(value) => setFilters(prev => ({ ...prev, dateRange: value }))}
                 >
-                  <SelectTrigger className="bg-gray-700 border-gray-600">
+                  <SelectTrigger className="bg-gray-700 border-gray-600 mobile-touch-target">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-700">
@@ -361,7 +373,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   value={filters.contentType}
                   onValueChange={(value) => setFilters(prev => ({ ...prev, contentType: value }))}
                 >
-                  <SelectTrigger className="bg-gray-700 border-gray-600">
+                  <SelectTrigger className="bg-gray-700 border-gray-600 mobile-touch-target">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-700">
@@ -381,7 +393,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   value={filters.popularity}
                   onValueChange={(value) => setFilters(prev => ({ ...prev, popularity: value }))}
                 >
-                  <SelectTrigger className="bg-gray-700 border-gray-600">
+                  <SelectTrigger className="bg-gray-700 border-gray-600 mobile-touch-target">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-700">
@@ -401,7 +413,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   placeholder="Enter category..."
                   value={filters.category}
                   onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                  className="bg-gray-700 border-gray-600"
+                  className="bg-gray-700 border-gray-600 mobile-accessible-text"
                 />
               </div>
 
@@ -412,7 +424,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   placeholder="Enter author name..."
                   value={filters.author}
                   onChange={(e) => setFilters(prev => ({ ...prev, author: e.target.value }))}
-                  className="bg-gray-700 border-gray-600"
+                  className="bg-gray-700 border-gray-600 mobile-accessible-text"
                 />
               </div>
 
@@ -426,7 +438,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     const tags = e.target.value.split(",").map(tag => tag.trim()).filter(tag => tag);
                     setFilters(prev => ({ ...prev, tags }));
                   }}
-                  className="bg-gray-700 border-gray-600"
+                  className="bg-gray-700 border-gray-600 mobile-accessible-text"
                 />
               </div>
             </div>
@@ -438,7 +450,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   variant="outline"
                   size="sm"
                   onClick={clearFilters}
-                  className="text-gray-400 border-gray-600 hover:bg-gray-700"
+                  className="text-gray-400 border-gray-600 hover:bg-gray-700 mobile-touch-target"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Clear Filters
@@ -450,14 +462,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
         {/* Search Suggestions */}
         {showSuggestions && suggestions.length > 0 && query && (
-          <div className="border-b border-gray-700">
+          <div className="border-b border-gray-700 flex-shrink-0">
             <div className="p-2">
               {suggestions.map((suggestion, index) => (
                 <button
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
                   className={cn(
-                    "w-full text-left px-3 py-2 rounded-md text-sm hover:bg-gray-800 transition-colors",
+                    "w-full text-left px-3 py-3 rounded-md text-sm hover:bg-gray-800 transition-colors mobile-touch-target mobile-search-item",
                     index === selectedIndex && "bg-gray-800"
                   )}
                 >
@@ -472,7 +484,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         )}
 
         {/* Search Results */}
-        <div className="max-h-[50vh] md:max-h-[400px] overflow-y-auto mobile-smooth-scroll">
+        <div className="flex-1 overflow-y-auto mobile-smooth-scroll mobile-search-results">
           {query && !loading && results.length === 0 && (
             <div className="p-4 md:p-6 text-center text-gray-400">
               <Search className="h-8 md:h-12 w-8 md:w-12 mx-auto mb-2 md:mb-4 text-gray-600" />
@@ -510,7 +522,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       onClose();
                     }}
                     className={cn(
-                      "w-full text-left p-3 rounded-lg hover:bg-gray-800 transition-colors",
+                      "w-full text-left p-3 rounded-lg hover:bg-gray-800 transition-colors mobile-touch-target mobile-search-item",
                       index === selectedIndex && "bg-gray-800"
                     )}
                   >
@@ -558,9 +570,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-700 p-3 md:p-4 text-xs text-gray-400">
+        <div className="border-t border-gray-700 p-3 md:p-4 text-xs text-gray-400 flex-shrink-0">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0">
-            <div className="flex flex-wrap items-center gap-2 md:gap-4">
+            {/* Hide keyboard shortcuts on mobile */}
+            <div className="hidden md:flex flex-wrap items-center gap-2 md:gap-4">
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 text-xs bg-gray-800 border border-gray-700 rounded">↑</kbd>
                 <kbd className="px-1.5 py-0.5 text-xs bg-gray-800 border border-gray-700 rounded">↓</kbd>

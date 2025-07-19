@@ -806,3 +806,52 @@ body.scroll-locked {
   font-family: inherit;
   line-height: inherit;
 }
+
+  /* Mobile search modal optimizations */
+  .mobile-search-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    transform: none !important;
+    border-radius: 0 !important;
+  }
+
+  .mobile-search-modal .mobile-search-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .mobile-search-modal .mobile-search-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 16px 48px;
+    border: none;
+    border-bottom: 1px solid #374151;
+    background: transparent;
+    color: white;
+    outline: none;
+  }
+
+  .mobile-search-modal .mobile-search-results {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-search-modal .mobile-search-item {
+    min-height: 44px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #374151;
+    transition: background-color 0.2s;
+  }
+
+  .mobile-search-modal .mobile-search-item:active {
+    background-color: #374151;
+  }

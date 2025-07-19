@@ -319,74 +319,12 @@ export function Navigation() {
                           Main Sections
                         </h3>
                         <div className="space-y-1">
-                          {navigationItems.slice(0, 4).map((item) => (
+                          {navigationItems.map((item) => (
                             <div key={item.title} className="px-4">
                               <Link
                                 href={item.href}
                                 className={cn(
                                   "flex items-center justify-between py-3 px-3 rounded-lg transition-colors mobile-touch-target group",
-                                  pathname.startsWith(item.href) 
-                                    ? "bg-primary/20 text-primary border border-primary/30" 
-                                    : "text-white hover:bg-gray-800/50"
-                                )}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <div className="flex items-center space-x-3">
-                                  <div className={cn(
-                                    "w-8 h-8 rounded-lg flex items-center justify-center",
-                                    pathname.startsWith(item.href) 
-                                      ? "bg-primary/20" 
-                                      : "bg-gray-800/50 group-hover:bg-gray-700/50"
-                                  )}>
-                                    {(() => {
-                                      const IconComponent = getSectionIcon(item.color);
-                                      return <IconComponent className="h-4 w-4 text-white" />;
-                                    })()}
-                                  </div>
-                                  <div>
-                                    <div className="font-medium text-sm">{item.title}</div>
-                                    <div className="text-xs text-gray-400">{item.description}</div>
-                                  </div>
-                                </div>
-                                {item.items && item.items.length > 0 && (
-                                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                  </svg>
-                                )}
-                              </Link>
-                              
-                              {/* Sub-items with better organization */}
-                              {item.items && item.items.length > 0 && (
-                                <div className="ml-11 mt-2 space-y-1">
-                                  {item.items.map((subItem) => (
-                                    <Link
-                                      key={subItem.title}
-                                      href={subItem.href}
-                                      className="block py-2 px-3 text-sm text-gray-400 hover:text-white transition-colors mobile-touch-target rounded-md hover:bg-gray-800/30"
-                                      onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                      {subItem.title}
-                                    </Link>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Secondary Sections */}
-                      <div>
-                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 mb-3">
-                          More
-                        </h3>
-                        <div className="space-y-1">
-                          {navigationItems.slice(4).map((item) => (
-                            <div key={item.title} className="px-4">
-                              <Link
-                                href={item.href}
-                                className={cn(
-                                  "flex items-center py-3 px-3 rounded-lg transition-colors mobile-touch-target group",
                                   pathname.startsWith(item.href) 
                                     ? "bg-primary/20 text-primary border border-primary/30" 
                                     : "text-white hover:bg-gray-800/50"
