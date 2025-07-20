@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import {
   User,
   UserCredential,
@@ -27,8 +27,10 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string, redirectTo?: string) => Promise<UserCredential>;
   signInWithGoogle: (redirectTo?: string) => Promise<UserCredential>;
+  signUpWithGoogle: (redirectTo?: string) => Promise<{ userCredential: UserCredential; isNewUser: boolean }>;
   signOut: () => Promise<void>;
   createUser: (email: string, password: string, redirectTo?: string) => Promise<UserCredential>;
+  updateUserProfile: (firstName: string, lastName: string) => Promise<void>;
   hasRole: (requiredRole: UserRole['role']) => boolean;
   hasPermission: (permission: string) => boolean;
   isAdmin: () => boolean;
@@ -48,10 +50,16 @@ const AuthContext = createContext<AuthContextType>({
   signInWithGoogle: async () => {
     throw new Error("AuthContext not initialized");
   },
+  signUpWithGoogle: async () => {
+    throw new Error("AuthContext not initialized");
+  },
   signOut: async () => {
     throw new Error("AuthContext not initialized");
   },
   createUser: async () => {
+    throw new Error("AuthContext not initialized");
+  },
+  updateUserProfile: async () => {
     throw new Error("AuthContext not initialized");
   },
   hasRole: () => false,
@@ -71,29 +79,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   // Redirect URL management
-  const setRedirectUrl = (url: string) => {
+  const setRedirectUrl = useCallback((url: string) => {
     setRedirectUrlState(url);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('authRedirectUrl', url);
     }
-  };
+  }, []);
 
-  const getRedirectUrl = (): string | null => {
+  const getRedirectUrl = useCallback((): string | null => {
     if (typeof window !== 'undefined') {
       return sessionStorage.getItem('authRedirectUrl') || redirectUrl;
     }
     return redirectUrl;
-  };
+  }, [redirectUrl]);
 
-  const clearRedirectUrl = () => {
+  const clearRedirectUrl = useCallback(() => {
     setRedirectUrlState(null);
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('authRedirectUrl');
     }
-  };
+  }, []);
 
   // Handle redirect after successful authentication
-  const handleSuccessfulAuth = () => {
+  const handleSuccessfulAuth = useCallback(() => {
     const redirectTo = getRedirectUrl();
     if (redirectTo && redirectTo !== '/auth') {
       clearRedirectUrl();
@@ -101,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       router.push('/');
     }
-  };
+  }, [getRedirectUrl, clearRedirectUrl, router]);
 
   // Fetch user role from Firestore
   const fetchUserRole = async (userId: string) => {
@@ -145,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Cleanup subscription
     return unsubscribe;
-  }, []);
+  }, [handleSuccessfulAuth]);
 
   // Sign in function
   const signIn = async (email: string, password: string, redirectTo?: string) => {
@@ -175,6 +183,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setRedirectUrl(redirectTo);
     }
     return createUserWithEmailAndPassword(auth, email, password);
+  };
+
+  // Google sign up function that returns whether user is new
+  const signUpWithGoogle = async (redirectTo?: string) => {
+    if (redirectTo) {
+      setRedirectUrl(redirectTo);
+    }
+    const provider = new GoogleAuthProvider();
+    const userCredential = await signInWithPopup(auth, provider);
+    
+    // Check if this is a new user by looking at creation time vs last sign in time
+    const isNewUser = userCredential.user.metadata.creationTime === userCredential.user.metadata.lastSignInTime;
+    
+    return { userCredential, isNewUser };
+  };
+
+  // Update user profile with first and last name
+  const updateUserProfile = async (firstName: string, lastName: string) => {
+    if (!user) {
+      throw new Error("No user is currently signed in");
+    }
+    
+    try {
+      // Update user document in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        firstName,
+        lastName,
+        email: user.email,
+        role: 'viewer',
+        isAdmin: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }, { merge: true });
+      
+      // Update the user role state
+      setUserRole(prev => ({
+        ...prev,
+        role: 'viewer',
+        isAdmin: false,
+      }));
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      throw new Error("Failed to update user profile");
+    }
   };
 
   // Check if user has admin privileges
@@ -225,8 +277,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     signIn,
     signInWithGoogle,
+    signUpWithGoogle,
     signOut,
     createUser,
+    updateUserProfile,
     hasRole,
     hasPermission,
     isAdmin,

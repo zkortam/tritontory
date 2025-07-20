@@ -24,11 +24,13 @@ import { UserPlus, LogIn, ArrowLeft } from "lucide-react";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Link from "next/link";
+import { NamePromptModal } from "@/components/common/NamePromptModal";
 
 export default function AuthPage() {
-  const { signIn, createUser, signInWithGoogle, getRedirectUrl } = useAuth();
+  const { signIn, createUser, signInWithGoogle, signUpWithGoogle, updateUserProfile, getRedirectUrl } = useAuth();
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [isNamePromptOpen, setIsNamePromptOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -111,6 +113,45 @@ export default function AuthPage() {
       setIsSignInOpen(false);
     } catch (error: unknown) {
       setError((error as Error).message || "Failed to sign in with Google");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Google sign up with name prompt
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const redirectTo = getRedirectUrl();
+      const { isNewUser } = await signUpWithGoogle(redirectTo || undefined);
+      
+      if (isNewUser) {
+        // Show name prompt for new users
+        setIsNamePromptOpen(true);
+      } else {
+        // Existing user, close the sign-up dialog
+        setIsSignUpOpen(false);
+      }
+    } catch (error: unknown) {
+      setError((error as Error).message || "Failed to sign up with Google");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle name prompt submission
+  const handleNameSubmit = async (firstName: string, lastName: string) => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      await updateUserProfile(firstName, lastName);
+      setIsNamePromptOpen(false);
+      setIsSignUpOpen(false);
+    } catch (error: unknown) {
+      setError((error as Error).message || "Failed to update profile");
     } finally {
       setIsLoading(false);
     }
@@ -219,6 +260,25 @@ export default function AuthPage() {
                       {isLoading ? "Creating account..." : "Create Account"}
                     </Button>
                   </form>
+                  
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-gray-700" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-gray-900 px-2 text-gray-400">Or</span>
+                    </div>
+                  </div>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGoogleSignUp}
+                    disabled={isLoading}
+                    className="w-full"
+                  >
+                    Sign up with Google
+                  </Button>
                 </DialogContent>
               </Dialog>
             </CardContent>
@@ -292,6 +352,15 @@ export default function AuthPage() {
           </Card>
         </div>
       </div>
+      
+      {/* Name Prompt Modal */}
+      <NamePromptModal
+        isOpen={isNamePromptOpen}
+        onClose={() => setIsNamePromptOpen(false)}
+        onSubmit={handleNameSubmit}
+        isLoading={isLoading}
+        error={error}
+      />
     </div>
   );
 } 

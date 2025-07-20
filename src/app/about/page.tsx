@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Newspaper, Video, Scale, FlaskConical, Building, Globe } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AboutPage() {
   const founders = [
@@ -16,7 +17,8 @@ export default function AboutPage() {
       specialization: "Machine Learning Controls",
       description: "Leading the digital transformation and technical infrastructure of Triton Tory Media.",
       icon: <Building className="h-5 w-5" />,
-      color: "bg-blue-500/10 text-blue-400 border-blue-500/20"
+      color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      image: "/Zakaria.jpg"
     },
     {
       name: "Dylan Archer",
@@ -27,7 +29,8 @@ export default function AboutPage() {
       specialization: "Data Science & Analytics",
       description: "Overseeing operations and strategic direction with expertise in political analysis and data-driven insights.",
       icon: <Globe className="h-5 w-5" />,
-      color: "bg-green-500/10 text-green-400 border-green-500/20"
+      color: "bg-green-500/10 text-green-400 border-green-500/20",
+      image: "/Dylan.jpg"
     }
   ];
 
@@ -139,8 +142,14 @@ export default function AboutPage() {
               <Card key={index} className="bg-gray-900/30 border-gray-800/50 backdrop-blur-sm hover:border-gray-700/50 transition-all duration-300 group">
                 <CardHeader className="text-center pb-4">
                   <div className="flex justify-center mb-4">
-                    <div className={`flex items-center justify-center w-16 h-16 rounded-xl ${founder.color} border group-hover:scale-105 transition-transform duration-300`}>
-                      {founder.icon}
+                    <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-700 group-hover:border-gray-600 transition-all duration-300 group-hover:scale-105">
+                      <Image
+                        src={founder.image}
+                        alt={`${founder.name} - ${founder.position}`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 96px, 96px"
+                      />
                     </div>
                   </div>
                   <CardTitle className="text-2xl text-white mb-2">{founder.name}</CardTitle>
