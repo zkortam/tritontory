@@ -10,17 +10,10 @@ import {
   Volume2, 
   VolumeX, 
   Eye,
-  Menu,
-  Heart,
-  MessageCircle,
-  Share2,
-  ChevronUp,
-  ChevronDown,
-  Home,
-  Search
+  Calendar,
+  User
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import Link from "next/link";
 
 export default function TritonTodayPage() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -29,20 +22,15 @@ export default function TritonTodayPage() {
   const [selectedCategory] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [showControls, setShowControls] = useState(true);
-  const [showMenu, setShowMenu] = useState(false);
-  const [scrollOffset, setScrollOffset] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
 
+  const [isScrollLocked, setIsScrollLocked] = useState(true);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [showVideoPopup, setShowVideoPopup] = useState(false);
+  const [videoDurations, setVideoDurations] = useState<{ [key: string]: number }>({});
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
-  const controlsTimeoutRef = useRef<NodeJS.Timeout>();
-
-  // Check if it's a mobile device
-  useEffect(() => {
-    const mobileCheck = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    setIsMobile(mobileCheck);
-  }, []);
+  const popupVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     async function fetchVideos() {
@@ -66,7 +54,7 @@ export default function TritonTodayPage() {
     videoRefs.current.forEach((videoRef, index) => {
       if (videoRef && index !== currentVideoIndex) {
         videoRef.pause();
-        videoRef.currentTime = 0;
+        videoRef.currentTime = 0; // Reset to beginning
       }
     });
 
@@ -103,129 +91,142 @@ export default function TritonTodayPage() {
   const handleScroll = useCallback((direction: 'up' | 'down') => {
     if (direction === 'down' && currentVideoIndex < videos.length - 1) {
       setCurrentVideoIndex(prev => prev + 1);
+      // Scroll to next video
+      const nextVideo = document.querySelector(`[data-video-index="${currentVideoIndex + 1}"]`);
+      if (nextVideo) {
+        nextVideo.scrollIntoView({ behavior: 'smooth' });
+      }
     } else if (direction === 'up' && currentVideoIndex > 0) {
       setCurrentVideoIndex(prev => prev - 1);
+      // Scroll to previous video
+      const prevVideo = document.querySelector(`[data-video-index="${currentVideoIndex - 1}"]`);
+      if (prevVideo) {
+        prevVideo.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   }, [currentVideoIndex, videos.length]);
 
-  // Auto-hide controls
-  const resetControlsTimeout = () => {
-    setShowControls(true);
-    if (controlsTimeoutRef.current) {
-      clearTimeout(controlsTimeoutRef.current);
-    }
-    controlsTimeoutRef.current = setTimeout(() => {
-      setShowControls(false);
-    }, 3000);
-  };
-
-  // Touch/swipe handling - MOBILE ONLY
+  // Add intersection observer for autoplay when video enters viewport
   useEffect(() => {
-    if (!isMobile) return; // Only apply on mobile
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const videoIndex = parseInt(entry.target.getAttribute('data-video-index') || '0');
+          
+          if (entry.isIntersecting) {
+            // Video is now visible - play it and update current index
+            console.log(`Video ${videoIndex} is now visible`);
+            setCurrentVideoIndex(videoIndex);
+          } else {
+            // Video is not visible - pause it
+            console.log(`Video ${videoIndex} is no longer visible`);
+            const videoRef = videoRefs.current[videoIndex];
+            if (videoRef) {
+              videoRef.pause();
+              videoRef.currentTime = 0;
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.8, // Video must be 80% visible to be considered "in view"
+        rootMargin: '0px'
+      }
+    );
 
+    // Observe all video containers
+    const videoContainers = document.querySelectorAll('[data-video-index]');
+    videoContainers.forEach((container) => {
+      observer.observe(container);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [videos.length, handleScroll]);
+
+  // Add touch/swipe support
+  useEffect(() => {
     let startY = 0;
-    let startTime = 0;
-    let isDragging = false;
+    let endY = 0;
 
     const handleTouchStart = (e: TouchEvent) => {
       startY = e.touches[0].clientY;
-      startTime = Date.now();
-      isDragging = true;
-      resetControlsTimeout();
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging) return;
-      
-      const currentY = e.touches[0].clientY;
-      const diff = startY - currentY;
-      
-      // Apply elastic resistance
-      const resistance = 0.6;
-      const elasticDiff = diff * resistance;
-      
-      setScrollOffset(elasticDiff);
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (!isDragging) return;
-      
-      const endY = e.changedTouches[0].clientY;
-      const endTime = Date.now();
+      endY = e.changedTouches[0].clientY;
       const diff = startY - endY;
-      const duration = endTime - startTime;
       
-      isDragging = false;
-      
-      console.log('Touch end:', { diff, duration, threshold: Math.abs(diff) > 20, quick: duration < 300 });
-      
-      // Reset scroll offset immediately
-      setScrollOffset(0);
-      
-      // Only handle as swipe if it's quick and has enough distance
-      if (duration < 300 && Math.abs(diff) > 20) {
+      if (Math.abs(diff) > 50) { // Minimum swipe distance
         if (diff > 0) {
-          // Swipe up - go to next video
-          console.log('Swiping up to next video');
-          if (currentVideoIndex < videos.length - 1) {
-            setCurrentVideoIndex(currentVideoIndex + 1);
-          }
+          // Swipe up - next video
+          handleScroll('down');
         } else {
-          // Swipe down - go to previous video
-          console.log('Swiping down to previous video');
-          if (currentVideoIndex > 0) {
-            setCurrentVideoIndex(currentVideoIndex - 1);
-          }
+          // Swipe down - previous video
+          handleScroll('up');
         }
       }
     };
 
     const container = containerRef.current;
     if (container) {
-      container.addEventListener('touchstart', handleTouchStart, { passive: false });
-      container.addEventListener('touchmove', handleTouchMove, { passive: false });
-      container.addEventListener('touchend', handleTouchEnd, { passive: false });
+      container.addEventListener('touchstart', handleTouchStart);
+      container.addEventListener('touchend', handleTouchEnd);
     }
 
     return () => {
       if (container) {
         container.removeEventListener('touchstart', handleTouchStart);
-        container.removeEventListener('touchmove', handleTouchMove);
         container.removeEventListener('touchend', handleTouchEnd);
       }
-      if (controlsTimeoutRef.current) {
-        clearTimeout(controlsTimeoutRef.current);
-      }
     };
-  }, [currentVideoIndex, videos.length, handleScroll, isMobile]);
+  }, [currentVideoIndex, videos.length]);
 
-  // Lock body scroll for mobile - MOBILE ONLY
+  // Lock/unlock page scroll
   useEffect(() => {
-    if (!isMobile) return; // Only apply on mobile
-
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    document.body.style.height = '100%';
-
-    // Hide the navigation header on mobile for this page
-    const header = document.querySelector('header');
-    if (header) {
-      header.style.display = 'none';
+    if (isScrollLocked) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     }
 
     return () => {
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
-      document.body.style.height = '';
-      
-      // Restore header visibility when leaving the page
-      if (header) {
-        header.style.display = '';
-      }
     };
-  }, [isMobile]);
+  }, [isScrollLocked]);
+
+  const formatDuration = (seconds: number, videoIndex?: number, videoId?: string) => {
+    // If duration is 0 or undefined, try to get it from stored durations first
+    if ((!seconds || seconds === 0) && videoId && videoDurations[videoId]) {
+      seconds = videoDurations[videoId];
+    }
+    
+    // If still no duration, try to get it from the video element
+    if (!seconds || seconds === 0) {
+      if (videoIndex !== undefined) {
+        const videoElement = videoRefs.current[videoIndex];
+        if (videoElement && videoElement.duration && !isNaN(videoElement.duration)) {
+          seconds = videoElement.duration;
+        }
+      }
+    }
+    
+    // If still no valid duration, return "0:00"
+    if (!seconds || seconds === 0 || isNaN(seconds)) {
+      return "0:00";
+    }
+    
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
 
   const formatViews = (views: number) => {
     if (views >= 1000000) {
@@ -236,9 +237,22 @@ export default function TritonTodayPage() {
     return views.toString();
   };
 
+  const handleVideoSelect = (video: Video) => {
+    setSelectedVideo(video);
+    setShowVideoPopup(true);
+  };
+
+  const handleClosePopup = () => {
+    setShowVideoPopup(false);
+    setSelectedVideo(null);
+    if (popupVideoRef.current) {
+      popupVideoRef.current.pause();
+    }
+  };
+
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-today-500 mx-auto mb-4"></div>
           <p className="text-gray-400">Loading videos...</p>
@@ -249,279 +263,332 @@ export default function TritonTodayPage() {
 
   if (videos.length === 0) {
     return (
-      <div className="fixed inset-0 bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">No Videos Found</h1>
-          <p className="text-gray-400">No videos available in this category.</p>
+      <div className="min-h-screen bg-black text-white">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">No Videos Found</h1>
+            <p className="text-gray-400">No videos available in this category.</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  const currentVideo = videos[currentVideoIndex];
-
   return (
-    <div className="fixed inset-0 bg-black text-white overflow-hidden">
-      {/* Full Screen Video Container */}
+    <div className="min-h-screen bg-black text-white relative">
+      {/* Video Container */}
       <div 
         ref={containerRef}
-        className="relative w-full h-full"
-        onClick={resetControlsTimeout}
-        style={isMobile ? {
-          transform: `translateY(${scrollOffset}px)`,
-          transition: 'transform 0.2s ease-out'
-        } : {}}
+        className="video-container shorts-container scrollbar-hide"
       >
-        {/* Current Video */}
-        <div className="absolute inset-0">
-          <video
-            ref={(el) => {
-              videoRefs.current[currentVideoIndex] = el;
-            }}
-            src={currentVideo.videoUrl}
-            poster={currentVideo.thumbnailUrl}
-            className={`w-full h-full object-cover ${isMobile ? 'mobile-video-touch' : ''}`}
-            loop
-            playsInline
-            muted={isMuted}
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-            onEnded={() => {
-              if (currentVideoIndex < videos.length - 1) {
-                setCurrentVideoIndex(currentVideoIndex + 1);
-              }
-            }}
-            onLoadedMetadata={() => {
-              const videoElement = videoRefs.current[currentVideoIndex];
-              if (videoElement && currentVideoIndex === 0) {
-                videoElement.play().catch(() => {
-                  // Auto-play failed, that's okay
-                });
-              }
-            }}
-            onClick={isMobile ? handleVideoClick : undefined}
-          />
-        </div>
-
-        {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent" />
-
-        {/* Top Controls */}
-        <div className={`absolute top-0 left-0 right-0 z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          <div className="flex items-center justify-between p-4 pt-12">
-            {/* Back/Home Button */}
-            <Link 
-              href="/"
-              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
-            >
-              <Home className="w-5 h-5" />
-            </Link>
-
-            {/* Search Button - Only show on desktop */}
-            {!isMobile && (
-              <button className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
-                <Search className="w-5 h-5" />
-              </button>
-            )}
-
-            {/* Menu Button */}
-            <button 
-              onClick={() => setShowMenu(!showMenu)}
-              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Right Side Controls - TikTok Style */}
-        <div className={`absolute right-4 bottom-20 z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          <div className="flex flex-col items-center space-y-6">
-            {/* Like Button - Only show on desktop */}
-            {!isMobile && (
-              <button className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
-                <Heart className="w-6 h-6" />
-              </button>
-            )}
-
-            {/* Comment Button - Only show on desktop */}
-            {!isMobile && (
-              <button className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
-                <MessageCircle className="w-6 h-6" />
-              </button>
-            )}
-
-            {/* Share Button - Only show on desktop */}
-            {!isMobile && (
-              <button className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
-                <Share2 className="w-6 h-6" />
-              </button>
-            )}
-
-            {/* Mute Button - Only show on desktop */}
-            {!isMobile && (
-              <button
-                onClick={handleMuteToggle}
-                className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
-              >
-                {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Bottom Video Info */}
-        <div className={`absolute bottom-0 left-0 right-0 z-20 transition-opacity duration-300 ${isMobile ? 'mobile-video-info' : ''} ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          <div className="p-4 pb-8">
-            {/* Video Info */}
-            <div className="mb-4">
-              <h3 className="text-white font-semibold text-lg mb-2 line-clamp-2">
-                {currentVideo.title}
-              </h3>
-              <p className="text-gray-300 text-sm mb-3 line-clamp-2">
-                {currentVideo.description}
-              </p>
-              
-              {/* Author and Stats */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-today-500 to-today-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-xs">
-                      {currentVideo.authorName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="text-white font-medium text-sm">{currentVideo.authorName}</div>
-                    <div className="text-gray-400 text-xs">{formatDistanceToNow(currentVideo.publishedAt, { addSuffix: true })}</div>
-                  </div>
-                </div>
+        {videos.map((video, index) => (
+          <div
+            key={video.id}
+            data-video-index={index}
+            className="shorts-item"
+          >
+            <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-4xl mx-auto px-4 gap-6 h-full pb-[50px]">
+              {/* Video Player */}
+              <div className="relative flex-shrink-0">
+                <video
+                  ref={(el) => {
+                    videoRefs.current[index] = el;
+                  }}
+                  src={video.videoUrl}
+                  poster={video.thumbnailUrl}
+                  className="w-full max-w-sm h-[80vh] object-cover rounded-lg"
+                  loop
+                  playsInline
+                  muted={isMuted}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => {
+                    if (index < videos.length - 1) {
+                      setCurrentVideoIndex(index + 1);
+                    }
+                  }}
+                  onLoadedMetadata={() => {
+                    // Capture video duration when metadata is loaded
+                    const videoElement = videoRefs.current[index];
+                    if (videoElement && videoElement.duration && !isNaN(videoElement.duration)) {
+                      setVideoDurations(prev => ({
+                        ...prev,
+                        [video.id]: videoElement.duration
+                      }));
+                    }
+                    
+                    // Auto-play if this is the first video and no video is currently playing
+                    if (index === 0 && currentVideoIndex === 0) {
+                      if (videoElement) {
+                        videoElement.play().catch(() => {
+                          // Auto-play failed, that's okay
+                        });
+                      }
+                    }
+                  }}
+                />
                 
-                <div className="flex items-center space-x-4 text-sm text-gray-300">
-                  {/* View Count - Only show on desktop */}
-                  {!isMobile && (
-                    <div className="flex items-center space-x-1">
-                      <Eye className="w-4 h-4" />
-                      <span>{formatViews(currentVideo.views)}</span>
-                    </div>
-                  )}
+                {/* Video Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button
+                    onClick={handleVideoClick}
+                    className="bg-black/50 rounded-full p-4 opacity-0 hover:opacity-100 transition-opacity"
+                  >
+                    {isPlaying && index === currentVideoIndex ? (
+                      <Pause className="w-8 h-8 text-white" />
+                    ) : (
+                      <Play className="w-8 h-8 text-white" />
+                    )}
+                  </button>
+                </div>
+
+                {/* Mute Button */}
+                <button
+                  onClick={handleMuteToggle}
+                  className="absolute top-4 right-4 bg-black/50 rounded-full p-2 text-white"
+                >
+                  {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                </button>
+
+                {/* Duration Badge */}
+                <div className="absolute top-4 left-4">
+                  <Badge className="bg-black/80 text-white text-xs">
+                    {formatDuration(video.duration, index, video.id)}
+                  </Badge>
+                </div>
+
+                {/* Category Badge */}
+                <div className="absolute top-4 left-20">
                   <Badge className="bg-today-500/90 text-white text-xs">
-                    {currentVideo.category}
+                    {video.category}
                   </Badge>
                 </div>
               </div>
+
+              {/* Content Sidebar */}
+              <div className="flex flex-col justify-between h-[80vh] max-w-sm w-full md:w-auto">
+                {/* Video Info */}
+                <div className="flex-1">
+                  <h3 className="text-white font-semibold text-xl mb-3 line-clamp-3">
+                    {video.title}
+                  </h3>
+                  <p className="text-gray-300 text-sm mb-4 line-clamp-4 leading-relaxed">
+                    {video.description}
+                  </p>
+                  <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
+                    <div className="flex items-center gap-1">
+                      <User className="w-4 h-4" />
+                      <span>{video.authorName}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>{formatDistanceToNow(video.publishedAt, { addSuffix: true })}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Eye className="w-4 h-4" />
+                      <span>{formatViews(video.views)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            {/* Progress Bar - Only show on desktop */}
-            {!isMobile && (
-              <div className="w-full bg-white/20 rounded-full h-1 mb-4">
-                <div 
-                  className="bg-today-500 h-1 rounded-full transition-all duration-100"
-                  style={{ 
-                    width: `${(currentVideoIndex / (videos.length - 1)) * 100}%` 
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Navigation Dots - Only show on desktop */}
-            {!isMobile && (
-              <div className="flex justify-center space-x-2">
-                {videos.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentVideoIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                      index === currentVideoIndex ? 'bg-today-500' : 'bg-white/30'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
           </div>
-        </div>
-
-        {/* Center Play/Pause Button - Only show on desktop */}
-        {!isMobile && (
-          <div 
-            className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}
-            onClick={handleVideoClick}
-          >
-            <button className="w-16 h-16 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors mobile-touch-target">
-              {isPlaying ? (
-                <Pause className="w-8 h-8" />
-              ) : (
-                <Play className="w-8 h-8 ml-1" />
-              )}
-            </button>
-          </div>
-        )}
-
-        {/* Swipe Indicators - Only show on mobile */}
-        {isMobile && (
-          <div className={`absolute left-1/2 transform -translate-x-1/2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-            {currentVideoIndex > 0 && (
-              <div className="absolute top-20 text-white/60">
-                <ChevronUp className="w-6 h-6" />
-              </div>
-            )}
-            {currentVideoIndex < videos.length - 1 && (
-              <div className="absolute bottom-32 text-white/60">
-                <ChevronDown className="w-6 h-6" />
-              </div>
-            )}
-          </div>
-        )}
+        ))}
       </div>
 
-      {/* Floating Menu */}
-      {showMenu && (
-        <div className="absolute top-20 right-4 z-30">
-          <div className="bg-black/90 backdrop-blur-sm rounded-lg p-4 min-w-[200px] border border-gray-800">
-            <div className="space-y-3">
-              <Link 
-                href="/triton-tory"
-                className="flex items-center space-x-3 text-white hover:text-today-400 transition-colors mobile-touch-target py-2"
-                onClick={() => setShowMenu(false)}
+      {/* Control Buttons */}
+      <div className="fixed bottom-6 right-6 z-50 flex gap-3">
+        {/* View Library Button */}
+        <button
+          onClick={() => setShowLibrary(!showLibrary)}
+          className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full shadow-lg transition-colors duration-200 flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          View Library
+        </button>
+
+        {/* Unlock Scroll Button */}
+        <button
+          onClick={() => setIsScrollLocked(!isScrollLocked)}
+          className="bg-today-500 hover:bg-today-600 text-white px-4 py-2 rounded-full shadow-lg transition-colors duration-200 flex items-center gap-2"
+        >
+          {isScrollLocked ? (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+              </svg>
+              Unlock Scroll
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+              </svg>
+              Lock Scroll
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Library View */}
+      {showLibrary && (
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm overflow-y-auto">
+          <div className="container mx-auto px-4 py-8">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-bold text-white">Video Library</h2>
+              <button
+                onClick={() => setShowLibrary(false)}
+                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full transition-colors"
               >
-                <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">T</span>
+                Close
+              </button>
+            </div>
+
+            {/* Video Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+              {videos.map((video) => (
+                <div
+                  key={video.id}
+                  onClick={() => handleVideoSelect(video)}
+                  className="bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200"
+                >
+                  <div className="relative aspect-[9/16]">
+                    <video
+                      src={video.videoUrl}
+                      poster={video.thumbnailUrl}
+                      className="w-full h-full object-cover"
+                      muted
+                      loop
+                      playsInline
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    
+                    {/* Duration Badge */}
+                    <div className="absolute top-2 right-2">
+                      <Badge className="bg-black/80 text-white text-xs">
+                        {formatDuration(video.duration, videos.indexOf(video), video.id)}
+                      </Badge>
+                    </div>
+                    
+                    {/* View Count */}
+                    <div className="absolute top-2 left-2">
+                      <div className="flex items-center gap-1 text-white text-xs bg-black/50 px-2 py-1 rounded">
+                        <Eye className="w-3 h-3" />
+                        <span>{formatViews(video.views)}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Video Info Overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-white font-semibold text-sm mb-1 line-clamp-2">
+                        {video.title}
+                      </h3>
+                      <p className="text-gray-300 text-xs line-clamp-2 mb-2">
+                        {video.description}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-gray-400">
+                        <span className="truncate">{video.authorName}</span>
+                        <span>{formatDistanceToNow(video.publishedAt, { addSuffix: true })}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-sm">Triton Tory</span>
-              </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Popup */}
+      {showVideoPopup && selectedVideo && (
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="relative max-w-2xl w-full">
+            {/* Close Button */}
+            <button
+              onClick={handleClosePopup}
+              className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Video Player */}
+            <div className="relative">
+              <video
+                ref={popupVideoRef}
+                src={selectedVideo.videoUrl}
+                poster={selectedVideo.thumbnailUrl}
+                className="w-full aspect-[9/16] object-cover rounded-lg"
+                loop
+                playsInline
+                autoPlay
+                muted={isMuted}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+              />
               
-              <Link 
-                href="/triton-science"
-                className="flex items-center space-x-3 text-white hover:text-science-400 transition-colors mobile-touch-target py-2"
-                onClick={() => setShowMenu(false)}
+              {/* Video Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <button
+                  onClick={() => {
+                    if (popupVideoRef.current) {
+                      if (isPlaying) {
+                        popupVideoRef.current.pause();
+                        setIsPlaying(false);
+                      } else {
+                        popupVideoRef.current.play();
+                        setIsPlaying(true);
+                      }
+                    }
+                  }}
+                  className="bg-black/50 rounded-full p-4 opacity-0 hover:opacity-100 transition-opacity"
+                >
+                  {isPlaying ? (
+                    <Pause className="w-8 h-8 text-white" />
+                  ) : (
+                    <Play className="w-8 h-8 text-white" />
+                  )}
+                </button>
+              </div>
+
+              {/* Mute Button */}
+              <button
+                onClick={handleMuteToggle}
+                className="absolute top-4 left-4 bg-black/50 rounded-full p-2 text-white"
               >
-                <div className="w-6 h-6 bg-science-500 rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">S</span>
+                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+              </button>
+
+              {/* Duration Badge */}
+              <div className="absolute top-4 left-16">
+                <Badge className="bg-black/80 text-white text-xs">
+                  {formatDuration(selectedVideo.duration, videos.indexOf(selectedVideo), selectedVideo.id)}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Video Info */}
+            <div className="mt-4 text-white">
+              <h3 className="text-xl font-semibold mb-2">{selectedVideo.title}</h3>
+              <p className="text-gray-300 mb-4">{selectedVideo.description}</p>
+              <div className="flex items-center gap-4 text-sm text-gray-400">
+                <div className="flex items-center gap-1">
+                  <User className="w-4 h-4" />
+                  <span>{selectedVideo.authorName}</span>
                 </div>
-                <span className="text-sm">Science Journal</span>
-              </Link>
-              
-              <Link 
-                href="/triton-law"
-                className="flex items-center space-x-3 text-white hover:text-law-400 transition-colors mobile-touch-target py-2"
-                onClick={() => setShowMenu(false)}
-              >
-                <div className="w-6 h-6 bg-law-500 rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">L</span>
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>{formatDistanceToNow(selectedVideo.publishedAt, { addSuffix: true })}</span>
                 </div>
-                <span className="text-sm">Law Review</span>
-              </Link>
-              
-              <Link 
-                href="/playground"
-                className="flex items-center space-x-3 text-white hover:text-purple-400 transition-colors mobile-touch-target py-2"
-                onClick={() => setShowMenu(false)}
-              >
-                <div className="w-6 h-6 bg-purple-500 rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">P</span>
+                <div className="flex items-center gap-1">
+                  <Eye className="w-4 h-4" />
+                  <span>{formatViews(selectedVideo.views)}</span>
                 </div>
-                <span className="text-sm">Playground</span>
-              </Link>
+              </div>
             </div>
           </div>
         </div>
