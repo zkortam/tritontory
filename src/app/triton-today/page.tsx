@@ -83,49 +83,23 @@ export default function TritonTodayPage() {
     setIsScrolling(true);
     
     if (direction === 'down' && currentVideoIndex < videos.length - 1) {
-      // Animate scroll down
-      const startTime = performance.now();
-      const animateScroll = (currentTime: number) => {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / 300, 1); // 300ms animation
-        
-        // Elastic easing function
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        
-        setScrollOffset(-100 * easeOut);
-        
-        if (progress < 1) {
-          scrollAnimationRef.current = requestAnimationFrame(animateScroll);
-        } else {
-          setCurrentVideoIndex(prev => prev + 1);
-          setScrollOffset(0);
-          setIsScrolling(false);
-        }
-      };
+      // Simple animation for scroll down
+      setScrollOffset(-50);
       
-      scrollAnimationRef.current = requestAnimationFrame(animateScroll);
+      setTimeout(() => {
+        setCurrentVideoIndex(prev => prev + 1);
+        setScrollOffset(0);
+        setIsScrolling(false);
+      }, 150);
     } else if (direction === 'up' && currentVideoIndex > 0) {
-      // Animate scroll up
-      const startTime = performance.now();
-      const animateScroll = (currentTime: number) => {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / 300, 1); // 300ms animation
-        
-        // Elastic easing function
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        
-        setScrollOffset(100 * easeOut);
-        
-        if (progress < 1) {
-          scrollAnimationRef.current = requestAnimationFrame(animateScroll);
-        } else {
-          setCurrentVideoIndex(prev => prev - 1);
-          setScrollOffset(0);
-          setIsScrolling(false);
-        }
-      };
+      // Simple animation for scroll up
+      setScrollOffset(50);
       
-      scrollAnimationRef.current = requestAnimationFrame(animateScroll);
+      setTimeout(() => {
+        setCurrentVideoIndex(prev => prev - 1);
+        setScrollOffset(0);
+        setIsScrolling(false);
+      }, 150);
     } else {
       setIsScrolling(false);
     }
@@ -146,12 +120,10 @@ export default function TritonTodayPage() {
   useEffect(() => {
     let startY = 0;
     let startTime = 0;
-    let currentY = 0;
     let isDragging = false;
 
     const handleTouchStart = (e: TouchEvent) => {
       startY = e.touches[0].clientY;
-      currentY = startY;
       startTime = Date.now();
       isDragging = true;
       resetControlsTimeout();
@@ -160,7 +132,7 @@ export default function TritonTodayPage() {
     const handleTouchMove = (e: TouchEvent) => {
       if (!isDragging) return;
       
-      currentY = e.touches[0].clientY;
+      const currentY = e.touches[0].clientY;
       const diff = startY - currentY;
       
       // Apply elastic resistance
@@ -180,33 +152,22 @@ export default function TritonTodayPage() {
       
       isDragging = false;
       
+      // Reset scroll offset immediately
+      setScrollOffset(0);
+      
+      console.log('Touch end:', { diff, duration, threshold: Math.abs(diff) > 50, quick: duration < 300 });
+      
       // Only handle as swipe if it's quick and has enough distance
       if (duration < 300 && Math.abs(diff) > 50) {
         if (diff > 0) {
+          // Swipe up - go to next video
+          console.log('Swiping up to next video');
           handleScroll('down');
         } else {
+          // Swipe down - go to previous video
+          console.log('Swiping down to previous video');
           handleScroll('up');
         }
-      } else {
-        // Reset position with elastic animation
-        const resetStartTime = performance.now();
-        const startOffset = scrollOffset;
-        
-        const animateReset = (currentTime: number) => {
-          const elapsed = currentTime - resetStartTime;
-          const progress = Math.min(elapsed / 200, 1);
-          
-          // Elastic easing
-          const easeOut = 1 - Math.pow(1 - progress, 3);
-          
-          setScrollOffset(startOffset * (1 - easeOut));
-          
-          if (progress < 1) {
-            requestAnimationFrame(animateReset);
-          }
-        };
-        
-        requestAnimationFrame(animateReset);
       }
     };
 
@@ -230,7 +191,7 @@ export default function TritonTodayPage() {
         cancelAnimationFrame(scrollAnimationRef.current);
       }
     };
-  }, [currentVideoIndex, videos.length, handleScroll, scrollOffset]);
+  }, [currentVideoIndex, videos.length, handleScroll]);
 
   // Lock body scroll for mobile
   useEffect(() => {
@@ -291,7 +252,7 @@ export default function TritonTodayPage() {
         onClick={resetControlsTimeout}
         style={{
           transform: `translateY(${scrollOffset}px)`,
-          transition: isScrolling ? 'none' : 'transform 0.2s ease-out'
+          transition: 'transform 0.15s ease-out'
         }}
       >
         {/* Current Video */}
