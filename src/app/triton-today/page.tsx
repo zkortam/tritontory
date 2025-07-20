@@ -23,13 +23,11 @@ export default function TritonTodayPage() {
   const [showMenu, setShowMenu] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [nextVideoIndex, setNextVideoIndex] = useState<number | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
-  const scrollAnimationRef = useRef<number>();
 
   useEffect(() => {
     async function fetchVideos() {
@@ -86,65 +84,15 @@ export default function TritonTodayPage() {
     setIsTransitioning(true);
     
     if (direction === 'down' && currentVideoIndex < videos.length - 1) {
-      // Scroll to next video
-      const nextIndex = currentVideoIndex + 1;
-      setNextVideoIndex(nextIndex);
-      
-      // Animate current video up and next video in
-      const startTime = performance.now();
-      const animateScroll = (currentTime: number) => {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / 400, 1); // 400ms animation
-        
-        // Smooth easing
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        
-        // Move current video up and next video in
-        setScrollOffset(-100 * easeOut);
-        
-        if (progress < 1) {
-          scrollAnimationRef.current = requestAnimationFrame(animateScroll);
-        } else {
-          // Complete the transition
-          setCurrentVideoIndex(nextIndex);
-          setNextVideoIndex(null);
-          setScrollOffset(0);
-          setIsScrolling(false);
-          setIsTransitioning(false);
-        }
-      };
-      
-      scrollAnimationRef.current = requestAnimationFrame(animateScroll);
+      // Simple transition to next video
+      setCurrentVideoIndex(currentVideoIndex + 1);
+      setIsScrolling(false);
+      setIsTransitioning(false);
     } else if (direction === 'up' && currentVideoIndex > 0) {
-      // Scroll to previous video
-      const prevIndex = currentVideoIndex - 1;
-      setNextVideoIndex(prevIndex);
-      
-      // Animate current video down and previous video in
-      const startTime = performance.now();
-      const animateScroll = (currentTime: number) => {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / 400, 1); // 400ms animation
-        
-        // Smooth easing
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        
-        // Move current video down and previous video in
-        setScrollOffset(100 * easeOut);
-        
-        if (progress < 1) {
-          scrollAnimationRef.current = requestAnimationFrame(animateScroll);
-        } else {
-          // Complete the transition
-          setCurrentVideoIndex(prevIndex);
-          setNextVideoIndex(null);
-          setScrollOffset(0);
-          setIsScrolling(false);
-          setIsTransitioning(false);
-        }
-      };
-      
-      scrollAnimationRef.current = requestAnimationFrame(animateScroll);
+      // Simple transition to previous video
+      setCurrentVideoIndex(currentVideoIndex - 1);
+      setIsScrolling(false);
+      setIsTransitioning(false);
     } else {
       setIsScrolling(false);
       setIsTransitioning(false);
@@ -186,17 +134,6 @@ export default function TritonTodayPage() {
       const elasticDiff = diff * resistance;
       
       setScrollOffset(elasticDiff);
-      
-      // Prepare next video for transition
-      if (Math.abs(diff) > 10) {
-        if (diff > 0 && currentVideoIndex < videos.length - 1) {
-          // Swiping up - prepare next video
-          setNextVideoIndex(currentVideoIndex + 1);
-        } else if (diff < 0 && currentVideoIndex > 0) {
-          // Swiping down - prepare previous video
-          setNextVideoIndex(currentVideoIndex - 1);
-        }
-      }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
@@ -209,42 +146,26 @@ export default function TritonTodayPage() {
       
       isDragging = false;
       
-      console.log('Touch end:', { diff, duration, threshold: Math.abs(diff) > 50, quick: duration < 300 });
+      console.log('Touch end:', { diff, duration, threshold: Math.abs(diff) > 20, quick: duration < 300 });
+      
+      // Reset scroll offset immediately
+      setScrollOffset(0);
       
       // Only handle as swipe if it's quick and has enough distance
       if (duration < 300 && Math.abs(diff) > 20) {
         if (diff > 0) {
           // Swipe up - go to next video
           console.log('Swiping up to next video');
-          handleScroll('down');
+          if (currentVideoIndex < videos.length - 1) {
+            setCurrentVideoIndex(currentVideoIndex + 1);
+          }
         } else {
           // Swipe down - go to previous video
           console.log('Swiping down to previous video');
-          handleScroll('up');
-        }
-      } else {
-        // Reset position with elastic animation
-        const startOffset = scrollOffset;
-        const resetStartTime = performance.now();
-        
-        const animateReset = (currentTime: number) => {
-          const elapsed = currentTime - resetStartTime;
-          const progress = Math.min(elapsed / 200, 1);
-          
-          // Elastic easing
-          const easeOut = 1 - Math.pow(1 - progress, 3);
-          
-          setScrollOffset(startOffset * (1 - easeOut));
-          
-          if (progress < 1) {
-            requestAnimationFrame(animateReset);
-          } else {
-            setScrollOffset(0);
-            setNextVideoIndex(null);
+          if (currentVideoIndex > 0) {
+            setCurrentVideoIndex(currentVideoIndex - 1);
           }
-        };
-        
-        requestAnimationFrame(animateReset);
+        }
       }
     };
 
@@ -263,9 +184,6 @@ export default function TritonTodayPage() {
       }
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
-      }
-      if (scrollAnimationRef.current) {
-        cancelAnimationFrame(scrollAnimationRef.current);
       }
     };
   }, [currentVideoIndex, videos.length, handleScroll]);
@@ -319,7 +237,6 @@ export default function TritonTodayPage() {
   }
 
   const currentVideo = videos[currentVideoIndex];
-  const nextVideo = nextVideoIndex !== null ? videos[nextVideoIndex] : null;
 
   return (
     <div className="fixed inset-0 bg-black text-white overflow-hidden">
@@ -363,31 +280,6 @@ export default function TritonTodayPage() {
             onClick={handleVideoClick}
           />
         </div>
-
-        {/* Next Video (for smooth transitions) */}
-        {nextVideo && (
-          <div 
-            className="absolute inset-0"
-            style={{
-              transform: `translateY(${scrollOffset > 0 ? -100 : 100}%)`,
-              transition: 'none'
-            }}
-          >
-            <video
-              ref={(el) => {
-                if (nextVideoIndex !== null) {
-                  videoRefs.current[nextVideoIndex] = el;
-                }
-              }}
-              src={nextVideo.videoUrl}
-              poster={nextVideo.thumbnailUrl}
-              className="w-full h-full object-cover"
-              loop
-              playsInline
-              muted={true}
-            />
-          </div>
-        )}
 
         {/* Gradient Overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
