@@ -5,10 +5,19 @@ import { VideoService } from "@/lib/firebase-service";
 import { Video } from "@/lib/models";
 import { Badge } from "@/components/ui/badge";
 import { 
+  Play, 
+  Pause, 
+  Volume2, 
+  VolumeX, 
+  Eye,
   Menu,
+  Heart,
+  MessageCircle,
+  Share2,
   ChevronUp,
   ChevronDown,
-  Home
+  Home,
+  Search
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
@@ -19,15 +28,21 @@ export default function TritonTodayPage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Check if it's a mobile device
+  useEffect(() => {
+    const mobileCheck = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    setIsMobile(mobileCheck);
+  }, []);
 
   useEffect(() => {
     async function fetchVideos() {
@@ -77,27 +92,21 @@ export default function TritonTodayPage() {
     }
   };
 
-  const handleScroll = useCallback((direction: 'up' | 'down') => {
-    if (isScrolling || isTransitioning) return; // Prevent multiple scrolls
-    
-    setIsScrolling(true);
-    setIsTransitioning(true);
-    
-    if (direction === 'down' && currentVideoIndex < videos.length - 1) {
-      // Simple transition to next video
-      setCurrentVideoIndex(currentVideoIndex + 1);
-      setIsScrolling(false);
-      setIsTransitioning(false);
-    } else if (direction === 'up' && currentVideoIndex > 0) {
-      // Simple transition to previous video
-      setCurrentVideoIndex(currentVideoIndex - 1);
-      setIsScrolling(false);
-      setIsTransitioning(false);
-    } else {
-      setIsScrolling(false);
-      setIsTransitioning(false);
+  const handleMuteToggle = () => {
+    const currentVideo = videoRefs.current[currentVideoIndex];
+    if (currentVideo) {
+      currentVideo.muted = !isMuted;
+      setIsMuted(!isMuted);
     }
-  }, [currentVideoIndex, videos.length, isScrolling, isTransitioning]);
+  };
+
+  const handleScroll = useCallback((direction: 'up' | 'down') => {
+    if (direction === 'down' && currentVideoIndex < videos.length - 1) {
+      setCurrentVideoIndex(prev => prev + 1);
+    } else if (direction === 'up' && currentVideoIndex > 0) {
+      setCurrentVideoIndex(prev => prev - 1);
+    }
+  }, [currentVideoIndex, videos.length]);
 
   // Auto-hide controls
   const resetControlsTimeout = () => {
@@ -110,10 +119,8 @@ export default function TritonTodayPage() {
     }, 3000);
   };
 
-  // Touch/swipe handling with elastic effect - MOBILE ONLY
+  // Touch/swipe handling - MOBILE ONLY
   useEffect(() => {
-    // Check if it's a mobile device
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     if (!isMobile) return; // Only apply on mobile
 
     let startY = 0;
@@ -190,12 +197,10 @@ export default function TritonTodayPage() {
         clearTimeout(controlsTimeoutRef.current);
       }
     };
-  }, [currentVideoIndex, videos.length, handleScroll]);
+  }, [currentVideoIndex, videos.length, handleScroll, isMobile]);
 
   // Lock body scroll for mobile - MOBILE ONLY
   useEffect(() => {
-    // Check if it's a mobile device
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     if (!isMobile) return; // Only apply on mobile
 
     document.body.style.overflow = 'hidden';
@@ -220,7 +225,16 @@ export default function TritonTodayPage() {
         header.style.display = '';
       }
     };
-  }, []);
+  }, [isMobile]);
+
+  const formatViews = (views: number) => {
+    if (views >= 1000000) {
+      return `${(views / 1000000).toFixed(1)}M`;
+    } else if (views >= 1000) {
+      return `${(views / 1000).toFixed(1)}K`;
+    }
+    return views.toString();
+  };
 
   if (loading) {
     return (
@@ -246,19 +260,16 @@ export default function TritonTodayPage() {
 
   const currentVideo = videos[currentVideoIndex];
 
-  // Check if it's a mobile device
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
   return (
     <div className="fixed inset-0 bg-black text-white overflow-hidden">
       {/* Full Screen Video Container */}
       <div 
         ref={containerRef}
-        className="relative w-full h-full mobile-video-scroll"
+        className="relative w-full h-full"
         onClick={resetControlsTimeout}
         style={isMobile ? {
           transform: `translateY(${scrollOffset}px)`,
-          transition: isTransitioning ? 'none' : 'transform 0.2s ease-out'
+          transition: 'transform 0.2s ease-out'
         } : {}}
       >
         {/* Current Video */}
@@ -272,7 +283,7 @@ export default function TritonTodayPage() {
             className={`w-full h-full object-cover ${isMobile ? 'mobile-video-touch' : ''}`}
             loop
             playsInline
-            muted={false}
+            muted={isMuted}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             onEnded={() => {
@@ -296,32 +307,73 @@ export default function TritonTodayPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent" />
 
-        {/* Top Controls - Only show on mobile */}
-        {isMobile && (
-          <div className={`absolute top-0 left-0 right-0 z-20 transition-opacity duration-300 mobile-video-controls ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-            <div className="flex items-center justify-between p-4 pt-12">
-              {/* Back/Home Button */}
-              <Link 
-                href="/"
-                className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
-              >
-                <Home className="w-5 h-5" />
-              </Link>
+        {/* Top Controls */}
+        <div className={`absolute top-0 left-0 right-0 z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="flex items-center justify-between p-4 pt-12">
+            {/* Back/Home Button */}
+            <Link 
+              href="/"
+              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
+            >
+              <Home className="w-5 h-5" />
+            </Link>
 
-              {/* Menu Button */}
-              <button 
-                onClick={() => setShowMenu(!showMenu)}
-                className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
-              >
-                <Menu className="w-5 h-5" />
+            {/* Search Button - Only show on desktop */}
+            {!isMobile && (
+              <button className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
+                <Search className="w-5 h-5" />
               </button>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* Bottom Video Info - Mobile Style */}
+            {/* Menu Button */}
+            <button 
+              onClick={() => setShowMenu(!showMenu)}
+              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Right Side Controls - TikTok Style */}
+        <div className={`absolute right-4 bottom-20 z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="flex flex-col items-center space-y-6">
+            {/* Like Button - Only show on desktop */}
+            {!isMobile && (
+              <button className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
+                <Heart className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Comment Button - Only show on desktop */}
+            {!isMobile && (
+              <button className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
+                <MessageCircle className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Share Button - Only show on desktop */}
+            {!isMobile && (
+              <button className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target">
+                <Share2 className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Mute Button - Only show on desktop */}
+            {!isMobile && (
+              <button
+                onClick={handleMuteToggle}
+                className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
+              >
+                {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom Video Info */}
         <div className={`absolute bottom-0 left-0 right-0 z-20 transition-opacity duration-300 ${isMobile ? 'mobile-video-info' : ''} ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          <div className="p-4 pb-12">
+          <div className="p-4 pb-8">
             {/* Video Info */}
             <div className="mb-4">
               <h3 className="text-white font-semibold text-lg mb-2 line-clamp-2">
@@ -332,7 +384,7 @@ export default function TritonTodayPage() {
               </p>
               
               {/* Author and Stats */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-today-500 to-today-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-xs">
@@ -346,6 +398,13 @@ export default function TritonTodayPage() {
                 </div>
                 
                 <div className="flex items-center space-x-4 text-sm text-gray-300">
+                  {/* View Count - Only show on desktop */}
+                  {!isMobile && (
+                    <div className="flex items-center space-x-1">
+                      <Eye className="w-4 h-4" />
+                      <span>{formatViews(currentVideo.views)}</span>
+                    </div>
+                  )}
                   <Badge className="bg-today-500/90 text-white text-xs">
                     {currentVideo.category}
                   </Badge>
@@ -353,28 +412,70 @@ export default function TritonTodayPage() {
               </div>
             </div>
 
-            {/* Swipe Indicators - Only show on mobile */}
-            {isMobile && (
-              <div className={`absolute left-1/2 transform -translate-x-1/2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-                {currentVideoIndex > 0 && (
-                  <div className="absolute top-20 text-white/60">
-                    <ChevronUp className="w-6 h-6" />
-                  </div>
-                )}
-                {currentVideoIndex < videos.length - 1 && (
-                  <div className="absolute bottom-32 text-white/60">
-                    <ChevronDown className="w-6 h-6" />
-                  </div>
-                )}
+            {/* Progress Bar - Only show on desktop */}
+            {!isMobile && (
+              <div className="w-full bg-white/20 rounded-full h-1 mb-4">
+                <div 
+                  className="bg-today-500 h-1 rounded-full transition-all duration-100"
+                  style={{ 
+                    width: `${(currentVideoIndex / (videos.length - 1)) * 100}%` 
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Navigation Dots - Only show on desktop */}
+            {!isMobile && (
+              <div className="flex justify-center space-x-2">
+                {videos.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentVideoIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                      index === currentVideoIndex ? 'bg-today-500' : 'bg-white/30'
+                    }`}
+                  />
+                ))}
               </div>
             )}
           </div>
         </div>
 
+        {/* Center Play/Pause Button - Only show on desktop */}
+        {!isMobile && (
+          <div 
+            className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}
+            onClick={handleVideoClick}
+          >
+            <button className="w-16 h-16 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors mobile-touch-target">
+              {isPlaying ? (
+                <Pause className="w-8 h-8" />
+              ) : (
+                <Play className="w-8 h-8 ml-1" />
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Swipe Indicators - Only show on mobile */}
+        {isMobile && (
+          <div className={`absolute left-1/2 transform -translate-x-1/2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+            {currentVideoIndex > 0 && (
+              <div className="absolute top-20 text-white/60">
+                <ChevronUp className="w-6 h-6" />
+              </div>
+            )}
+            {currentVideoIndex < videos.length - 1 && (
+              <div className="absolute bottom-32 text-white/60">
+                <ChevronDown className="w-6 h-6" />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Floating Menu - Mobile Only */}
-      {isMobile && showMenu && (
+      {/* Floating Menu */}
+      {showMenu && (
         <div className="absolute top-20 right-4 z-30">
           <div className="bg-black/90 backdrop-blur-sm rounded-lg p-4 min-w-[200px] border border-gray-800">
             <div className="space-y-3">
