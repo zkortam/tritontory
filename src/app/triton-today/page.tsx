@@ -182,13 +182,13 @@ export default function TritonTodayPage() {
       const diff = startY - currentY;
       
       // Apply elastic resistance
-      const resistance = 0.3;
+      const resistance = 0.6;
       const elasticDiff = diff * resistance;
       
       setScrollOffset(elasticDiff);
       
       // Prepare next video for transition
-      if (Math.abs(diff) > 20) {
+      if (Math.abs(diff) > 10) {
         if (diff > 0 && currentVideoIndex < videos.length - 1) {
           // Swiping up - prepare next video
           setNextVideoIndex(currentVideoIndex + 1);
@@ -212,7 +212,7 @@ export default function TritonTodayPage() {
       console.log('Touch end:', { diff, duration, threshold: Math.abs(diff) > 50, quick: duration < 300 });
       
       // Only handle as swipe if it's quick and has enough distance
-      if (duration < 300 && Math.abs(diff) > 50) {
+      if (duration < 300 && Math.abs(diff) > 20) {
         if (diff > 0) {
           // Swipe up - go to next video
           console.log('Swiping up to next video');
