@@ -110,8 +110,12 @@ export default function TritonTodayPage() {
     }, 3000);
   };
 
-  // Touch/swipe handling with elastic effect
+  // Touch/swipe handling with elastic effect - MOBILE ONLY
   useEffect(() => {
+    // Check if it's a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (!isMobile) return; // Only apply on mobile
+
     let startY = 0;
     let startTime = 0;
     let isDragging = false;
@@ -188,8 +192,12 @@ export default function TritonTodayPage() {
     };
   }, [currentVideoIndex, videos.length, handleScroll]);
 
-  // Lock body scroll for mobile
+  // Lock body scroll for mobile - MOBILE ONLY
   useEffect(() => {
+    // Check if it's a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (!isMobile) return; // Only apply on mobile
+
     document.body.style.overflow = 'hidden';
     document.body.style.position = 'fixed';
     document.body.style.width = '100%';
@@ -238,6 +246,9 @@ export default function TritonTodayPage() {
 
   const currentVideo = videos[currentVideoIndex];
 
+  // Check if it's a mobile device
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
   return (
     <div className="fixed inset-0 bg-black text-white overflow-hidden">
       {/* Full Screen Video Container */}
@@ -245,10 +256,10 @@ export default function TritonTodayPage() {
         ref={containerRef}
         className="relative w-full h-full mobile-video-scroll"
         onClick={resetControlsTimeout}
-        style={{
+        style={isMobile ? {
           transform: `translateY(${scrollOffset}px)`,
           transition: isTransitioning ? 'none' : 'transform 0.2s ease-out'
-        }}
+        } : {}}
       >
         {/* Current Video */}
         <div className="absolute inset-0">
@@ -258,7 +269,7 @@ export default function TritonTodayPage() {
             }}
             src={currentVideo.videoUrl}
             poster={currentVideo.thumbnailUrl}
-            className="w-full h-full object-cover mobile-video-touch"
+            className={`w-full h-full object-cover ${isMobile ? 'mobile-video-touch' : ''}`}
             loop
             playsInline
             muted={false}
@@ -277,7 +288,7 @@ export default function TritonTodayPage() {
                 });
               }
             }}
-            onClick={handleVideoClick}
+            onClick={isMobile ? handleVideoClick : undefined}
           />
         </div>
 
@@ -286,28 +297,30 @@ export default function TritonTodayPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent" />
 
         {/* Top Controls - Only show on mobile */}
-        <div className={`absolute top-0 left-0 right-0 z-20 transition-opacity duration-300 mobile-video-controls ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          <div className="flex items-center justify-between p-4 pt-12">
-            {/* Back/Home Button */}
-            <Link 
-              href="/"
-              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
-            >
-              <Home className="w-5 h-5" />
-            </Link>
+        {isMobile && (
+          <div className={`absolute top-0 left-0 right-0 z-20 transition-opacity duration-300 mobile-video-controls ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="flex items-center justify-between p-4 pt-12">
+              {/* Back/Home Button */}
+              <Link 
+                href="/"
+                className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
+              >
+                <Home className="w-5 h-5" />
+              </Link>
 
-            {/* Menu Button */}
-            <button 
-              onClick={() => setShowMenu(!showMenu)}
-              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
+              {/* Menu Button */}
+              <button 
+                onClick={() => setShowMenu(!showMenu)}
+                className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Bottom Video Info - TikTok Style - Moved Higher */}
-        <div className={`absolute bottom-0 left-0 right-0 z-20 transition-opacity duration-300 mobile-video-info ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+        {/* Bottom Video Info - Mobile Style */}
+        <div className={`absolute bottom-0 left-0 right-0 z-20 transition-opacity duration-300 ${isMobile ? 'mobile-video-info' : ''} ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           <div className="p-4 pb-12">
             {/* Video Info */}
             <div className="mb-4">
@@ -318,7 +331,7 @@ export default function TritonTodayPage() {
                 {currentVideo.description}
               </p>
               
-              {/* Author and Stats - Moved Higher */}
+              {/* Author and Stats */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-today-500 to-today-600 rounded-full flex items-center justify-center">
@@ -340,26 +353,28 @@ export default function TritonTodayPage() {
               </div>
             </div>
 
-            {/* Swipe Indicators */}
-            <div className={`absolute left-1/2 transform -translate-x-1/2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-              {currentVideoIndex > 0 && (
-                <div className="absolute top-20 text-white/60">
-                  <ChevronUp className="w-6 h-6" />
-                </div>
-              )}
-              {currentVideoIndex < videos.length - 1 && (
-                <div className="absolute bottom-32 text-white/60">
-                  <ChevronDown className="w-6 h-6" />
-                </div>
-              )}
-            </div>
+            {/* Swipe Indicators - Only show on mobile */}
+            {isMobile && (
+              <div className={`absolute left-1/2 transform -translate-x-1/2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+                {currentVideoIndex > 0 && (
+                  <div className="absolute top-20 text-white/60">
+                    <ChevronUp className="w-6 h-6" />
+                  </div>
+                )}
+                {currentVideoIndex < videos.length - 1 && (
+                  <div className="absolute bottom-32 text-white/60">
+                    <ChevronDown className="w-6 h-6" />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
       </div>
 
       {/* Floating Menu - Mobile Only */}
-      {showMenu && (
+      {isMobile && showMenu && (
         <div className="absolute top-20 right-4 z-30">
           <div className="bg-black/90 backdrop-blur-sm rounded-lg p-4 min-w-[200px] border border-gray-800">
             <div className="space-y-3">
