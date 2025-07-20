@@ -5,10 +5,6 @@ import { VideoService } from "@/lib/firebase-service";
 import { Video } from "@/lib/models";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Play, 
-  Pause, 
-  Volume2, 
-  VolumeX, 
   Menu,
   ChevronUp,
   ChevronDown,
@@ -23,13 +19,15 @@ export default function TritonTodayPage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const [isScrolling, setIsScrolling] = useState(false);
 
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
+  const scrollAnimationRef = useRef<number>();
 
   useEffect(() => {
     async function fetchVideos() {
@@ -79,21 +77,59 @@ export default function TritonTodayPage() {
     }
   };
 
-  const handleMuteToggle = () => {
-    const currentVideo = videoRefs.current[currentVideoIndex];
-    if (currentVideo) {
-      currentVideo.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-
   const handleScroll = useCallback((direction: 'up' | 'down') => {
+    if (isScrolling) return; // Prevent multiple scrolls
+    
+    setIsScrolling(true);
+    
     if (direction === 'down' && currentVideoIndex < videos.length - 1) {
-      setCurrentVideoIndex(prev => prev + 1);
+      // Animate scroll down
+      const startTime = performance.now();
+      const animateScroll = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / 300, 1); // 300ms animation
+        
+        // Elastic easing function
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        
+        setScrollOffset(-100 * easeOut);
+        
+        if (progress < 1) {
+          scrollAnimationRef.current = requestAnimationFrame(animateScroll);
+        } else {
+          setCurrentVideoIndex(prev => prev + 1);
+          setScrollOffset(0);
+          setIsScrolling(false);
+        }
+      };
+      
+      scrollAnimationRef.current = requestAnimationFrame(animateScroll);
     } else if (direction === 'up' && currentVideoIndex > 0) {
-      setCurrentVideoIndex(prev => prev - 1);
+      // Animate scroll up
+      const startTime = performance.now();
+      const animateScroll = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / 300, 1); // 300ms animation
+        
+        // Elastic easing function
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        
+        setScrollOffset(100 * easeOut);
+        
+        if (progress < 1) {
+          scrollAnimationRef.current = requestAnimationFrame(animateScroll);
+        } else {
+          setCurrentVideoIndex(prev => prev - 1);
+          setScrollOffset(0);
+          setIsScrolling(false);
+        }
+      };
+      
+      scrollAnimationRef.current = requestAnimationFrame(animateScroll);
+    } else {
+      setIsScrolling(false);
     }
-  }, [currentVideoIndex, videos.length]);
+  }, [currentVideoIndex, videos.length, isScrolling]);
 
   // Auto-hide controls
   const resetControlsTimeout = () => {
@@ -106,22 +142,43 @@ export default function TritonTodayPage() {
     }, 3000);
   };
 
-  // Touch/swipe handling
+  // Touch/swipe handling with elastic effect
   useEffect(() => {
     let startY = 0;
     let startTime = 0;
+    let currentY = 0;
+    let isDragging = false;
 
     const handleTouchStart = (e: TouchEvent) => {
       startY = e.touches[0].clientY;
+      currentY = startY;
       startTime = Date.now();
+      isDragging = true;
       resetControlsTimeout();
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      
+      currentY = e.touches[0].clientY;
+      const diff = startY - currentY;
+      
+      // Apply elastic resistance
+      const resistance = 0.3;
+      const elasticDiff = diff * resistance;
+      
+      setScrollOffset(elasticDiff);
+    };
+
     const handleTouchEnd = (e: TouchEvent) => {
+      if (!isDragging) return;
+      
       const endY = e.changedTouches[0].clientY;
       const endTime = Date.now();
       const diff = startY - endY;
       const duration = endTime - startTime;
+      
+      isDragging = false;
       
       // Only handle as swipe if it's quick and has enough distance
       if (duration < 300 && Math.abs(diff) > 50) {
@@ -130,25 +187,50 @@ export default function TritonTodayPage() {
         } else {
           handleScroll('up');
         }
+      } else {
+        // Reset position with elastic animation
+        const resetStartTime = performance.now();
+        const startOffset = scrollOffset;
+        
+        const animateReset = (currentTime: number) => {
+          const elapsed = currentTime - resetStartTime;
+          const progress = Math.min(elapsed / 200, 1);
+          
+          // Elastic easing
+          const easeOut = 1 - Math.pow(1 - progress, 3);
+          
+          setScrollOffset(startOffset * (1 - easeOut));
+          
+          if (progress < 1) {
+            requestAnimationFrame(animateReset);
+          }
+        };
+        
+        requestAnimationFrame(animateReset);
       }
     };
 
     const container = containerRef.current;
     if (container) {
-      container.addEventListener('touchstart', handleTouchStart);
-      container.addEventListener('touchend', handleTouchEnd);
+      container.addEventListener('touchstart', handleTouchStart, { passive: false });
+      container.addEventListener('touchmove', handleTouchMove, { passive: false });
+      container.addEventListener('touchend', handleTouchEnd, { passive: false });
     }
 
     return () => {
       if (container) {
         container.removeEventListener('touchstart', handleTouchStart);
+        container.removeEventListener('touchmove', handleTouchMove);
         container.removeEventListener('touchend', handleTouchEnd);
       }
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
       }
+      if (scrollAnimationRef.current) {
+        cancelAnimationFrame(scrollAnimationRef.current);
+      }
     };
-  }, [currentVideoIndex, videos.length, handleScroll]);
+  }, [currentVideoIndex, videos.length, handleScroll, scrollOffset]);
 
   // Lock body scroll for mobile
   useEffect(() => {
@@ -205,8 +287,12 @@ export default function TritonTodayPage() {
       {/* Full Screen Video Container */}
       <div 
         ref={containerRef}
-        className="relative w-full h-full"
+        className="relative w-full h-full mobile-video-scroll"
         onClick={resetControlsTimeout}
+        style={{
+          transform: `translateY(${scrollOffset}px)`,
+          transition: isScrolling ? 'none' : 'transform 0.2s ease-out'
+        }}
       >
         {/* Current Video */}
         <div className="absolute inset-0">
@@ -216,10 +302,10 @@ export default function TritonTodayPage() {
             }}
             src={currentVideo.videoUrl}
             poster={currentVideo.thumbnailUrl}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover mobile-video-touch"
             loop
             playsInline
-            muted={isMuted}
+            muted={false}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             onEnded={() => {
@@ -235,6 +321,7 @@ export default function TritonTodayPage() {
                 });
               }
             }}
+            onClick={handleVideoClick}
           />
         </div>
 
@@ -243,7 +330,7 @@ export default function TritonTodayPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent" />
 
         {/* Top Controls - Only show on mobile */}
-        <div className={`absolute top-0 left-0 right-0 z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`absolute top-0 left-0 right-0 z-20 transition-opacity duration-300 mobile-video-controls ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           <div className="flex items-center justify-between p-4 pt-12">
             {/* Back/Home Button */}
             <Link 
@@ -263,22 +350,9 @@ export default function TritonTodayPage() {
           </div>
         </div>
 
-        {/* Right Side Controls - TikTok Style */}
-        <div className={`absolute right-4 bottom-20 z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          <div className="flex flex-col items-center space-y-6">
-            {/* Mute Button */}
-            <button
-              onClick={handleMuteToggle}
-              className="w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors mobile-touch-target"
-            >
-              {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Bottom Video Info - TikTok Style */}
-        <div className={`absolute bottom-0 left-0 right-0 z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          <div className="p-4 pb-8">
+        {/* Bottom Video Info - TikTok Style - Moved Higher */}
+        <div className={`absolute bottom-0 left-0 right-0 z-20 transition-opacity duration-300 mobile-video-info ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="p-4 pb-12">
             {/* Video Info */}
             <div className="mb-4">
               <h3 className="text-white font-semibold text-lg mb-2 line-clamp-2">
@@ -288,8 +362,8 @@ export default function TritonTodayPage() {
                 {currentVideo.description}
               </p>
               
-              {/* Author and Stats */}
-              <div className="flex items-center justify-between">
+              {/* Author and Stats - Moved Higher */}
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-today-500 to-today-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-xs">
@@ -324,20 +398,6 @@ export default function TritonTodayPage() {
               )}
             </div>
           </div>
-        </div>
-
-        {/* Center Play/Pause Button */}
-        <div 
-          className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}
-          onClick={handleVideoClick}
-        >
-          <button className="w-16 h-16 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors mobile-touch-target">
-            {isPlaying ? (
-              <Pause className="w-8 h-8" />
-            ) : (
-              <Play className="w-8 h-8 ml-1" />
-            )}
-          </button>
         </div>
 
       </div>

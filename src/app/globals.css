@@ -855,3 +855,42 @@ body.scroll-locked {
   .mobile-search-modal .mobile-search-item:active {
     background-color: #374151;
   }
+
+  /* Mobile TikTok-style video scroll effects */
+  .mobile-video-scroll {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-video-elastic {
+    transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .mobile-video-elastic:active {
+    transition: none;
+  }
+
+  /* Mobile video controls */
+  .mobile-video-controls {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .mobile-video-controls:active {
+    transform: scale(0.95);
+  }
+
+  /* Mobile video info positioning */
+  .mobile-video-info {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+
+  /* Mobile video touch feedback */
+  .mobile-video-touch {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .mobile-video-touch:active {
+    opacity: 0.8;
+  }
