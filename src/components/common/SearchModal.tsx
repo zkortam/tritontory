@@ -302,7 +302,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] max-w-[95vw] max-h-[90vh] p-0 bg-gray-900 border-gray-800 mobile-gpu-accelerated fixed inset-4 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] flex flex-col mobile-search-modal">
+      <DialogContent className="sm:max-w-[800px] max-w-[95vw] max-h-[90vh] p-0 bg-gray-900 border-gray-800 mobile-gpu-accelerated flex flex-col">
         <DialogHeader className="p-4 md:p-6 pb-0 flex-shrink-0">
           <DialogTitle className="sr-only">Search</DialogTitle>
         </DialogHeader>
