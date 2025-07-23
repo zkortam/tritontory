@@ -28,14 +28,16 @@ export function FollowButton({
 }: FollowButtonProps) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
     // Check if user is following this target
-    if (user) {
+    if (user && !error) {
       checkFollowStatus();
     }
-  }, [user, targetId, followType]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, targetId, followType, error]);
 
   const checkFollowStatus = async () => {
     if (!user) return;
@@ -49,6 +51,7 @@ export function FollowButton({
       setIsFollowing(following);
     } catch (error) {
       console.error("Error checking follow status:", error);
+      setError(true);
     }
   };
 
@@ -66,8 +69,10 @@ export function FollowButton({
         await UserProfileService.follow(user.uid, targetId, followType);
       }
       setIsFollowing(!isFollowing);
+      setError(false); // Reset error state on success
     } catch (error) {
       console.error("Error toggling follow:", error);
+      setError(true);
     } finally {
       setIsLoading(false);
     }
@@ -90,6 +95,11 @@ export function FollowButton({
       default: return 'Following';
     }
   };
+
+  // Don't render if there's an error to prevent crashes
+  if (error) {
+    return null;
+  }
 
   return (
     <Button

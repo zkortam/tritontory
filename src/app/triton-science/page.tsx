@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ResearchService } from "@/lib/firebase-service";
 import type { Research } from "@/lib/models";
+import { AnalyticsService } from "@/lib/analytics-service";
 import { 
   Microscope, 
   FlaskConical, 
@@ -24,12 +25,10 @@ import {
   FileText,
   Search,
   ArrowRight,
-  Star,
   Building,
   GraduationCap,
   Target,
-  Eye,
-  Download
+  Eye
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { calculateReadingTime } from "@/lib/utils";
@@ -40,6 +39,7 @@ export default function TritonSciencePage() {
   const [loading, setLoading] = useState(true);
   const [selectedDepartment] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [clickData, setClickData] = useState<Record<string, number>>({});
 
   useEffect(() => {
     async function fetchData() {
@@ -53,6 +53,23 @@ export default function TritonSciencePage() {
         // Fetch all research for filtering
         const allResearch = await ResearchService.getResearchArticles(undefined, false, 50);
         setResearch(allResearch);
+
+        // Fetch click data for all research articles
+        const clickDataMap: Record<string, number> = {};
+        for (const article of allResearch) {
+          try {
+            console.log(`Fetching analytics for research article: ${article.id}`);
+            const analytics = await AnalyticsService.getContentAnalytics(article.id);
+            console.log(`Analytics for ${article.id}:`, analytics);
+            clickDataMap[article.id] = analytics?.clicks || 0;
+          } catch (error) {
+            console.error(`Error fetching analytics for research article ${article.id}:`, error);
+            clickDataMap[article.id] = 0;
+          }
+        }
+        console.log('Final click data map:', clickDataMap);
+        setClickData(clickDataMap);
+
       } catch (error) {
         console.error("Error fetching research data:", error);
       } finally {
@@ -148,15 +165,7 @@ export default function TritonSciencePage() {
           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-700/50">
             <div className="flex items-center gap-1 text-xs text-gray-400">
               <Eye className="h-3 w-3" />
-              <span>{Math.floor(Math.random() * 500) + 100} views</span>
-            </div>
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              <Download className="h-3 w-3" />
-              <span>{Math.floor(Math.random() * 50) + 10} citations</span>
-            </div>
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              <Star className="h-3 w-3 text-yellow-500" />
-              <span>{Math.floor(Math.random() * 5) + 1}.{Math.floor(Math.random() * 9)}</span>
+              <span>{clickData[research.id] || 0} clicks</span>
             </div>
           </div>
         </CardContent>
@@ -202,7 +211,7 @@ export default function TritonSciencePage() {
             </div>
             <div className="flex items-center gap-1">
               <Eye className="h-3 w-3" />
-              <span>{Math.floor(Math.random() * 200) + 50}</span>
+              <span>{clickData[research.id] || 0} clicks</span>
             </div>
           </div>
         </div>

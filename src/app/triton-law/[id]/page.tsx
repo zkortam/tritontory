@@ -11,17 +11,23 @@ import { LegalService } from "@/lib/firebase-service";
 import { LegalArticle } from "@/lib/models";
 import { Comments } from "@/components/common/Comments";
 import { SocialShare } from "@/components/common/SocialShare";
-import { AnalyticsService } from "@/lib/analytics-service";
+import { AnalyticsService, generateSessionId } from "@/lib/analytics-service";
+// import { useAuth } from "@/lib/auth-context";
 import { ArrowLeft, Calendar, User, Tag, BookOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { calculateReadingTime } from "@/lib/utils";
 
 export default function LegalArticlePage() {
   const params = useParams();
+  // const { user: currentUser } = useAuth();
   const [article, setArticle] = useState<LegalArticle | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<LegalArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [analyticsError, setAnalyticsError] = useState(false);
+
+  // Temporarily disabled redirect hook to fix auto-redirect issue
+  // useRedirectOnAuth();
 
   useEffect(() => {
     async function fetchArticle() {
@@ -48,8 +54,8 @@ export default function LegalArticlePage() {
         // Filter out the current article
         setRelatedArticles(related.filter(a => a.id !== id));
 
-      } catch {
-        console.error("Error fetching legal article");
+      } catch (error) {
+        console.error("Error fetching legal article:", error);
         setError("Failed to load legal analysis");
       } finally {
         setLoading(false);
@@ -59,13 +65,21 @@ export default function LegalArticlePage() {
     fetchArticle();
   }, [params.id]);
 
-  // Track view on component mount
+  // Track click on component mount with error handling
   useEffect(() => {
-    if (article) {
-      const sessionId = AnalyticsService.generateSessionId();
-      AnalyticsService.trackView(article.id, 'legal', sessionId);
+    if (article && !analyticsError) {
+      const trackClick = async () => {
+        try {
+          const sessionId = generateSessionId();
+          await AnalyticsService.trackClick(article.id, 'legal', sessionId);
+        } catch (error) {
+          console.error("Analytics error:", error);
+          setAnalyticsError(true);
+        }
+      };
+      trackClick();
     }
-  }, [article]);
+  }, [article, analyticsError]);
 
   if (loading) {
     return (
@@ -165,7 +179,7 @@ export default function LegalArticlePage() {
               contentType="legal"
               title={article.title}
               description={article.abstract || ""}
-              url={window.location.href}
+              url={typeof window !== 'undefined' ? window.location.href : ''}
               image={article.coverImage}
             />
           </div>
@@ -199,7 +213,11 @@ export default function LegalArticlePage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {article.tags.map((tag, index) => (
-                <Badge key={index} variant="outline" className="border-gray-600 text-gray-300">
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:border-crimson-500 hover:text-crimson-500 cursor-pointer"
+                >
                   {tag}
                 </Badge>
               ))}
@@ -207,47 +225,51 @@ export default function LegalArticlePage() {
           </div>
         )}
 
-        <Separator className="my-8" />
-
-        {/* Comments */}
-        <div className="mb-12">
-          <Comments
-            contentId={article.id}
-            contentType="legal"
-          />
-        </div>
+        <Separator className="bg-gray-800 my-12" />
 
         {/* Related Articles */}
         {relatedArticles.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold mb-6">Related Legal Analyses</h2>
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">Related Legal Analysis</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {relatedArticles.map((relatedArticle) => (
-                <Link key={relatedArticle.id} href={`/triton-law/${relatedArticle.id}`}>
-                  <div className="group border border-gray-800 rounded-lg p-4 hover:border-crimson-500/50 transition-colors">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className="bg-crimson-500 text-white text-xs">
-                        {relatedArticle.category}
-                      </Badge>
-                    </div>
-                    <h3 className="font-semibold text-white group-hover:text-crimson-400 transition-colors line-clamp-2 mb-2">
-                      {relatedArticle.title}
-                    </h3>
-                    {relatedArticle.abstract && (
-                      <p className="text-sm text-gray-400 line-clamp-2 mb-3">
+                <Link
+                  key={relatedArticle.id}
+                  href={`/triton-law/${relatedArticle.id}`}
+                  className="group"
+                >
+                  <div className="bg-gray-900 rounded-lg overflow-hidden hover:bg-gray-800 transition-colors">
+                    {relatedArticle.coverImage && (
+                      <div className="relative aspect-video">
+                        <Image
+                          src={relatedArticle.coverImage}
+                          alt={relatedArticle.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <h3 className="font-semibold text-lg mb-2 group-hover:text-crimson-400 transition-colors">
+                        {relatedArticle.title}
+                      </h3>
+                      <p className="text-gray-400 text-sm mb-3">
                         {relatedArticle.abstract}
                       </p>
-                    )}
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span>{relatedArticle.authorName}</span>
-                      <span>{formatDistanceToNow(relatedArticle.publishedAt, { addSuffix: true })}</span>
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span>{relatedArticle.authorName}</span>
+                        <span>{formatDistanceToNow(relatedArticle.publishedAt, { addSuffix: true })}</span>
+                      </div>
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
-          </div>
+          </section>
         )}
+
+        {/* Comments */}
+        <Comments contentId={article.id} contentType="legal" />
       </article>
     </div>
   );

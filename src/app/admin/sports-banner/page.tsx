@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 import { SportBannerService } from '@/lib/firebase-service';
 import { SportBanner, SportBannerSettings } from '@/lib/models';
@@ -778,7 +779,7 @@ function BannerForm({ formData, setFormData, onSubmit, submitLabel }: BannerForm
               {getAllTeams().map((team) => (
                 <SelectItem key={team.id} value={team.id}>
                   <div className="flex items-center gap-2">
-                    <img src={team.logo} alt={team.name} className="w-4 h-4" />
+                    <Image src={team.logo} alt={team.name} width={16} height={16} className="w-4 h-4" />
                     {team.name}
                   </div>
                 </SelectItem>
@@ -800,7 +801,7 @@ function BannerForm({ formData, setFormData, onSubmit, submitLabel }: BannerForm
               {getAllTeams().map((team) => (
                 <SelectItem key={team.id} value={team.id}>
                   <div className="flex items-center gap-2">
-                    <img src={team.logo} alt={team.name} className="w-4 h-4" />
+                    <Image src={team.logo} alt={team.name} width={16} height={16} className="w-4 h-4" />
                     {team.name}
                   </div>
                 </SelectItem>

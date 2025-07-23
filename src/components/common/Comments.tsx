@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CustomAvatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -13,13 +13,14 @@ import {
 
   Edit, 
   Trash2,
-  User,
   Clock
 } from "lucide-react";
 import { CommentService } from "@/lib/firebase-service";
 import { Comment } from "@/lib/models";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
+import { getDoc, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface CommentsProps {
   contentId: string;
@@ -46,14 +47,17 @@ function CommentForm({ contentId, contentType, parentId, onCommentAdded, onCance
 
     setIsSubmitting(true);
     try {
+      console.log(`Adding comment for ${contentId} (${contentType})`);
       await CommentService.addComment(
         contentId,
         contentType,
         user.uid,
         user.displayName || user.email || "Anonymous",
         content.trim(),
-        parentId
+        parentId,
+        user.photoURL || undefined
       );
+      console.log('Comment added successfully, calling onCommentAdded callback');
       setContent("");
       onCommentAdded();
     } catch (error) {
@@ -75,12 +79,11 @@ function CommentForm({ contentId, contentType, parentId, onCommentAdded, onCance
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="flex gap-3">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={user.photoURL || undefined} />
-          <AvatarFallback>
-            <User className="h-4 w-4" />
-          </AvatarFallback>
-        </Avatar>
+        <CustomAvatar
+          name={user.displayName || user.email || ""}
+          imageUrl={user.photoURL || undefined}
+          size="sm"
+        />
         <div className="flex-1">
           <Textarea
             value={content}
@@ -134,6 +137,7 @@ function CommentItem({
   const [editContent, setEditContent] = useState(comment.content);
   const [replies, setReplies] = useState<Comment[]>([]);
   const [showReplies, setShowReplies] = useState(true);
+  const [profileImage, setProfileImage] = useState<string | undefined>(comment.authorProfileImage);
   const { user } = useAuth();
 
   // const isAuthor = user?.uid === comment.authorId;
@@ -151,7 +155,30 @@ function CommentItem({
     if (comment.replies && comment.replies.length > 0) {
       loadReplies();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comment.replies]);
+
+  // Fetch user profile image if not available in comment
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!comment.authorProfileImage && comment.authorId) {
+        try {
+          // Try to get user profile from Firestore
+          const userDoc = await getDoc(doc(db, "users", comment.authorId));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            if (userData.profileImage) {
+              setProfileImage(userData.profileImage);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [comment.authorId, comment.authorProfileImage]);
 
   const loadReplies = async () => {
     try {
@@ -225,12 +252,12 @@ function CommentItem({
       <Card className="bg-gray-800/50 border-gray-700">
         <CardContent className="p-4">
           <div className="flex gap-3">
-            <Avatar className="h-8 w-8 flex-shrink-0">
-              <AvatarImage src={comment.authorProfileImage} />
-              <AvatarFallback>
-                <User className="h-4 w-4" />
-              </AvatarFallback>
-            </Avatar>
+            <CustomAvatar
+              name={comment.authorName}
+              imageUrl={profileImage}
+              size="sm"
+              className="flex-shrink-0"
+            />
             
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
@@ -351,11 +378,13 @@ export function Comments({ contentId, contentType }: CommentsProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     try {
+      console.log(`Loading comments for ${contentId} (${contentType})`);
       setLoading(true);
       setError(null);
       const fetchedComments = await CommentService.getComments(contentId, contentType);
+      console.log(`Fetched ${fetchedComments.length} comments:`, fetchedComments);
       setComments(fetchedComments);
     } catch (err) {
       console.error("Error loading comments:", err);
@@ -363,11 +392,11 @@ export function Comments({ contentId, contentType }: CommentsProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [contentId, contentType]);
 
   useEffect(() => {
     loadComments();
-  }, [contentId, contentType, loadComments]);
+  }, [loadComments]);
 
   if (loading) {
     return (

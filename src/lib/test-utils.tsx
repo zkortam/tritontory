@@ -136,8 +136,8 @@ export const createMockComment = (overrides: Partial<Comment> = {}): Comment => 
 export const createMockContentAnalytics = (overrides: Partial<ContentAnalytics> = {}): ContentAnalytics => ({
   contentId: 'test-article-1',
   contentType: 'article',
-  views: 0,
-  uniqueViews: 0,
+  clicks: 0,
+  uniqueClicks: 0,
   shares: 0,
   likes: 0,
   comments: 0,

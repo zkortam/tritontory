@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/lib/auth-context";
+import { SurveyService, TEST_TYPES } from "@/lib/survey-service";
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -32,7 +34,7 @@ interface Question {
   reverse: boolean; // Whether to reverse score
 }
 
-interface Answer {
+interface Answer extends Record<string, unknown> {
   questionId: number;
   value: number; // 1-5 scale: 1 = Strongly Disagree, 5 = Strongly Agree
 }
@@ -54,12 +56,23 @@ interface Results {
 }
 
 export default function DarkTriadTest() {
+  const { user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState<Results | null>(null);
   const [timeStarted, setTimeStarted] = useState<Date | null>(null);
   const [timeCompleted, setTimeCompleted] = useState<Date | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [hasPreviousResult, setHasPreviousResult] = useState(false);
+  const [sharedResults, setSharedResults] = useState<{
+    personalityType: string;
+    overallDarkScore: number;
+    narcissismScore: number;
+    machiavellianismScore: number;
+    psychopathyScore: number;
+  } | null>(null);
+  const [isSharedView, setIsSharedView] = useState(false);
 
   const questions: Question[] = [
     // Narcissism Questions
@@ -100,10 +113,77 @@ export default function DarkTriadTest() {
   ];
 
   useEffect(() => {
-    if (!timeStarted) {
+    // Check for shared results in URL parameters
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const shared = urlParams.get('shared');
+      const personalityType = urlParams.get('personalityType');
+      const overallDarkScore = urlParams.get('overallDarkScore');
+      const narcissismScore = urlParams.get('narcissismScore');
+      const machiavellianismScore = urlParams.get('machiavellianismScore');
+      const psychopathyScore = urlParams.get('psychopathyScore');
+      
+      if (shared === 'true' && personalityType && overallDarkScore) {
+        setSharedResults({
+          personalityType: decodeURIComponent(personalityType),
+          overallDarkScore: parseInt(overallDarkScore),
+          narcissismScore: parseInt(narcissismScore || '0'),
+          machiavellianismScore: parseInt(machiavellianismScore || '0'),
+          psychopathyScore: parseInt(psychopathyScore || '0')
+        });
+        setIsSharedView(true);
+        setLoading(false);
+        return;
+      }
+    }
+
+    const checkPreviousResults = async () => {
+      if (user) {
+        try {
+          const hasCompleted = await SurveyService.hasCompletedSurvey(
+            user.uid,
+            TEST_TYPES.DARK_TRIAD
+          );
+          
+          if (hasCompleted) {
+            const savedResult = await SurveyService.getSurveyResult<Results>(
+              user.uid,
+              TEST_TYPES.DARK_TRIAD
+            );
+            
+            if (savedResult) {
+              setHasPreviousResult(true);
+              setResults(savedResult.results as unknown as Results);
+              setTimeStarted(savedResult.timeStarted);
+              setTimeCompleted(savedResult.timeCompleted);
+              setShowResults(true);
+            }
+          }
+        } catch (error) {
+          console.error("Error checking previous results:", error);
+        }
+      }
+      setLoading(false);
+    };
+
+    const loadStatistics = async () => {
+      try {
+        // const stats = await SurveyService.getTestStatistics(TEST_TYPES.DARK_TRIAD);
+        // setStatistics(stats); // This line was removed as per the edit hint
+      } catch (error) {
+        console.error("Error loading statistics:", error);
+      }
+    };
+
+    checkPreviousResults();
+    loadStatistics();
+  }, [user]);
+
+  useEffect(() => {
+    if (!timeStarted && !hasPreviousResult) {
       setTimeStarted(new Date());
     }
-  }, [timeStarted]);
+  }, [timeStarted, hasPreviousResult]);
 
   const handleAnswer = (value: number) => {
     const newAnswers = [...answers];
@@ -242,17 +322,178 @@ export default function DarkTriadTest() {
     };
   };
 
-  const handleFinish = () => {
-    setTimeCompleted(new Date());
+  const handleFinish = async () => {
+    const completedTime = new Date();
+    setTimeCompleted(completedTime);
     const calculatedResults = calculateResults();
     setResults(calculatedResults);
     setShowResults(true);
+
+    // Save results if user is authenticated
+    if (user && timeStarted) {
+      try {
+        await SurveyService.saveSurveyResult<Results>(
+          user.uid,
+          TEST_TYPES.DARK_TRIAD,
+          answers,
+          calculatedResults,
+          timeStarted,
+          completedTime
+        );
+        setHasPreviousResult(true);
+      } catch (error) {
+        console.error("Error saving survey results:", error);
+      }
+    }
+  };
+
+  const handleRetake = async () => {
+    // Delete previous results if user is authenticated
+    if (user && hasPreviousResult) {
+      try {
+        await SurveyService.deleteSurveyResult(
+          user.uid,
+          TEST_TYPES.DARK_TRIAD
+        );
+      } catch (error) {
+        console.error("Error deleting previous results:", error);
+      }
+    }
+
+    // Reset all state
+    setShowResults(false);
+    setCurrentQuestion(0);
+    setAnswers([]);
+    setResults(null);
+    setTimeStarted(new Date());
+    setTimeCompleted(null);
+    setHasPreviousResult(false);
+    setSharedResults(null); // Reset shared results state
+    setIsSharedView(false); // Reset shared view state
   };
 
   const currentAnswer = answers.find(a => a.questionId === questions[currentQuestion].id);
   const progress = ((currentQuestion + 1) / questions.length) * 100;
   const isLastQuestion = currentQuestion === questions.length - 1;
   const canProceed = currentAnswer !== undefined;
+
+  // Show loading state while checking for previous results
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show shared results view
+  if (isSharedView && sharedResults) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Link href="/playground" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-4">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Playground
+            </Link>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">Shared Dark Triad Results</h1>
+            <p className="text-gray-400">Someone shared their dark triad test results with you</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Shared Results Summary */}
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-6 w-6 text-purple-400" />
+                  Shared Dark Triad Profile
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-400 mb-2">{sharedResults.personalityType}</div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Overall Dark Score</span>
+                    <span className="text-lg font-bold text-purple-400">{sharedResults.overallDarkScore}%</span>
+                  </div>
+                  <Progress value={sharedResults.overallDarkScore} className="h-3" />
+                  
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="p-3 bg-red-500/20 rounded-lg">
+                      <div className="text-lg font-bold text-red-400">{sharedResults.narcissismScore}%</div>
+                      <div className="text-xs text-gray-400">Narcissism</div>
+                    </div>
+                    <div className="p-3 bg-orange-500/20 rounded-lg">
+                      <div className="text-lg font-bold text-orange-400">{sharedResults.machiavellianismScore}%</div>
+                      <div className="text-xs text-gray-400">Machiavellianism</div>
+                    </div>
+                    <div className="p-3 bg-yellow-500/20 rounded-lg">
+                      <div className="text-lg font-bold text-yellow-400">{sharedResults.psychopathyScore}%</div>
+                      <div className="text-xs text-gray-400">Psychopathy</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Take Test Yourself */}
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-6 w-6 text-purple-400" />
+                  Take the Test Yourself
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-gray-300">
+                  Curious about your own dark triad traits? Take the same test to discover your levels of narcissism, Machiavellianism, and psychopathy!
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Based on scientific research</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Only takes 5-10 minutes</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Get detailed analysis and recommendations</span>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => {
+                    setIsSharedView(false);
+                    setSharedResults(null);
+                    setShowResults(false);
+                    setCurrentQuestion(0);
+                    setAnswers([]);
+                    setResults(null);
+                    setTimeStarted(new Date());
+                    setTimeCompleted(null);
+                    setHasPreviousResult(false);
+                    setSharedResults(null); // Reset shared results state
+                    setIsSharedView(false); // Reset shared view state
+                  }}
+                  className="w-full bg-blue-500 hover:bg-blue-600"
+                >
+                  Take Dark Triad Test
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showResults && results) {
     return (
@@ -380,24 +621,17 @@ export default function DarkTriadTest() {
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button
-              onClick={() => {
-                setShowResults(false);
-                setCurrentQuestion(0);
-                setAnswers([]);
-                setResults(null);
-                setTimeStarted(null);
-                setTimeCompleted(null);
-              }}
+              onClick={handleRetake}
               className="bg-blue-500 hover:bg-blue-600"
             >
               <RotateCcw className="h-4 w-4 mr-2" />
-              Retake Test
+              {hasPreviousResult ? "Retake Test" : "Take Test Again"}
             </Button>
             <Button 
               onClick={() => {
-                const text = `Dark Triad Test Results:\n${results.personalityType}\nOverall Score: ${results.overallDarkScore}%\nNarcissism: ${results.narcissismScore}%\nMachiavellianism: ${results.machiavellianismScore}%\nPsychopathy: ${results.psychopathyScore}%`;
-                navigator.clipboard.writeText(text);
-                alert('Results copied to clipboard!');
+                const shareUrl = `${window.location.origin}/playground/dark-triad?shared=true&personalityType=${encodeURIComponent(results.personalityType)}&overallDarkScore=${results.overallDarkScore}&narcissismScore=${results.narcissismScore}&machiavellianismScore=${results.machiavellianismScore}&psychopathyScore=${results.psychopathyScore}`;
+                navigator.clipboard.writeText(shareUrl);
+                alert('Shareable link copied to clipboard!');
               }}
               variant="outline" 
               className="border-gray-600 hover:bg-gray-800"
@@ -454,6 +688,14 @@ export default function DarkTriadTest() {
               <span>Scientific</span>
             </div>
           </div>
+          
+          {!user && (
+            <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg max-w-md mx-auto">
+              <p className="text-yellow-300 text-sm text-center">
+                💡 You can take this test without signing in, but your results won&apos;t be saved.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Progress */}

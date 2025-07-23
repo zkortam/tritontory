@@ -38,6 +38,7 @@ export default function VideoPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [hasTrackedView, setHasTrackedView] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -100,6 +101,18 @@ export default function VideoPage() {
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
+    }
+  };
+
+  // Track video view when video starts playing
+  const trackVideoView = async () => {
+    if (video && !hasTrackedView) {
+      try {
+        await VideoService.incrementViews(video.id);
+        setHasTrackedView(true);
+      } catch (error) {
+        console.error("Error tracking video view:", error);
+      }
     }
   };
 
@@ -178,7 +191,11 @@ export default function VideoPage() {
                 playsInline
                 autoPlay
                 muted={isMuted}
-                onPlay={() => setIsPlaying(true)}
+                onPlay={() => {
+                  setIsPlaying(true);
+                  // Track view when video starts playing
+                  trackVideoView();
+                }}
                 onPause={() => setIsPlaying(false)}
               />
               

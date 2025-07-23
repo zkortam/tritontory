@@ -6,6 +6,7 @@ export interface Team {
   logo: string;
   primaryColor: string;
   secondaryColor: string;
+  instagram: string;
 }
 
 export interface Conference {
@@ -26,88 +27,98 @@ export const CONFERENCES: Conference[] = [
         conference: 'Big West',
         logo: '/triton.png',
         primaryColor: '#0066CC',
-        secondaryColor: '#FFD700'
+        secondaryColor: '#FFD700',
+        instagram: 'https://www.instagram.com/ucsdtritons/'
       },
       {
         id: 'ucsb',
         name: 'UC Santa Barbara',
         shortName: 'UCSB',
         conference: 'Big West',
-        logo: '/logos/ucsb.png',
+        logo: '/ucsb.png',
         primaryColor: '#003366',
-        secondaryColor: '#FFD700'
+        secondaryColor: '#FFD700',
+        instagram: 'https://www.instagram.com/ucsbathletics/'
       },
       {
         id: 'uci',
         name: 'UC Irvine',
         shortName: 'UCI',
         conference: 'Big West',
-        logo: '/logos/uci.png',
+        logo: '/uci.png',
         primaryColor: '#0066CC',
-        secondaryColor: '#FF6B35'
+        secondaryColor: '#FF6B35',
+        instagram: 'https://www.instagram.com/uciathletics/'
       },
       {
         id: 'ucr',
         name: 'UC Riverside',
         shortName: 'UCR',
         conference: 'Big West',
-        logo: '/logos/ucr.png',
+        logo: '/ucr.png',
         primaryColor: '#1E3A8A',
-        secondaryColor: '#F59E0B'
+        secondaryColor: '#F59E0B',
+        instagram: 'https://www.instagram.com/ucr_athletics/'
       },
       {
         id: 'ucd',
         name: 'UC Davis',
         shortName: 'UCD',
         conference: 'Big West',
-        logo: '/logos/ucd.png',
+        logo: '/ucd.webp',
         primaryColor: '#1E40AF',
-        secondaryColor: '#F59E0B'
+        secondaryColor: '#F59E0B',
+        instagram: 'https://www.instagram.com/ucdavisaggies/'
       },
       {
         id: 'csuf',
         name: 'Cal State Fullerton',
         shortName: 'CSUF',
         conference: 'Big West',
-        logo: '/logos/csuf.png',
+        logo: '/csuf.png',
         primaryColor: '#DC2626',
-        secondaryColor: '#F59E0B'
+        secondaryColor: '#F59E0B',
+        instagram: 'https://www.instagram.com/fullertontitans/'
       },
       {
         id: 'csulb',
         name: 'Long Beach State',
         shortName: 'CSULB',
         conference: 'Big West',
-        logo: '/logos/csulb.png',
+        logo: '/csulb.png',
         primaryColor: '#1E40AF',
-        secondaryColor: '#F59E0B'
+        secondaryColor: '#F59E0B',
+        instagram: 'https://www.instagram.com/longbeachstate/'
       },
       {
         id: 'csun',
         name: 'Cal State Northridge',
         shortName: 'CSUN',
         conference: 'Big West',
-        logo: '/logos/csun.png',
+        logo: '/csun.png',
         primaryColor: '#DC2626',
-        secondaryColor: '#000000'
+        secondaryColor: '#000000',
+        instagram: 'https://www.instagram.com/csunmatadors/'
       },
       {
         id: 'uh',
         name: 'Hawai\'i',
         shortName: 'UH',
         conference: 'Big West',
-        logo: '/logos/uh.png',
+        logo: '/hawaii.png.webp',
         primaryColor: '#1E40AF',
-        secondaryColor: '#F59E0B'
+        secondaryColor: '#F59E0B',
+        instagram: 'https://www.instagram.com/hawaiiathletics/'
       },
       {
         id: 'bakersfield',
         name: 'Cal State Bakersfield',
         shortName: 'CSUB',
         conference: 'Big West',
-        logo: '/logos/bakersfield.png',
+        logo: '/csubaker.webp',
         primaryColor: '#DC2626',
-        secondaryColor: '#000000'
+        secondaryColor: '#000000',
+        instagram: 'https://www.instagram.com/csub_athletics/'
       }
     ]
   },
@@ -120,36 +131,40 @@ export const CONFERENCES: Conference[] = [
         name: 'UCLA',
         shortName: 'UCLA',
         conference: 'Pac-12',
-        logo: '/logos/ucla.png',
+        logo: '/ucla.jpg',
         primaryColor: '#1E40AF',
-        secondaryColor: '#F59E0B'
+        secondaryColor: '#F59E0B',
+        instagram: 'https://www.instagram.com/uclabruins/'
       },
       {
         id: 'usc',
         name: 'USC',
         shortName: 'USC',
         conference: 'Pac-12',
-        logo: '/logos/usc.png',
+        logo: '/usc.webp',
         primaryColor: '#DC2626',
-        secondaryColor: '#F59E0B'
+        secondaryColor: '#F59E0B',
+        instagram: 'https://www.instagram.com/usc_trojans/'
       },
       {
         id: 'stanford',
         name: 'Stanford',
         shortName: 'STAN',
         conference: 'Pac-12',
-        logo: '/logos/stanford.png',
+        logo: '/stanford.png',
         primaryColor: '#DC2626',
-        secondaryColor: '#000000'
+        secondaryColor: '#000000',
+        instagram: 'https://www.instagram.com/stanfordcard/'
       },
       {
         id: 'cal',
         name: 'California',
         shortName: 'CAL',
         conference: 'Pac-12',
-        logo: '/logos/cal.png',
+        logo: '/ucb.png',
         primaryColor: '#1E40AF',
-        secondaryColor: '#F59E0B'
+        secondaryColor: '#F59E0B',
+        instagram: 'https://www.instagram.com/calathletics/'
       }
     ]
   },
@@ -162,18 +177,20 @@ export const CONFERENCES: Conference[] = [
         name: 'San Diego State',
         shortName: 'SDSU',
         conference: 'Mountain West',
-        logo: '/logos/sdsu.png',
+        logo: '/sdsu.png',
         primaryColor: '#1E40AF',
-        secondaryColor: '#F59E0B'
+        secondaryColor: '#F59E0B',
+        instagram: 'https://www.instagram.com/aztecathletics/'
       },
       {
         id: 'unlv',
         name: 'UNLV',
         shortName: 'UNLV',
         conference: 'Mountain West',
-        logo: '/logos/unlv.png',
+        logo: '/unlv.png',
         primaryColor: '#DC2626',
-        secondaryColor: '#000000'
+        secondaryColor: '#000000',
+        instagram: 'https://www.instagram.com/unlvathletics/'
       }
     ]
   },
@@ -186,18 +203,20 @@ export const CONFERENCES: Conference[] = [
         name: 'Gonzaga',
         shortName: 'GONZ',
         conference: 'WCC',
-        logo: '/logos/gonzaga.png',
+        logo: '/gonzaga.png',
         primaryColor: '#1E40AF',
-        secondaryColor: '#F59E0B'
+        secondaryColor: '#F59E0B',
+        instagram: 'https://www.instagram.com/zagathletics/'
       },
       {
         id: 'saint-marys',
         name: 'Saint Mary\'s',
         shortName: 'SMC',
         conference: 'WCC',
-        logo: '/logos/saint-marys.png',
+        logo: '/saintmarys.png',
         primaryColor: '#1E40AF',
-        secondaryColor: '#F59E0B'
+        secondaryColor: '#F59E0B',
+        instagram: 'https://www.instagram.com/smcgaels/'
       }
     ]
   }

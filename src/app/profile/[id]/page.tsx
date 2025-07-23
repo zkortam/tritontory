@@ -27,15 +27,17 @@ import {
 } from "lucide-react";
 import { UserProfileService } from "@/lib/firebase-service";
 import { UserProfile } from "@/lib/models";
-import { useAuth, useRedirectOnAuth } from "@/lib/auth-context";
+import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useCallback } from "react";
 
 export default function UserProfilePage() {
   const params = useParams();
   const userId = params.id as string;
   const { user: currentUser } = useAuth();
-  useRedirectOnAuth(); // Track current page for redirect after auth
+  // Temporarily disabled redirect hook to fix auto-redirect issue
+  // useRedirectOnAuth(); // Track current page for redirect after auth
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,11 +46,7 @@ export default function UserProfilePage() {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
-  useEffect(() => {
-    loadProfile();
-  }, [userId]);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -78,7 +76,11 @@ export default function UserProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, currentUser]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const handleFollow = async () => {
     if (!currentUser) return;

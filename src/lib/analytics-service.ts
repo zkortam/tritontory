@@ -14,6 +14,7 @@ import {
   limit as firestoreLimit,
   Timestamp,
   serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { ContentAnalytics } from "./models";
@@ -23,7 +24,7 @@ const convertTimestampToDate = (timestamp: Timestamp): Date => {
   return timestamp.toDate();
 };
 
-export interface ViewEvent {
+export interface ClickEvent {
   contentId: string;
   contentType: 'article' | 'video' | 'research' | 'legal';
   userId?: string;
@@ -38,7 +39,6 @@ export interface ViewEvent {
 export interface ShareEvent {
   contentId: string;
   contentType: 'article' | 'video' | 'research' | 'legal';
-  userId?: string;
   platform: 'twitter' | 'facebook' | 'linkedin' | 'email' | 'copy';
   timestamp: Date;
 }
@@ -51,9 +51,14 @@ export interface LikeEvent {
   timestamp: Date;
 }
 
+// Generate a unique session ID
+export const generateSessionId = (): string => {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
 export class AnalyticsService {
-  // Track a view event
-  static async trackView(
+  // Track a click event
+  static async trackClick(
     contentId: string,
     contentType: 'article' | 'video' | 'research' | 'legal',
     sessionId: string,
@@ -61,8 +66,10 @@ export class AnalyticsService {
     completionRate?: number
   ): Promise<void> {
     try {
-      // Create view event
-      const viewEvent: Omit<ViewEvent, 'timestamp'> = {
+      console.log(`Starting click tracking for ${contentId} (${contentType})`);
+      
+      // Create click event
+      const clickEvent: Omit<ClickEvent, 'timestamp'> = {
         contentId,
         contentType,
         sessionId,
@@ -72,15 +79,20 @@ export class AnalyticsService {
         ...(completionRate !== undefined && { completionRate }),
       };
 
-      await addDoc(collection(db, "view-events"), {
-        ...viewEvent,
+      console.log('Adding click event to Firestore...');
+      await addDoc(collection(db, "click-events"), {
+        ...clickEvent,
         timestamp: serverTimestamp(),
       });
+      console.log('Click event added successfully');
 
       // Update content analytics
-      await this.updateContentAnalytics(contentId, contentType, 'view');
+      console.log('Updating content analytics...');
+      await this.updateContentAnalytics(contentId, contentType, 'click');
+      console.log('Content analytics updated successfully');
     } catch (error) {
-      console.error("Error tracking view:", error);
+      console.error("Error tracking click:", error);
+      throw error; // Re-throw to let calling code handle it
     }
   }
 
@@ -140,43 +152,49 @@ export class AnalyticsService {
   private static async updateContentAnalytics(
     contentId: string,
     contentType: 'article' | 'video' | 'research' | 'legal',
-    action: 'view' | 'share' | 'like' | 'unlike'
+    action: 'click' | 'share' | 'like' | 'unlike'
   ): Promise<void> {
     try {
+      console.log(`Updating analytics for ${contentId}, action: ${action}`);
       const analyticsRef = doc(db, "content-analytics", contentId);
       const analyticsDoc = await getDoc(analyticsRef);
 
       if (analyticsDoc.exists()) {
+        console.log(`Analytics document exists for ${contentId}, updating...`);
         // Update existing analytics
         const updates = {
           updatedAt: serverTimestamp(),
-          ...(action === 'view' && { views: increment(1) }),
+          ...(action === 'click' && { clicks: increment(1) }),
           ...(action === 'share' && { shares: increment(1) }),
           ...(action === 'like' && { likes: increment(1) }),
           ...(action === 'unlike' && { likes: increment(-1) }),
         };
 
         await updateDoc(analyticsRef, updates);
+        console.log(`Analytics updated successfully for ${contentId}`);
       } else {
+        console.log(`No analytics document exists for ${contentId}, creating new one...`);
         // Create new analytics document
         const initialAnalytics: ContentAnalytics = {
           contentId,
           contentType,
-          views: action === 'view' ? 1 : 0,
-          uniqueViews: action === 'view' ? 1 : 0,
+          clicks: action === 'click' ? 1 : 0,
+          uniqueClicks: action === 'click' ? 1 : 0,
           shares: action === 'share' ? 1 : 0,
           likes: action === 'like' ? 1 : action === 'unlike' ? -1 : 0,
           comments: 0,
         };
 
-        await updateDoc(analyticsRef, {
+        await setDoc(analyticsRef, {
           ...initialAnalytics,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
+        console.log(`New analytics document created for ${contentId}`);
       }
     } catch (error) {
-      console.error("Error updating content analytics:", error);
+      console.error(`Error updating content analytics for ${contentId}:`, error);
+      throw error; // Re-throw to let calling code handle it
     }
   }
 
@@ -185,49 +203,31 @@ export class AnalyticsService {
     contentId: string
   ): Promise<ContentAnalytics | null> {
     try {
+      console.log(`Attempting to fetch analytics for content: ${contentId}`);
       const analyticsRef = doc(db, "content-analytics", contentId);
       const analyticsDoc = await getDoc(analyticsRef);
 
       if (analyticsDoc.exists()) {
         const data = analyticsDoc.data();
+        console.log(`Found analytics data for ${contentId}:`, data);
         return {
           ...data,
           contentId: analyticsDoc.id,
         } as ContentAnalytics;
       }
 
+      console.log(`No analytics document found for ${contentId}`);
       return null;
     } catch (error) {
-      console.error("Error fetching content analytics:", error);
+      console.error(`Error fetching content analytics for ${contentId}:`, error);
       return null;
-    }
-  }
-
-  // Get analytics for multiple content items
-  static async getMultipleContentAnalytics(
-    contentIds: string[]
-  ): Promise<ContentAnalytics[]> {
-    try {
-      const analytics: ContentAnalytics[] = [];
-
-      for (const contentId of contentIds) {
-        const contentAnalytics = await this.getContentAnalytics(contentId);
-        if (contentAnalytics) {
-          analytics.push(contentAnalytics);
-        }
-      }
-
-      return analytics;
-    } catch (error) {
-      console.error("Error fetching multiple content analytics:", error);
-      return [];
     }
   }
 
   // Get top performing content
   static async getTopContent(
     contentType: 'article' | 'video' | 'research' | 'legal',
-    metric: 'views' | 'shares' | 'likes' | 'comments',
+    metric: 'clicks' | 'shares' | 'likes' | 'comments',
     limit: number = 10
   ): Promise<ContentAnalytics[]> {
     try {
@@ -259,7 +259,7 @@ export class AnalyticsService {
 
   // Get analytics summary for admin dashboard
   static async getAnalyticsSummary(): Promise<{
-    totalViews: number;
+    totalClicks: number;
     totalShares: number;
     totalLikes: number;
     totalComments: number;
@@ -270,7 +270,7 @@ export class AnalyticsService {
       const analyticsQuery = collection(db, "content-analytics");
       const querySnapshot = await getDocs(analyticsQuery);
 
-      let totalViews = 0;
+      let totalClicks = 0;
       let totalShares = 0;
       let totalLikes = 0;
       let totalComments = 0;
@@ -283,16 +283,16 @@ export class AnalyticsService {
           contentId: doc.id,
         } as ContentAnalytics;
 
-        totalViews += analytics.views || 0;
+        totalClicks += analytics.clicks || 0;
         totalShares += analytics.shares || 0;
         totalLikes += analytics.likes || 0;
         totalComments += analytics.comments || 0;
         allAnalytics.push(analytics);
       });
 
-      // Get top content by views
+      // Get top content by clicks
       const topContent = allAnalytics
-        .sort((a, b) => (b.views || 0) - (a.views || 0))
+        .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
         .slice(0, 5);
 
       // Get recent activity (last 7 days)
@@ -302,7 +302,7 @@ export class AnalyticsService {
       const recentActivity = await this.getRecentActivity(sevenDaysAgo);
 
       return {
-        totalViews,
+        totalClicks,
         totalShares,
         totalLikes,
         totalComments,
@@ -312,7 +312,7 @@ export class AnalyticsService {
     } catch (error) {
       console.error("Error fetching analytics summary:", error);
       return {
-        totalViews: 0,
+        totalClicks: 0,
         totalShares: 0,
         totalLikes: 0,
         totalComments: 0,
@@ -327,21 +327,21 @@ export class AnalyticsService {
     try {
       const activities: Array<{type: string; contentId: string; contentType: string; timestamp: Date; platform?: string}> = [];
 
-      // Get recent views
-      const viewsQuery = collection(db, "view-events");
-      const viewsSnapshot = await getDocs(
+      // Get recent clicks
+      const clicksQuery = collection(db, "click-events");
+      const clicksSnapshot = await getDocs(
         query(
-          viewsQuery,
+          clicksQuery,
           where("timestamp", ">=", Timestamp.fromDate(since)),
           orderBy("timestamp", "desc"),
           firestoreLimit(20)
         )
       );
 
-      viewsSnapshot.forEach((doc) => {
+      clicksSnapshot.forEach((doc) => {
         const data = doc.data();
         activities.push({
-          type: 'view',
+          type: 'click',
           contentId: data.contentId,
           contentType: data.contentType,
           timestamp: convertTimestampToDate(data.timestamp),
@@ -380,8 +380,15 @@ export class AnalyticsService {
     }
   }
 
-  // Generate session ID
-  static generateSessionId(): string {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  // Legacy method for backward compatibility
+  static async trackView(
+    contentId: string,
+    contentType: 'article' | 'video' | 'research' | 'legal',
+    sessionId: string,
+    duration?: number,
+    completionRate?: number
+  ): Promise<void> {
+    // Redirect to trackClick for backward compatibility
+    return this.trackClick(contentId, contentType, sessionId, duration, completionRate);
   }
 } 

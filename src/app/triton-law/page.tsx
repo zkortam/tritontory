@@ -8,11 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { LegalService } from "@/lib/firebase-service";
 import type { LegalArticle } from "@/lib/models";
+import { AnalyticsService } from "@/lib/analytics-service";
 import { 
   Scale,
   Gavel, 
   BookOpen, 
-
+  Eye,
   Users,
   Calendar,
   TrendingUp,
@@ -33,6 +34,7 @@ export default function TritonLawPage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [clickData, setClickData] = useState<Record<string, number>>({});
 
   useEffect(() => {
     async function fetchData() {
@@ -46,6 +48,20 @@ export default function TritonLawPage() {
         // Fetch all legal articles for filtering
         const allLegal = await LegalService.getLegalArticles(undefined, false, 50);
         setLegalArticles(allLegal);
+
+        // Fetch click data for all legal articles
+        const clickDataMap: Record<string, number> = {};
+        for (const article of allLegal) {
+          try {
+            const analytics = await AnalyticsService.getContentAnalytics(article.id);
+            clickDataMap[article.id] = analytics?.clicks || 0;
+          } catch (error) {
+            console.error(`Error fetching analytics for legal article ${article.id}:`, error);
+            clickDataMap[article.id] = 0;
+          }
+        }
+        setClickData(clickDataMap);
+
       } catch (error) {
         console.error("Error fetching legal data:", error);
       } finally {
@@ -134,6 +150,10 @@ export default function TritonLawPage() {
                 <BookOpen className="h-3 w-3" />
                 <span>{calculateReadingTime(legal.content || legal.abstract || "")} min read</span>
               </div>
+              <div className="flex items-center gap-1">
+                <Eye className="h-3 w-3" />
+                <span>{clickData[legal.id] || 0} clicks</span>
+              </div>
             </div>
           </div>
           
@@ -178,6 +198,10 @@ export default function TritonLawPage() {
                     <div className="flex items-center gap-1">
               <BookOpen className="h-3 w-3" />
               <span>{calculateReadingTime(legal.content || legal.abstract || "")} min read</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              <span>{clickData[legal.id] || 0} clicks</span>
             </div>
 
           </div>

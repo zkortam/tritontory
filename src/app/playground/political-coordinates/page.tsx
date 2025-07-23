@@ -50,6 +50,7 @@ export default function PoliticalCoordinatesTest() {
   const [timeStarted, setTimeStarted] = useState<Date | null>(null);
   const [timeCompleted, setTimeCompleted] = useState<Date | null>(null);
 
+
   const questions: Question[] = [
     // Economic Questions (Left vs Right)
     { id: 1, text: "The government should provide free healthcare for all citizens", category: 'economic', weight: 1 },

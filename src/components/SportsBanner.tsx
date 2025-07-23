@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { TeamLogo } from '@/components/common/TeamLogo';
 import { ChevronDown, ChevronUp, Clock, Users, Trophy } from 'lucide-react';
 
 interface SportsBannerProps {
@@ -115,11 +116,12 @@ export default function SportsBanner({ style = 'detailed' }: SportsBannerProps) 
     // Show a placeholder when system is enabled but no active banner
     return (
       <Card className="bg-black border-0 mb-4 shadow-lg rounded-xl relative overflow-hidden">
-        {/* Dispersing white border effect */}
-        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/30 via-white/10 to-white/30 blur-sm"></div>
-        <div className="absolute inset-[3px] rounded-xl bg-black"></div>
-        {/* Gradient hue overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/10 to-red-500/20 rounded-xl"></div>
+        {/* Enhanced glow effect */}
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 via-purple-500/15 to-red-500/20 blur-xl"></div>
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/40 via-white/20 to-white/40 blur-sm"></div>
+        <div className="absolute inset-[2px] rounded-xl bg-black"></div>
+        {/* Inner glow overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/5 to-red-500/10 rounded-xl"></div>
         <CardContent className="p-6 relative z-10" style={{ minHeight: '100px' }}>
           <div className="text-center text-white">
             <span className="text-2xl">🏆</span>
@@ -134,18 +136,19 @@ export default function SportsBanner({ style = 'detailed' }: SportsBannerProps) 
   if (style === 'minimal') {
     return (
       <Card className="bg-black border-0 mb-4 shadow-lg rounded-xl relative overflow-hidden">
-        {/* Dispersing white border effect */}
-        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/30 via-white/10 to-white/30 blur-sm"></div>
-        <div className="absolute inset-[3px] rounded-xl bg-black"></div>
-        {/* Gradient hue overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/10 to-red-500/20 rounded-xl"></div>
+        {/* Enhanced glow effect */}
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 via-purple-500/15 to-red-500/20 blur-xl"></div>
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/40 via-white/20 to-white/40 blur-sm"></div>
+        <div className="absolute inset-[2px] rounded-xl bg-black"></div>
+        {/* Inner glow overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/5 to-red-500/10 rounded-xl"></div>
         <CardContent className="p-6 relative z-10" style={{ minHeight: '100px' }}>
           {/* Main Score Row */}
           <div className="flex items-center justify-between text-white mb-4">
             {/* Triton Logo and Score */}
             <div className="flex flex-col items-center gap-1">
               <div className="flex items-center gap-2">
-                <img src="/triton.png" alt="Triton" className="w-8 h-8" />
+                <TeamLogo teamId="ucsd" size="sm" clickable={true} />
                 <span className="text-2xl font-bold">{banner.homeScore}</span>
               </div>
               <div className="text-sm font-medium text-white">UC San Diego</div>
@@ -158,7 +161,7 @@ export default function SportsBanner({ style = 'detailed' }: SportsBannerProps) 
             <div className="flex flex-col items-center gap-1">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold">{banner.awayScore}</span>
-                <span className="text-2xl">{getSportIcon(banner.sport)}</span>
+                <TeamLogo teamId={banner.awayTeamId} size="sm" clickable={true} />
               </div>
               <div className="text-sm font-medium text-white">{getTeamById(banner.awayTeamId)?.name || 'Unknown'}</div>
             </div>
@@ -188,11 +191,12 @@ export default function SportsBanner({ style = 'detailed' }: SportsBannerProps) 
 
   return (
     <Card className="bg-black border-0 mb-4 shadow-lg rounded-xl relative overflow-hidden">
-      {/* Dispersing white border effect */}
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/30 via-white/10 to-white/30 blur-sm"></div>
-      <div className="absolute inset-[3px] rounded-xl bg-black"></div>
-      {/* Gradient hue overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/10 to-red-500/20 rounded-xl"></div>
+      {/* Enhanced glow effect */}
+      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 via-purple-500/15 to-red-500/20 blur-xl"></div>
+      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/40 via-white/20 to-white/40 blur-sm"></div>
+      <div className="absolute inset-[2px] rounded-xl bg-black"></div>
+      {/* Inner glow overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/5 to-red-500/10 rounded-xl"></div>
       <CardContent className="p-6 relative z-10" style={{ minHeight: '100px' }}>
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
@@ -219,7 +223,7 @@ export default function SportsBanner({ style = 'detailed' }: SportsBannerProps) 
         <div className="flex items-center justify-between mb-2">
           <div className="text-center flex-1">
             <div className="flex items-center justify-center gap-2 mb-1">
-              <img src="/triton.png" alt="Triton" className="w-12 h-12" />
+              <TeamLogo teamId="ucsd" size="md" clickable={true} />
               <div className="text-5xl font-bold text-blue-400">{banner.homeScore}</div>
             </div>
             <div className="text-sm font-medium text-white">UC San Diego</div>
@@ -239,7 +243,7 @@ export default function SportsBanner({ style = 'detailed' }: SportsBannerProps) 
           <div className="text-center flex-1">
             <div className="flex items-center justify-center gap-2 mb-1">
               <div className="text-5xl font-bold text-red-400">{banner.awayScore}</div>
-              <span className="text-4xl">{getSportIcon(banner.sport)}</span>
+              <TeamLogo teamId={banner.awayTeamId} size="md" clickable={true} />
             </div>
             <div className="text-sm font-medium text-white">{getTeamById(banner.awayTeamId)?.name || 'Unknown'}</div>
           </div>

@@ -26,17 +26,23 @@ export function LikeButton({
   variant = 'ghost',
   className
 }: LikeButtonProps) {
-  const [likes, setLikes] = useState(initialLikes);
+  // Ensure likes is always a valid number
+  const [likes, setLikes] = useState(() => {
+    const validLikes = typeof initialLikes === 'number' && !isNaN(initialLikes) ? initialLikes : 0;
+    return validLikes;
+  });
   const [hasLiked, setHasLiked] = useState(initialHasLiked);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
     // Check if user has liked this content
-    if (user) {
+    if (user && !error) {
       checkLikeStatus();
     }
-  }, [user, contentId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, contentId, error]);
 
   const checkLikeStatus = async () => {
     if (!user) return;
@@ -46,6 +52,7 @@ export function LikeButton({
       setHasLiked(liked);
     } catch (error) {
       console.error("Error checking like status:", error);
+      setError(true);
     }
   };
 
@@ -60,13 +67,15 @@ export function LikeButton({
       await EnhancedContentService.toggleLike(contentId, contentType, user.uid);
       
       // Optimistically update UI
-      setLikes(prev => hasLiked ? prev - 1 : prev + 1);
+      setLikes(prev => hasLiked ? Math.max(0, prev - 1) : prev + 1);
       setHasLiked(!hasLiked);
+      setError(false); // Reset error state on success
     } catch (error) {
       console.error("Error toggling like:", error);
       // Revert optimistic update on error
-      setLikes(prev => hasLiked ? prev + 1 : prev - 1);
+      setLikes(prev => hasLiked ? prev + 1 : Math.max(0, prev - 1));
       setHasLiked(hasLiked);
+      setError(true);
     } finally {
       setIsLoading(false);
     }
@@ -79,6 +88,11 @@ export function LikeButton({
   };
 
   const buttonSize = size === 'md' ? 'default' : size;
+
+  // Don't render if there's an error to prevent crashes
+  if (error) {
+    return null;
+  }
 
   return (
     <Button
@@ -98,11 +112,9 @@ export function LikeButton({
           iconSizes[size],
           hasLiked && "fill-current",
           isLoading && "animate-pulse"
-        )} 
+        )}
       />
-      <span className="font-medium">
-        {likes.toLocaleString()}
-      </span>
+      <span>{likes}</span>
     </Button>
   );
 } 

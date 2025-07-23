@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/lib/auth-context";
+import { SurveyService, TEST_TYPES } from "@/lib/survey-service";
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -33,7 +35,7 @@ interface Question {
   reverse: boolean;
 }
 
-interface Answer {
+interface Answer extends Record<string, unknown> {
   questionId: number;
   value: number; // 1-5 scale: 1 = Strongly Disagree, 5 = Strongly Agree
 }
@@ -55,12 +57,23 @@ interface Results {
 }
 
 export default function LeadershipTest() {
+  const { user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState<Results | null>(null);
   const [timeStarted, setTimeStarted] = useState<Date | null>(null);
   const [timeCompleted, setTimeCompleted] = useState<Date | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [hasPreviousResult, setHasPreviousResult] = useState(false);
+  const [sharedResults, setSharedResults] = useState<{
+    leadershipLevel: string;
+    overallLeadership: number;
+    visionaryLeadership: number;
+    transformationalLeadership: number;
+    servantLeadership: number;
+  } | null>(null);
+  const [isSharedView, setIsSharedView] = useState(false);
 
   const questions: Question[] = [
     // Autocratic Leadership
@@ -100,10 +113,79 @@ export default function LeadershipTest() {
   ];
 
   useEffect(() => {
-    if (!timeStarted) {
+    // Check for shared results in URL parameters
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const shared = urlParams.get('shared');
+      const primaryStyle = urlParams.get('primaryStyle');
+      const secondaryStyle = urlParams.get('secondaryStyle');
+      const autocratic = urlParams.get('autocratic');
+      const democratic = urlParams.get('democratic');
+      const laissezFaire = urlParams.get('laissezFaire');
+      const transformational = urlParams.get('transformational');
+      // const servant = urlParams.get('servant');
+      
+      if (shared === 'true' && primaryStyle && secondaryStyle) {
+        setSharedResults({
+          leadershipLevel: decodeURIComponent(primaryStyle),
+          overallLeadership: parseInt(autocratic || '0'),
+          visionaryLeadership: parseInt(democratic || '0'),
+          transformationalLeadership: parseInt(laissezFaire || '0'),
+          servantLeadership: parseInt(transformational || '0')
+        });
+        setIsSharedView(true);
+        setLoading(false);
+        return;
+      }
+    }
+
+    const checkPreviousResults = async () => {
+      if (user) {
+        try {
+          const hasCompleted = await SurveyService.hasCompletedSurvey(
+            user.uid,
+            TEST_TYPES.LEADERSHIP_TEST
+          );
+          
+          if (hasCompleted) {
+            const savedResult = await SurveyService.getSurveyResult<Results>(
+              user.uid,
+              TEST_TYPES.LEADERSHIP_TEST
+            );
+            
+            if (savedResult) {
+              setHasPreviousResult(true);
+              setResults(savedResult.results as unknown as Results);
+              setTimeStarted(savedResult.timeStarted);
+              setTimeCompleted(savedResult.timeCompleted);
+              setShowResults(true);
+            }
+          }
+        } catch (error) {
+          console.error("Error checking previous results:", error);
+        }
+      }
+      setLoading(false);
+    };
+
+    const loadStatistics = async () => {
+      try {
+        // const stats = await SurveyService.getTestStatistics(TEST_TYPES.LEADERSHIP_TEST);
+        // setStatistics(stats); // This line was removed as per the new_code
+      } catch (error) {
+        console.error("Error loading statistics:", error);
+      }
+    };
+
+    checkPreviousResults();
+    loadStatistics();
+  }, [user]);
+
+  useEffect(() => {
+    if (!timeStarted && !hasPreviousResult) {
       setTimeStarted(new Date());
     }
-  }, [timeStarted]);
+  }, [timeStarted, hasPreviousResult]);
 
   const handleAnswer = (value: number) => {
     const newAnswers = [...answers];
@@ -346,17 +428,179 @@ export default function LeadershipTest() {
     };
   };
 
-  const handleFinish = () => {
-    setTimeCompleted(new Date());
+  const handleFinish = async () => {
+    const completedTime = new Date();
+    setTimeCompleted(completedTime);
     const calculatedResults = calculateResults();
     setResults(calculatedResults);
     setShowResults(true);
+
+    // Save results if user is authenticated
+    if (user && timeStarted) {
+      try {
+        await SurveyService.saveSurveyResult<Results>(
+          user.uid,
+          TEST_TYPES.LEADERSHIP_TEST,
+          answers,
+          calculatedResults,
+          timeStarted,
+          completedTime
+        );
+        setHasPreviousResult(true);
+      } catch (error) {
+        console.error("Error saving survey results:", error);
+      }
+    }
+  };
+
+  const handleRetake = async () => {
+    // Delete previous results if user is authenticated
+    if (user && hasPreviousResult) {
+      try {
+        await SurveyService.deleteSurveyResult(
+          user.uid,
+          TEST_TYPES.LEADERSHIP_TEST
+        );
+      } catch (error) {
+        console.error("Error deleting previous results:", error);
+      }
+    }
+
+    // Reset all state
+    setShowResults(false);
+    setCurrentQuestion(0);
+    setAnswers([]);
+    setResults(null);
+    setTimeStarted(new Date());
+    setTimeCompleted(null);
+    setHasPreviousResult(false);
+    setSharedResults(null); // Reset shared results state
+    setIsSharedView(false); // Reset shared view state
   };
 
   const currentAnswer = answers.find(a => a.questionId === questions[currentQuestion].id);
   const progress = ((currentQuestion + 1) / questions.length) * 100;
   const isLastQuestion = currentQuestion === questions.length - 1;
   const canProceed = currentAnswer !== undefined;
+
+  // Show loading state while checking for previous results
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show shared results view
+  if (isSharedView && sharedResults) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Link href="/playground" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-4">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Playground
+            </Link>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">Shared Leadership Style Results</h1>
+            <p className="text-gray-400">Someone shared their leadership style test results with you</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Shared Results Summary */}
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-6 w-6 text-yellow-400" />
+                  Shared Leadership Profile
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-yellow-400 mb-2">{sharedResults.leadershipLevel}</div>
+                  <div className="text-lg text-gray-300 mb-2">Primary Style</div>
+                  <div className="text-lg text-blue-400">Secondary Style</div>
+                  <div className="text-sm text-gray-400">Secondary Style</div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="grid grid-cols-5 gap-2 text-center">
+                    <div className="p-2 bg-red-500/20 rounded">
+                      <div className="text-sm font-bold text-red-400">{sharedResults.overallLeadership}%</div>
+                      <div className="text-xs text-gray-400">Overall Leadership</div>
+                    </div>
+                    <div className="p-2 bg-blue-500/20 rounded">
+                      <div className="text-sm font-bold text-blue-400">{sharedResults.visionaryLeadership}%</div>
+                      <div className="text-xs text-gray-400">Visionary</div>
+                    </div>
+                    <div className="p-2 bg-green-500/20 rounded">
+                      <div className="text-sm font-bold text-green-400">{sharedResults.transformationalLeadership}%</div>
+                      <div className="text-xs text-gray-400">Transformational</div>
+                    </div>
+                    <div className="p-2 bg-purple-500/20 rounded">
+                      <div className="text-sm font-bold text-purple-400">{sharedResults.servantLeadership}%</div>
+                      <div className="text-xs text-gray-400">Servant</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Take Test Yourself */}
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-6 w-6 text-purple-400" />
+                  Take the Test Yourself
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-gray-300">
+                  Curious about your own leadership style? Take the same test to discover your natural leadership approach and strengths!
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Based on scientific research</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Only takes 5-10 minutes</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Get detailed analysis and recommendations</span>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => {
+                    setIsSharedView(false);
+                    setSharedResults(null);
+                    setShowResults(false);
+                    setCurrentQuestion(0);
+                    setAnswers([]);
+                    setResults(null);
+                    setTimeStarted(new Date());
+                    setTimeCompleted(null);
+                    setHasPreviousResult(false);
+                    setSharedResults(null); // Reset shared results state
+                    setIsSharedView(false); // Reset shared view state
+                  }}
+                  className="w-full bg-blue-500 hover:bg-blue-600"
+                >
+                  Take Leadership Style Test
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showResults && results) {
     return (
@@ -516,24 +760,17 @@ export default function LeadershipTest() {
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button
-              onClick={() => {
-                setShowResults(false);
-                setCurrentQuestion(0);
-                setAnswers([]);
-                setResults(null);
-                setTimeStarted(null);
-                setTimeCompleted(null);
-              }}
+              onClick={handleRetake}
               className="bg-blue-500 hover:bg-blue-600"
             >
               <RotateCcw className="h-4 w-4 mr-2" />
-              Retake Test
+              {hasPreviousResult ? "Retake Test" : "Take Test Again"}
             </Button>
             <Button 
               onClick={() => {
-                const text = `Leadership Style Test Results:\nPrimary Style: ${results.primaryStyle}\nSecondary Style: ${results.secondaryStyle}\n\nScores:\nAutocratic: ${results.autocratic}%\nDemocratic: ${results.democratic}%\nLaissez-faire: ${results.laissezFaire}%\nTransformational: ${results.transformational}%\nServant: ${results.servant}%`;
-                navigator.clipboard.writeText(text);
-                alert('Results copied to clipboard!');
+                const shareUrl = `${window.location.origin}/playground/leadership-test?shared=true&primaryStyle=${encodeURIComponent(results.primaryStyle)}&secondaryStyle=${encodeURIComponent(results.secondaryStyle)}&autocratic=${results.autocratic}&democratic=${results.democratic}&laissezFaire=${results.laissezFaire}&transformational=${results.transformational}&servant=${results.servant}`;
+                navigator.clipboard.writeText(shareUrl);
+                alert('Shareable link copied to clipboard!');
               }}
               variant="outline" 
               className="border-gray-600 hover:bg-gray-800"
@@ -590,6 +827,14 @@ export default function LeadershipTest() {
               <span>Scientific</span>
             </div>
           </div>
+          
+          {!user && (
+            <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg max-w-md mx-auto">
+              <p className="text-yellow-300 text-sm text-center">
+                💡 You can take this test without signing in, but your results won&apos;t be saved.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Progress */}

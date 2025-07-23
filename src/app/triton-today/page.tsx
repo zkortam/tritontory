@@ -28,6 +28,7 @@ export default function TritonTodayPage() {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [showVideoPopup, setShowVideoPopup] = useState(false);
   const [videoDurations, setVideoDurations] = useState<{ [key: string]: number }>({});
+  const [viewedVideos, setViewedVideos] = useState<Set<string>>(new Set());
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const popupVideoRef = useRef<HTMLVideoElement>(null);
@@ -85,6 +86,18 @@ export default function TritonTodayPage() {
     if (currentVideo) {
       currentVideo.muted = !isMuted;
       setIsMuted(!isMuted);
+    }
+  };
+
+  // Track video view when video starts playing
+  const trackVideoView = async (videoId: string) => {
+    if (!viewedVideos.has(videoId)) {
+      try {
+        await VideoService.incrementViews(videoId);
+        setViewedVideos(prev => new Set(prev).add(videoId));
+      } catch (error) {
+        console.error("Error tracking video view:", error);
+      }
     }
   };
 
@@ -181,7 +194,7 @@ export default function TritonTodayPage() {
         container.removeEventListener('touchend', handleTouchEnd);
       }
     };
-  }, [currentVideoIndex, videos.length]);
+  }, [currentVideoIndex, videos.length, handleScroll]);
 
   // Lock/unlock page scroll
   useEffect(() => {
@@ -300,7 +313,11 @@ export default function TritonTodayPage() {
                   loop
                   playsInline
                   muted={isMuted}
-                  onPlay={() => setIsPlaying(true)}
+                  onPlay={() => {
+                    setIsPlaying(true);
+                    // Track view when video starts playing
+                    trackVideoView(video.id);
+                  }}
                   onPause={() => setIsPlaying(false)}
                   onEnded={() => {
                     if (index < videos.length - 1) {

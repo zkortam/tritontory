@@ -12,20 +12,23 @@ import { Article } from "@/lib/models";
 import { Comments } from "@/components/common/Comments";
 import { SocialShare } from "@/components/common/SocialShare";
 import { LikeButton } from "@/components/common/LikeButton";
-import { FollowButton } from "@/components/common/FollowButton";
-import { AnalyticsService } from "@/lib/analytics-service";
-import { useRedirectOnAuth } from "@/lib/auth-context";
-import { ArrowLeft, Calendar, User, Tag, BookOpen, Heart } from "lucide-react";
+import { AnalyticsService, generateSessionId } from "@/lib/analytics-service";
+import { useAuth } from "@/lib/auth-context";
+import { ArrowLeft, Calendar, User, Tag, BookOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { calculateReadingTime } from "@/lib/utils";
 
 export default function ArticlePage() {
   const params = useParams();
-  useRedirectOnAuth(); // Track current page for redirect after auth
+  const { user } = useAuth();
   const [article, setArticle] = useState<Article | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [analyticsError, setAnalyticsError] = useState(false);
+
+  // Temporarily disabled redirect hook to fix auto-redirect issue
+  // useRedirectOnAuth();
 
   useEffect(() => {
     async function fetchArticle() {
@@ -53,8 +56,8 @@ export default function ArticlePage() {
         // Filter out the current article
         setRelatedArticles(related.filter(a => a.id !== id));
 
-      } catch {
-        console.error("Error fetching article");
+      } catch (error) {
+        console.error("Error fetching article:", error);
         setError("Failed to load article");
       } finally {
         setLoading(false);
@@ -64,15 +67,21 @@ export default function ArticlePage() {
     fetchArticle();
   }, [params.id]);
 
-
-
-  // Track view on component mount
+  // Track click on component mount with error handling
   useEffect(() => {
-    if (article) {
-      const sessionId = AnalyticsService.generateSessionId();
-      AnalyticsService.trackView(article.id, 'article', sessionId);
+    if (article && !analyticsError) {
+      const trackClick = async () => {
+        try {
+          const sessionId = generateSessionId();
+          await AnalyticsService.trackClick(article.id, 'article', sessionId);
+        } catch (error) {
+          console.error("Analytics error:", error);
+          setAnalyticsError(true);
+        }
+      };
+      trackClick();
     }
-  }, [article]);
+  }, [article, analyticsError]);
 
   if (loading) {
     return (
@@ -153,12 +162,7 @@ export default function ArticlePage() {
           <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400 mb-6">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4" />
-              <Link 
-                href={`/profile/${article.authorId}`}
-                className="hover:text-tory-400 transition-colors cursor-pointer"
-              >
-                {article.authorName}
-              </Link>
+              <span>{article.authorName}</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
@@ -168,42 +172,28 @@ export default function ArticlePage() {
               <BookOpen className="w-4 h-4" />
               <span>{calculateReadingTime(article.content)} min read</span>
             </div>
-            {article.likes > 0 && (
-              <div className="flex items-center gap-2">
-                <Heart className="w-4 h-4" />
-                <span>{article.likes} likes</span>
-              </div>
-            )}
           </div>
 
           {/* Article Actions */}
-          <div className="flex flex-wrap items-center gap-3 mb-8">
-            <LikeButton
-              contentId={article.id}
-              contentType="article"
-              initialLikes={article.likes || 0}
-              size="md"
-              variant="outline"
-            />
-            <FollowButton
-              targetId={article.authorId}
-              followType="user"
-              size="default"
-              variant="outline"
-            >
-              Follow Author
-            </FollowButton>
+          <div className="flex gap-3 mb-8">
             <SocialShare
               contentId={article.id}
               contentType="article"
               title={article.title}
               description={article.excerpt || ""}
-              url={window.location.href}
+              url={typeof window !== 'undefined' ? window.location.href : ''}
               image={article.coverImage}
             />
+            {user && (
+              <LikeButton
+                contentId={article.id}
+                contentType="article"
+                initialLikes={article.likes}
+                size="sm"
+              />
+            )}
           </div>
 
-          {/* Cover Image */}
           {article.coverImage && (
             <div className="relative aspect-video rounded-lg overflow-hidden mb-8">
               <Image
@@ -248,16 +238,16 @@ export default function ArticlePage() {
 
         {/* Related Articles */}
         {relatedArticles.length > 0 && (
-          <section>
-            <h3 className="text-2xl font-bold mb-6">Related Articles</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">Related Articles</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {relatedArticles.map((relatedArticle) => (
                 <Link
                   key={relatedArticle.id}
                   href={`/triton-tory/${relatedArticle.id}`}
                   className="group"
                 >
-                  <article className="bg-gray-900/50 rounded-lg overflow-hidden border border-gray-800 hover:border-tory-500 transition-colors">
+                  <div className="bg-gray-900 rounded-lg overflow-hidden hover:bg-gray-800 transition-colors">
                     {relatedArticle.coverImage && (
                       <div className="relative aspect-video">
                         <Image
@@ -269,35 +259,27 @@ export default function ArticlePage() {
                       </div>
                     )}
                     <div className="p-4">
-                      <Badge className="bg-tory-500 text-white mb-2 text-xs">
-                        {relatedArticle.category}
-                      </Badge>
-                      <h4 className="font-semibold line-clamp-2 group-hover:text-tory-500 transition-colors">
+                      <h3 className="font-semibold text-lg mb-2 group-hover:text-tory-400 transition-colors">
                         {relatedArticle.title}
-                      </h4>
-                      {relatedArticle.excerpt && (
-                        <p className="text-sm text-gray-400 line-clamp-2 mt-2">
-                          {relatedArticle.excerpt}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
+                      </h3>
+                      <p className="text-gray-400 text-sm mb-3">
+                        {relatedArticle.excerpt}
+                      </p>
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
                         <span>{relatedArticle.authorName}</span>
-                        <span>•</span>
                         <span>{formatDistanceToNow(relatedArticle.publishedAt, { addSuffix: true })}</span>
                       </div>
                     </div>
-                  </article>
+                  </div>
                 </Link>
               ))}
             </div>
           </section>
         )}
-      </article>
 
-      {/* Comments Section */}
-      <div className="container px-4 py-8 max-w-4xl mx-auto">
+        {/* Comments */}
         <Comments contentId={article.id} contentType="article" />
-      </div>
+      </article>
     </div>
   );
 }

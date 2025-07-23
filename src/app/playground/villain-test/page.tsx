@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/lib/auth-context";
+import { SurveyService, TEST_TYPES } from "@/lib/survey-service";
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -29,7 +31,7 @@ interface Question {
   weight: number;
 }
 
-interface Answer {
+interface Answer extends Record<string, unknown> {
   questionId: number;
   value: number; // 1-5 scale: 1 = Strongly Disagree, 5 = Strongly Agree
 }
@@ -66,12 +68,20 @@ interface Results {
 }
 
 export default function VillainTest() {
+  const { user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState<Results | null>(null);
   const [timeStarted, setTimeStarted] = useState<Date | null>(null);
   const [timeCompleted, setTimeCompleted] = useState<Date | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [hasPreviousResult, setHasPreviousResult] = useState(false);
+  const [sharedResults, setSharedResults] = useState<{
+    personalityType: string;
+    agreeableness: number;
+  } | null>(null);
+  const [isSharedView, setIsSharedView] = useState(false);
 
   const questions: Question[] = [
     // Openness Questions
@@ -314,10 +324,71 @@ export default function VillainTest() {
   ];
 
   useEffect(() => {
-    if (!timeStarted) {
+    // Check for shared results in URL parameters
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const shared = urlParams.get('shared');
+      const personalityType = urlParams.get('personalityType');
+      const agreeableness = urlParams.get('agreeableness');
+      
+      if (shared === 'true' && personalityType && agreeableness) {
+        setSharedResults({
+          personalityType: decodeURIComponent(personalityType),
+          agreeableness: parseInt(agreeableness)
+        });
+        setIsSharedView(true);
+        setLoading(false);
+        return;
+      }
+    }
+
+    const checkPreviousResults = async () => {
+      if (user) {
+        try {
+          const hasCompleted = await SurveyService.hasCompletedSurvey(
+            user.uid,
+            TEST_TYPES.VILLAIN_TEST
+          );
+          
+          if (hasCompleted) {
+            const savedResult = await SurveyService.getSurveyResult<Results>(
+              user.uid,
+              TEST_TYPES.VILLAIN_TEST
+            );
+            
+            if (savedResult) {
+              setHasPreviousResult(true);
+              setResults(savedResult.results as unknown as Results);
+              setTimeStarted(savedResult.timeStarted);
+              setTimeCompleted(savedResult.timeCompleted);
+              setShowResults(true);
+            }
+          }
+        } catch (error) {
+          console.error("Error checking previous results:", error);
+        }
+      }
+      setLoading(false);
+    };
+
+    const loadStatistics = async () => {
+      try {
+        // const stats = await SurveyService.getTestStatistics(TEST_TYPES.VILLAIN_TEST);
+        // setStatistics(stats); // Removed unused variable
+      } catch (error) {
+        console.error("Error loading statistics:", error);
+      }
+    };
+
+    checkPreviousResults();
+    loadStatistics();
+  }, [user]);
+
+  useEffect(() => {
+    if (!timeStarted && !hasPreviousResult) {
       setTimeStarted(new Date());
     }
-  }, [timeStarted]);
+  }, [timeStarted, hasPreviousResult]);
 
   const handleAnswer = (value: number) => {
     const newAnswers = [...answers];
@@ -449,17 +520,164 @@ export default function VillainTest() {
     };
   };
 
-  const handleFinish = () => {
-    setTimeCompleted(new Date());
+  const handleFinish = async () => {
+    const completedTime = new Date();
+    setTimeCompleted(completedTime);
     const calculatedResults = calculateResults();
     setResults(calculatedResults);
     setShowResults(true);
+
+    // Save results if user is authenticated
+    if (user && timeStarted) {
+      try {
+        await SurveyService.saveSurveyResult<Results>(
+          user.uid,
+          TEST_TYPES.VILLAIN_TEST,
+          answers,
+          calculatedResults,
+          timeStarted,
+          completedTime
+        );
+        setHasPreviousResult(true);
+      } catch (error) {
+        console.error("Error saving survey results:", error);
+      }
+    }
+  };
+
+  const handleRetake = async () => {
+    // Delete previous results if user is authenticated
+    if (user && hasPreviousResult) {
+      try {
+        await SurveyService.deleteSurveyResult(
+          user.uid,
+          TEST_TYPES.VILLAIN_TEST
+        );
+      } catch (error) {
+        console.error("Error deleting previous results:", error);
+      }
+    }
+
+    // Reset all state
+    setShowResults(false);
+    setCurrentQuestion(0);
+    setAnswers([]);
+    setResults(null);
+    setTimeStarted(new Date());
+    setTimeCompleted(null);
+    setHasPreviousResult(false);
+          setSharedResults(null);
   };
 
   const currentAnswer = answers.find(a => a.questionId === questions[currentQuestion].id);
   const progress = ((currentQuestion + 1) / questions.length) * 100;
   const isLastQuestion = currentQuestion === questions.length - 1;
   const canProceed = currentAnswer !== undefined;
+
+  // Show loading state while checking for previous results
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show shared results view
+  if (isSharedView && sharedResults) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Link href="/playground" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-4">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Playground
+            </Link>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">Shared Personality Analysis</h1>
+            <p className="text-gray-400">Someone shared their personality analysis results with you</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Shared Results Summary */}
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-6 w-6 text-purple-400" />
+                  Shared Personality Type
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-400 mb-2">{sharedResults.personalityType}</div>
+                </div>
+                
+                <div className="space-y-3">
+                  <h4 className="font-medium text-purple-400">Agreeableness Score:</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm">Agreeableness</span>
+                      <span className="text-sm font-medium">{sharedResults.agreeableness}%</span>
+                    </div>
+                    <Progress value={sharedResults.agreeableness} className="h-2" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Take Test Yourself */}
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-6 w-6 text-purple-400" />
+                  Take the Test Yourself
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-gray-300">
+                  Curious about your own personality type? Take the same test to discover your Big Five personality traits and see which historical figures you match!
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Based on Big Five personality theory</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Only takes 5-10 minutes</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Get detailed analysis and historical comparisons</span>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => {
+                    setIsSharedView(false);
+                    setSharedResults(null);
+                    setShowResults(false);
+                    setCurrentQuestion(0);
+                    setAnswers([]);
+                    setResults(null);
+                    setTimeStarted(new Date());
+                    setTimeCompleted(null);
+                    setHasPreviousResult(false);
+                    setSharedResults(null);
+                  }}
+                  className="w-full bg-blue-500 hover:bg-blue-600"
+                >
+                  Take Personality Analysis Test
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showResults && results) {
     return (
@@ -588,24 +806,38 @@ export default function VillainTest() {
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button
-              onClick={() => {
-                setShowResults(false);
-                setCurrentQuestion(0);
-                setAnswers([]);
-                setResults(null);
-                setTimeStarted(null);
-                setTimeCompleted(null);
-              }}
+              onClick={handleRetake}
               className="bg-blue-500 hover:bg-blue-600"
             >
               <RotateCcw className="h-4 w-4 mr-2" />
-              Retake Test
+              {hasPreviousResult ? "Retake Test" : "Take Test Again"}
             </Button>
-            <Button variant="outline" className="border-gray-600 hover:bg-gray-800">
+            <Button 
+              onClick={() => {
+                const shareUrl = `${window.location.origin}/playground/villain-test?shared=true&personalityType=${encodeURIComponent(results.personalityType)}&agreeableness=${results.bigFiveScores.agreeableness}`;
+                navigator.clipboard.writeText(shareUrl);
+                alert('Shareable link copied to clipboard!');
+              }}
+              variant="outline" 
+              className="border-gray-600 hover:bg-gray-800"
+            >
               <Share2 className="h-4 w-4 mr-2" />
               Share Results
             </Button>
-            <Button variant="outline" className="border-gray-600 hover:bg-gray-800">
+            <Button 
+              onClick={() => {
+                const report = `Villain Test Report\n\nPersonality Type: ${results.personalityType}\n\nBig Five Scores:\n- Openness: ${results.bigFiveScores.openness}%\n- Conscientiousness: ${results.bigFiveScores.conscientiousness}%\n- Extraversion: ${results.bigFiveScores.extraversion}%\n- Agreeableness: ${results.bigFiveScores.agreeableness}%\n- Neuroticism: ${results.bigFiveScores.neuroticism}%\n\nDescription:\n${results.description}\n\nAnalysis:\n${results.analysis}\n\nTop Historical Matches:\n${results.topMatches.map((match, i) => `${i+1}. ${match.name} (${match.title}) - ${match.matchPercentage}% match`).join('\n')}\n\nRecommendations:\n${results.recommendations.map((rec, i) => `${i+1}. ${rec}`).join('\n')}`;
+                const blob = new Blob([report], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'villain-test-report.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              variant="outline" 
+              className="border-gray-600 hover:bg-gray-800"
+            >
               <Download className="h-4 w-4 mr-2" />
               Download Report
             </Button>
@@ -641,6 +873,14 @@ export default function VillainTest() {
               <span>Scientific</span>
             </div>
           </div>
+          
+          {!user && (
+            <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg max-w-md mx-auto">
+              <p className="text-yellow-300 text-sm text-center">
+                💡 You can take this test without signing in, but your results won&apos;t be saved.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Progress */}

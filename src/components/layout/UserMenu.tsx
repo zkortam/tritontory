@@ -12,6 +12,7 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { User, LogOut, Settings, UserPlus, Shield } from "lucide-react";
 import Link from "next/link";
+import { CustomAvatar } from "@/components/ui/avatar";
 
 export function UserMenu() {
   const { user, userRole, signOut, isAdmin } = useAuth();
@@ -25,17 +26,7 @@ export function UserMenu() {
     }
   };
 
-  // Get user initials
-  const getUserInitials = () => {
-    if (!user?.displayName && !user?.email) return "U";
-    
-    if (user.displayName) {
-      const names = user.displayName.split(" ");
-      return names.map(name => name[0]).join("").toUpperCase().slice(0, 2);
-    }
-    
-    return user.email?.charAt(0).toUpperCase() || "U";
-  };
+
 
   // If user is logged in, show user menu
   if (user) {
@@ -44,11 +35,13 @@ export function UserMenu() {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="relative h-9 w-9 rounded-full bg-gray-800 hover:bg-gray-700"
+            className="relative h-9 w-9 rounded-full p-0"
           >
-            <span className="text-sm font-medium text-white">
-              {getUserInitials()}
-            </span>
+            <CustomAvatar
+              name={user.displayName || user.email || ""}
+              imageUrl={user.photoURL || undefined}
+              size="sm"
+            />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56 bg-gray-900 border-gray-700" align="end" forceMount>

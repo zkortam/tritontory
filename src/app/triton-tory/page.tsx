@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArticleService, NewsTickerService } from "@/lib/firebase-service";
 import type { Article, NewsTicker } from "@/lib/models";
-import { Search, User, TrendingUp, Clock, MapPin, Globe, Building, Trophy, Newspaper, Sun, Cloud, TrendingDown, ArrowRight, BookOpen } from "lucide-react";
+import { AnalyticsService } from "@/lib/analytics-service";
+import { Search, User, TrendingUp, Clock, MapPin, Globe, Building, Trophy, Newspaper, Sun, Cloud, TrendingDown, ArrowRight, BookOpen, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { calculateReadingTime } from "@/lib/utils";
 import { NewsTicker as NewsTickerComponent } from "@/components/common/NewsTicker";
@@ -29,6 +30,7 @@ export default function TritonToryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [stocks, setStocks] = useState<StockData[]>(FALLBACK_STOCK_DATA);
   const [weather, setWeather] = useState<WeatherData>(FALLBACK_WEATHER_DATA);
+  const [clickData, setClickData] = useState<Record<string, number>>({});
 
   useEffect(() => {
     async function fetchData() {
@@ -67,6 +69,19 @@ export default function TritonToryPage() {
         // Fetch all articles for search
         const allArticles = await ArticleService.getArticles(undefined, undefined, false, 50);
         setArticles(allArticles);
+
+        // Fetch click data for all articles
+        const clickDataMap: Record<string, number> = {};
+        for (const article of allArticles) {
+          try {
+            const analytics = await AnalyticsService.getContentAnalytics(article.id);
+            clickDataMap[article.id] = analytics?.clicks || 0;
+          } catch (error) {
+            console.error(`Error fetching analytics for article ${article.id}:`, error);
+            clickDataMap[article.id] = 0;
+          }
+        }
+        setClickData(clickDataMap);
 
         // Fetch stock and weather data
         const stockService = StockService.getInstance();
@@ -152,6 +167,10 @@ export default function TritonToryPage() {
                 <BookOpen className="h-3 w-3" />
                 <span>{calculateReadingTime(article.content || "")} min read</span>
               </div>
+              <div className="flex items-center gap-1">
+                <Eye className="h-3 w-3" />
+                <span>{clickData[article.id] || 0} clicks</span>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -191,6 +210,10 @@ export default function TritonToryPage() {
             <div className="flex items-center gap-1">
               <BookOpen className="h-3 w-3" />
               <span>{calculateReadingTime(article.content || "")} min read</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              <span>{clickData[article.id] || 0} clicks</span>
             </div>
           </div>
         </div>

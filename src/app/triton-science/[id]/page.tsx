@@ -6,46 +6,41 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { ResearchService } from "@/lib/firebase-service";
-
-import { useRedirectOnAuth } from "@/lib/auth-context";
-import type { Research } from "@/lib/models";
+import { Research } from "@/lib/models";
+import { Comments } from "@/components/common/Comments";
+import { SocialShare } from "@/components/common/SocialShare";
+import { AnalyticsService, generateSessionId } from "@/lib/analytics-service";
+// import { useAuth } from "@/lib/auth-context";
 import { 
   ArrowLeft, 
   Calendar, 
-  Users, 
-  BookOpen, 
-  Eye, 
-  Download, 
-  Star,
-  Building,
-  GraduationCap,
-  Target,
-  Microscope,
-  FlaskConical,
+  User, 
+  Tag, 
+  BookOpen,
   Dna,
+  FlaskConical,
   Atom,
   Brain,
   Leaf,
-  Zap,
   Database,
-  FileText,
-  Share2,
-
-  MessageCircle
+  Zap,
+  Microscope
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { calculateReadingTime } from "@/lib/utils";
 
 export default function TritonScienceArticlePage() {
   const params = useParams();
-  // const { user: _user } = useAuth();
-  useRedirectOnAuth(); // Track current page for redirect after auth
-  
+  // const { user: currentUser } = useAuth();
   const [research, setResearch] = useState<Research | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [analyticsError, setAnalyticsError] = useState(false);
+
+  // Temporarily disabled redirect hook to fix auto-redirect issue
+  // useRedirectOnAuth();
 
   useEffect(() => {
     async function fetchResearch() {
@@ -65,6 +60,24 @@ export default function TritonScienceArticlePage() {
 
     fetchResearch();
   }, [params.id]);
+
+  // Track click on component mount with error handling
+  useEffect(() => {
+    if (research && !analyticsError) {
+      const trackClick = async () => {
+        try {
+          console.log(`Tracking click for research article: ${research.id}`);
+          const sessionId = generateSessionId();
+          await AnalyticsService.trackClick(research.id, 'research', sessionId);
+          console.log(`Successfully tracked click for: ${research.id}`);
+        } catch (error) {
+          console.error("Analytics error:", error);
+          setAnalyticsError(true);
+        }
+      };
+      trackClick();
+    }
+  }, [research, analyticsError]);
 
   if (loading) {
     return (
@@ -101,174 +114,139 @@ export default function TritonScienceArticlePage() {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="relative h-96 overflow-hidden">
-        <Image
-          src={research.coverImage || `https://picsum.photos/1200/600?random=${research.id}`}
-          alt={research.title}
-          fill
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-        
-        {/* Back Button */}
-        <div className="absolute top-6 left-6">
+      <div className="border-b border-gray-800">
+        <div className="container px-4 py-4">
           <Link href="/triton-science">
-            <Button variant="outline" size="sm" className="bg-black/50 border-white/20 text-white hover:bg-black/70">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+            <Button variant="ghost" className="text-science-500 hover:text-science-400">
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Research
             </Button>
           </Link>
         </div>
+      </div>
 
-        {/* Department Badge */}
-        <div className="absolute top-6 right-6">
-          <Badge className="bg-science-500/90 text-white text-sm font-medium">
-            {getDepartmentIcon(research.department)}
-            <span className="ml-2">{research.department}</span>
-          </Badge>
-        </div>
+      <article className="container px-4 py-8 max-w-4xl mx-auto">
+        {/* Article Header */}
+        <header className="mb-8">
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Badge className="bg-science-500 text-white flex items-center gap-2">
+              {getDepartmentIcon(research.department)}
+              {research.department}
+            </Badge>
+            <Badge variant="outline" className="border-gray-600 text-gray-300">
+              Research
+            </Badge>
+            {research.featured && (
+              <Badge className="bg-gradient-to-r from-yellow-600 to-orange-600 text-white">
+                Featured
+              </Badge>
+            )}
+          </div>
 
-        {/* Content */}
-        <div className="absolute bottom-6 left-6 right-6">
-          <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
             {research.title}
           </h1>
+
           {research.abstract && (
-            <p className="text-gray-300 text-lg max-w-4xl leading-relaxed">
+            <p className="text-xl text-gray-300 leading-relaxed mb-6">
               {research.abstract}
             </p>
           )}
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Article Content */}
-          <div className="lg:col-span-2">
-            {/* Author Info */}
-            <Card className="bg-gray-900/50 border-gray-800/50 mb-8">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-science-500/20 rounded-full flex items-center justify-center">
-                      <Users className="h-6 w-6 text-science-500" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-white">{research.authorName}</h3>
-                      <p className="text-gray-400 text-sm">{research.department}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-400">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>{formatDistanceToNow(research.publishedAt, { addSuffix: true })}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <BookOpen className="h-4 w-4" />
-                      <span>{calculateReadingTime(research.content || "")} min read</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Research Content */}
-            <div className="prose prose-invert max-w-none">
-              <div className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-8">
-                {research.content ? (
-                  <div 
-                    className="text-gray-300 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: research.content }}
-                  />
-                ) : (
-                  <div className="text-gray-400 text-center py-12">
-                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                    <p>Research content not available</p>
-                  </div>
-                )}
-              </div>
+          {/* Article Meta */}
+          <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400 mb-6">
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              <span>{research.authorName}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span>{formatDistanceToNow(research.publishedAt, { addSuffix: true })}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              <span>{calculateReadingTime(research.content)} min read</span>
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Research Stats */}
-            <Card className="bg-gray-900/50 border-gray-800/50">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-white mb-4">Research Metrics</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <Eye className="h-4 w-4" />
-                      <span>Views</span>
-                    </div>
-                    <span className="text-white font-medium">{Math.floor(Math.random() * 500) + 100}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <Download className="h-4 w-4" />
-                      <span>Citations</span>
-                    </div>
-                    <span className="text-white font-medium">{Math.floor(Math.random() * 50) + 10}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <Star className="h-4 w-4 text-yellow-500" />
-                      <span>Rating</span>
-                    </div>
-                    <span className="text-white font-medium">{Math.floor(Math.random() * 5) + 1}.{Math.floor(Math.random() * 9)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Research Details */}
-            <Card className="bg-gray-900/50 border-gray-800/50">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-white mb-4">Research Details</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <Building className="h-4 w-4" />
-                    <span>Department: {research.department}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <GraduationCap className="h-4 w-4" />
-                    <span>Author: {research.authorName}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <Target className="h-4 w-4" />
-                    <span>Type: Research Study</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Actions */}
-            <Card className="bg-gray-900/50 border-gray-800/50">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-white mb-4">Actions</h3>
-                <div className="space-y-3">
-                  <Button className="w-full bg-science-600 hover:bg-science-700">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download PDF
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share Research
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Contact Author
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Article Actions */}
+          <div className="flex gap-3 mb-8">
+            <SocialShare
+              contentId={research.id}
+              contentType="research"
+              title={research.title}
+              description={research.abstract || ""}
+              url={typeof window !== 'undefined' ? window.location.href : ''}
+              image={research.coverImage}
+            />
           </div>
-        </div>
-      </div>
+
+          {/* Cover Image */}
+          {research.coverImage && (
+            <div className="relative aspect-video rounded-lg overflow-hidden mb-8">
+              <Image
+                src={research.coverImage}
+                alt={research.title}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
+        </header>
+
+        {/* Article Content */}
+        <div
+          className="prose prose-invert prose-lg max-w-none mb-12"
+          dangerouslySetInnerHTML={{ __html: research.content }}
+        />
+
+        {/* Contributors */}
+        {research.contributors && research.contributors.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-3">Contributors</h3>
+            <div className="flex flex-wrap gap-2">
+              {research.contributors.map((contributor, index) => (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300"
+                >
+                  {contributor}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tags */}
+        {research.tags && research.tags.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <Tag className="w-4 h-4 text-gray-400" />
+              <span className="text-sm font-medium text-gray-400">Tags</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {research.tags.map((tag, index) => (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:border-science-500 hover:text-science-500 cursor-pointer"
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <Separator className="bg-gray-800 my-12" />
+
+        {/* Comments */}
+        <Comments contentId={research.id} contentType="research" />
+      </article>
     </div>
   );
 } 

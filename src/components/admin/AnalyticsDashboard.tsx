@@ -31,7 +31,7 @@ import { AnalyticsService } from "@/lib/analytics-service";
 import { ContentAnalytics } from "@/lib/models";
 
 interface AnalyticsSummary {
-  totalViews: number;
+  totalClicks: number;
   totalShares: number;
   totalLikes: number;
   totalComments: number;
@@ -119,7 +119,7 @@ export function AnalyticsDashboard() {
 
   // Prepare chart data
   const overviewData = [
-    { name: 'Views', value: summary.totalViews, icon: Eye, color: '#0066CC' },
+    { name: 'Clicks', value: summary.totalClicks, icon: Eye, color: '#0066CC' },
     { name: 'Shares', value: summary.totalShares, icon: Share2, color: '#00C49F' },
     { name: 'Likes', value: summary.totalLikes, icon: Heart, color: '#FFBB28' },
     { name: 'Comments', value: summary.totalComments, icon: MessageCircle, color: '#FF8042' },
@@ -127,7 +127,7 @@ export function AnalyticsDashboard() {
 
   const topContentData = summary.topContent.map((content, index) => ({
     name: `Content ${index + 1}`,
-    views: content.views || 0,
+    clicks: content.clicks || 0,
     shares: content.shares || 0,
     likes: content.likes || 0,
     comments: content.comments || 0,
@@ -139,11 +139,11 @@ export function AnalyticsDashboard() {
     const type = content.contentType;
     const existing = acc.find(item => item.name === getContentTypeLabel(type));
     if (existing) {
-      existing.value += content.views || 0;
+      existing.value += content.clicks || 0;
     } else {
       acc.push({
         name: getContentTypeLabel(type),
-        value: content.views || 0,
+        value: content.clicks || 0,
         color: getContentTypeColor(type),
       });
     }
@@ -208,7 +208,7 @@ export function AnalyticsDashboard() {
               Top Content Performance
             </CardTitle>
             <CardDescription>
-              Most viewed content by engagement metrics
+              Most clicked content by engagement metrics
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -224,7 +224,7 @@ export function AnalyticsDashboard() {
                     borderRadius: '8px'
                   }}
                 />
-                <Bar dataKey="views" fill="#0066CC" name="Views" />
+                <Bar dataKey="clicks" fill="#0066CC" name="Clicks" />
                 <Bar dataKey="shares" fill="#00C49F" name="Shares" />
                 <Bar dataKey="likes" fill="#FFBB28" name="Likes" />
               </BarChart>
@@ -240,7 +240,7 @@ export function AnalyticsDashboard() {
               Content Type Distribution
             </CardTitle>
             <CardDescription>
-              Views by content type
+              Clicks by content type
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -303,8 +303,8 @@ export function AnalyticsDashboard() {
                 </div>
                 <div className="flex items-center gap-6 text-sm">
                   <div className="text-center">
-                    <p className="font-semibold text-blue-400">{formatNumber(content.views || 0)}</p>
-                    <p className="text-gray-400">Views</p>
+                    <p className="font-semibold text-blue-400">{formatNumber(content.clicks || 0)}</p>
+                    <p className="text-gray-400">Clicks</p>
                   </div>
                   <div className="text-center">
                     <p className="font-semibold text-green-400">{formatNumber(content.shares || 0)}</p>
@@ -341,13 +341,13 @@ export function AnalyticsDashboard() {
             {summary.recentActivity.slice(0, 10).map((activity, index) => (
               <div key={index} className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
                 <div className={`w-2 h-2 rounded-full ${
-                  activity.type === 'view' ? 'bg-blue-400' : 
+                  activity.type === 'click' ? 'bg-blue-400' : 
                   activity.type === 'share' ? 'bg-green-400' : 'bg-purple-400'
                 }`} />
                 <div className="flex-1">
                   <p className="text-sm">
                     <span className="font-medium">
-                      {activity.type === 'view' ? 'Viewed' : 
+                      {activity.type === 'click' ? 'Clicked' : 
                        activity.type === 'share' ? 'Shared' : 'Liked'}
                     </span>
                     {' '}

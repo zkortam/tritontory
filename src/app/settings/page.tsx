@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth, useRedirectOnAuth } from "@/lib/auth-context";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -11,7 +11,8 @@ import { useState } from "react";
 
 export default function SettingsPage() {
   const { user, userRole } = useAuth();
-  useRedirectOnAuth(); // Track current page for redirect after auth
+  // Temporarily disabled redirect hook to fix auto-redirect issue
+  // useRedirectOnAuth(); // Track current page for redirect after auth
   const [notifications, setNotifications] = useState(true);
   const [emailUpdates, setEmailUpdates] = useState(false);
   const [darkMode, setDarkMode] = useState(true);

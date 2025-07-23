@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/lib/auth-context";
+import { SurveyService, TEST_TYPES } from "@/lib/survey-service";
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -19,7 +21,8 @@ import {
   Share2,
   Download,
   Star,
-  TestTube
+  TestTube,
+  BarChart3
 } from "lucide-react";
 
 interface Question {
@@ -31,7 +34,7 @@ interface Question {
   rightTrait: string;
 }
 
-interface Answer {
+interface Answer extends Record<string, unknown> {
   questionId: number;
   value: number; // 1-5 scale: 1 = Strongly Left, 5 = Strongly Right
 }
@@ -47,12 +50,22 @@ interface Results {
 }
 
 export default function LeftRightTest() {
+  const { user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState<Results | null>(null);
   const [timeStarted, setTimeStarted] = useState<Date | null>(null);
   const [timeCompleted, setTimeCompleted] = useState<Date | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [hasPreviousResult, setHasPreviousResult] = useState(false);
+  const [sharedResults, setSharedResults] = useState<{
+    politicalPosition: string;
+    overallScore: number;
+    economicScore: number;
+    socialScore: number;
+  } | null>(null);
+  const [isSharedView, setIsSharedView] = useState(false);
 
   const questions: Question[] = [
     // Lifestyle Questions
@@ -183,10 +196,73 @@ export default function LeftRightTest() {
   ];
 
   useEffect(() => {
-    if (!timeStarted) {
+    // Check for shared results in URL parameters
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const shared = urlParams.get('shared');
+      const score = urlParams.get('score');
+      const orientation = urlParams.get('orientation');
+      
+      if (shared === 'true' && score && orientation) {
+        setSharedResults({
+          politicalPosition: decodeURIComponent(orientation),
+          overallScore: parseInt(score),
+          economicScore: 0, // Placeholder, needs actual calculation
+          socialScore: 0 // Placeholder, needs actual calculation
+        });
+        setIsSharedView(true);
+        setLoading(false);
+        return;
+      }
+    }
+
+    const checkPreviousResults = async () => {
+      if (user) {
+        try {
+          const hasCompleted = await SurveyService.hasCompletedSurvey(
+            user.uid,
+            TEST_TYPES.POLITICAL_COORDINATES_LEFT_RIGHT
+          );
+          
+          if (hasCompleted) {
+            const savedResult = await SurveyService.getSurveyResult<Results>(
+              user.uid,
+              TEST_TYPES.POLITICAL_COORDINATES_LEFT_RIGHT
+            );
+            
+            if (savedResult) {
+              setHasPreviousResult(true);
+              setResults(savedResult.results as unknown as Results);
+              setTimeStarted(savedResult.timeStarted);
+              setTimeCompleted(savedResult.timeCompleted);
+              setShowResults(true);
+            }
+          }
+        } catch (error) {
+          console.error("Error checking previous results:", error);
+        }
+      }
+      setLoading(false);
+    };
+
+    const loadStatistics = async () => {
+      try {
+        // const stats = await SurveyService.getTestStatistics(TEST_TYPES.POLITICAL_COORDINATES_LEFT_RIGHT);
+        // setStatistics(stats); // This line was removed as per the edit hint
+      } catch (error) {
+        console.error("Error loading statistics:", error);
+      }
+    };
+
+    checkPreviousResults();
+    loadStatistics();
+  }, [user]);
+
+  useEffect(() => {
+    if (!timeStarted && !hasPreviousResult) {
       setTimeStarted(new Date());
     }
-  }, [timeStarted]);
+  }, [timeStarted, hasPreviousResult]);
 
   const handleAnswer = (value: number) => {
     const newAnswers = [...answers];
@@ -320,17 +396,171 @@ export default function LeftRightTest() {
     };
   };
 
-  const handleFinish = () => {
-    setTimeCompleted(new Date());
+  const handleFinish = async () => {
+    const completedTime = new Date();
+    setTimeCompleted(completedTime);
     const calculatedResults = calculateResults();
     setResults(calculatedResults);
     setShowResults(true);
+
+    // Save results if user is authenticated
+    if (user && timeStarted) {
+      try {
+        await SurveyService.saveSurveyResult<Results>(
+          user.uid,
+          TEST_TYPES.POLITICAL_COORDINATES_LEFT_RIGHT,
+          answers,
+          calculatedResults,
+          timeStarted,
+          completedTime
+        );
+        setHasPreviousResult(true);
+      } catch (error) {
+        console.error("Error saving survey results:", error);
+      }
+    }
+  };
+
+  const handleRetake = async () => {
+    // Delete previous results if user is authenticated
+    if (user && hasPreviousResult) {
+      try {
+        await SurveyService.deleteSurveyResult(
+          user.uid,
+          TEST_TYPES.POLITICAL_COORDINATES_LEFT_RIGHT
+        );
+      } catch (error) {
+        console.error("Error deleting previous results:", error);
+      }
+    }
+
+    // Reset all state
+    setShowResults(false);
+    setCurrentQuestion(0);
+    setAnswers([]);
+    setResults(null);
+    setTimeStarted(new Date());
+    setTimeCompleted(null);
+    setHasPreviousResult(false);
+    setSharedResults(null); // Reset shared results state
+    setIsSharedView(false); // Reset shared view state
   };
 
   const currentAnswer = answers.find(a => a.questionId === questions[currentQuestion].id);
   const progress = ((currentQuestion + 1) / questions.length) * 100;
   const isLastQuestion = currentQuestion === questions.length - 1;
   const canProceed = currentAnswer !== undefined;
+
+  // Show loading state while checking for previous results
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show shared results view
+  if (isSharedView && sharedResults) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Link href="/playground" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-4">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Playground
+            </Link>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">Shared Political Orientation Results</h1>
+            <p className="text-gray-400">Someone shared their political orientation test results with you</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Shared Results Summary */}
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Flag className="h-6 w-6 text-blue-400" />
+                  Shared Results
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-400 mb-2">{sharedResults.politicalPosition}</div>
+                </div>
+                
+                {/* Score Breakdown */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-red-500/20 rounded-lg border border-red-500/30">
+                    <div className="text-2xl font-bold text-red-400 mb-1">{sharedResults.overallScore}%</div>
+                    <div className="text-sm text-gray-400">Overall</div>
+                  </div>
+                  <div className="text-center p-4 bg-blue-500/20 rounded-lg border border-blue-500/30">
+                    <div className="text-2xl font-bold text-blue-400 mb-1">{sharedResults.economicScore}%</div>
+                    <div className="text-sm text-gray-400">Economic</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-500/20 rounded-lg border border-green-500/30">
+                    <div className="text-2xl font-bold text-green-400 mb-1">{sharedResults.socialScore}%</div>
+                    <div className="text-sm text-gray-400">Social</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Take Test Yourself */}
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-6 w-6 text-purple-400" />
+                  Take the Test Yourself
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-gray-300">
+                  Curious about your own political orientation? Take the same test to discover where you fall on the political spectrum!
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Based on scientific research</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Only takes 5-10 minutes</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <span>Get detailed analysis and recommendations</span>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => {
+                    setIsSharedView(false);
+                    setSharedResults(null);
+                    setShowResults(false);
+                    setCurrentQuestion(0);
+                    setAnswers([]);
+                    setResults(null);
+                    setTimeStarted(new Date());
+                    setTimeCompleted(null);
+                    setHasPreviousResult(false);
+                    setSharedResults(null); // Reset shared results state
+                    setIsSharedView(false); // Reset shared view state
+                  }}
+                  className="w-full bg-blue-500 hover:bg-blue-600"
+                >
+                  Take Political Orientation Test
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showResults && results) {
     return (
@@ -361,6 +591,7 @@ export default function LeftRightTest() {
                   <p className="text-gray-300">{results.description}</p>
                 </div>
                 
+                {/* Score Breakdown */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-red-500/20 rounded-lg border border-red-500/30">
                     <div className="text-2xl font-bold text-red-400 mb-1">{results.leftScore}%</div>
@@ -406,6 +637,79 @@ export default function LeftRightTest() {
             </Card>
           </div>
 
+          {/* Detailed Political Spectrum */}
+          <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 mt-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-6 w-6 text-indigo-400" />
+                Political Spectrum Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Detailed Spectrum with Ideologies */}
+                <div className="relative">
+                  <div className="w-full h-12 bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 rounded-lg overflow-hidden">
+                                         {/* User Position */}
+                     <div 
+                       className="absolute top-0 w-6 h-6 bg-white rounded-full shadow-lg border-2 border-gray-800 transform -translate-x-3"
+                       style={{ left: `${results.rightScore}%`, top: '11px' }}
+                     >
+                     </div>
+                    
+                                         {/* Reference Points */}
+                     <div className="absolute top-0" style={{ left: '20%' }}>
+                       <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-white text-sm font-medium">
+                         Liberal
+                       </div>
+                     </div>
+                     <div className="absolute top-0" style={{ left: '50%' }}>
+                       <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-white text-sm font-medium">
+                         Centrist
+                       </div>
+                     </div>
+                     <div className="absolute top-0" style={{ left: '80%' }}>
+                       <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-white text-sm font-medium">
+                         Conservative
+                       </div>
+                     </div>
+                  </div>
+                  
+                  {/* Percentage Labels */}
+                  <div className="flex justify-between text-xs text-gray-400 mt-2">
+                    <span>0%</span>
+                    <span>25%</span>
+                    <span>50%</span>
+                    <span>75%</span>
+                    <span>100%</span>
+                  </div>
+                </div>
+                
+                {/* Position Analysis */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-gray-800/30 rounded-lg">
+                    <div className="text-lg font-bold text-red-400 mb-2">Left Wing</div>
+                    <div className="text-sm text-gray-400">
+                      Progressive, social equality, government intervention, environmental protection
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-gray-800/30 rounded-lg">
+                    <div className="text-lg font-bold text-yellow-400 mb-2">Center</div>
+                    <div className="text-sm text-gray-400">
+                      Balanced approach, pragmatic solutions, evidence-based policy
+                    </div>
+                  </div>
+                  <div className="text-center p-4 bg-gray-800/30 rounded-lg">
+                    <div className="text-lg font-bold text-blue-400 mb-2">Right Wing</div>
+                    <div className="text-sm text-gray-400">
+                      Traditional values, free markets, personal responsibility, limited government
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Recommendations */}
           <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 mt-8">
             <CardHeader>
@@ -432,24 +736,38 @@ export default function LeftRightTest() {
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button
-              onClick={() => {
-                setShowResults(false);
-                setCurrentQuestion(0);
-                setAnswers([]);
-                setResults(null);
-                setTimeStarted(null);
-                setTimeCompleted(null);
-              }}
+              onClick={handleRetake}
               className="bg-blue-500 hover:bg-blue-600"
             >
               <RotateCcw className="h-4 w-4 mr-2" />
-              Retake Test
+              {hasPreviousResult ? "Retake Test" : "Take Test Again"}
             </Button>
-            <Button variant="outline" className="border-gray-600 hover:bg-gray-800">
+            <Button 
+              onClick={() => {
+                const shareUrl = `${window.location.origin}/playground/left-right?shared=true&score=${results.rightScore}&orientation=${encodeURIComponent(results.orientation)}`;
+                navigator.clipboard.writeText(shareUrl);
+                alert('Shareable link copied to clipboard!');
+              }}
+              variant="outline" 
+              className="border-gray-600 hover:bg-gray-800"
+            >
               <Share2 className="h-4 w-4 mr-2" />
               Share Results
             </Button>
-            <Button variant="outline" className="border-gray-600 hover:bg-gray-800">
+            <Button 
+              onClick={() => {
+                const report = `Political Orientation Test Report\n\nYour Position: ${results.rightScore}% Right\nOrientation: ${results.orientation}\n\nDescription:\n${results.description}\n\nScientific Background:\n${results.scientificBackground}\n\nRecommendations:\n${results.recommendations.map((rec, i) => `${i+1}. ${rec}`).join('\n')}\n\nGenetic Factors:\n${results.geneticFactors.map((factor, i) => `${i+1}. ${factor}`).join('\n')}`;
+                const blob = new Blob([report], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'political-orientation-report.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              variant="outline" 
+              className="border-gray-600 hover:bg-gray-800"
+            >
               <Download className="h-4 w-4 mr-2" />
               Download Report
             </Button>
@@ -485,6 +803,14 @@ export default function LeftRightTest() {
               <span>Scientific</span>
             </div>
           </div>
+          
+          {!user && (
+            <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg max-w-md mx-auto">
+              <p className="text-yellow-300 text-sm text-center">
+                💡 You can take this test without signing in, but your results won&apos;t be saved.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Progress */}

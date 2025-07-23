@@ -170,8 +170,8 @@ export interface SearchQuery {
 export interface ContentAnalytics {
   contentId: string;
   contentType: 'article' | 'video' | 'research' | 'legal';
-  views: number;
-  uniqueViews: number;
+  clicks: number;
+  uniqueClicks: number;
   shares: number;
   likes: number;
   comments: number;

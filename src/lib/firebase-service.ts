@@ -862,10 +862,10 @@ export const UserProfileService = {
         ...(readTime && { readTime }),
       };
 
-      await updateDoc(docRef, {
+      await setDoc(docRef, {
         readingHistory: arrayUnion(historyEntry),
         updatedAt: serverTimestamp(),
-      });
+      }, { merge: true });
     } catch (error) {
       console.error("Error adding to reading history:", error);
     }
@@ -909,21 +909,21 @@ export const UserProfileService = {
         createdAt: serverTimestamp(),
       });
 
-      // Update follower's profile
+      // Update follower's profile - create if doesn't exist
       const followerRef = doc(db, "user-profiles", followerId);
-      batch.update(followerRef, {
+      batch.set(followerRef, {
         following: arrayUnion(followingId),
         [`following${followType.charAt(0).toUpperCase() + followType.slice(1)}s`]: arrayUnion(followingId),
         updatedAt: serverTimestamp(),
-      });
+      }, { merge: true });
 
-      // Update following user's profile (if following a user)
+      // Update following user's profile (if following a user) - create if doesn't exist
       if (followType === 'user') {
         const followingRef = doc(db, "user-profiles", followingId);
-        batch.update(followingRef, {
+        batch.set(followingRef, {
           followers: arrayUnion(followerId),
           updatedAt: serverTimestamp(),
-        });
+        }, { merge: true });
       }
 
       await batch.commit();
@@ -954,21 +954,21 @@ export const UserProfileService = {
         batch.delete(doc.ref);
       });
 
-      // Update follower's profile
+      // Update follower's profile - create if doesn't exist
       const followerRef = doc(db, "user-profiles", followerId);
-      batch.update(followerRef, {
+      batch.set(followerRef, {
         following: arrayRemove(followingId),
         [`following${followType.charAt(0).toUpperCase() + followType.slice(1)}s`]: arrayRemove(followingId),
         updatedAt: serverTimestamp(),
-      });
+      }, { merge: true });
 
-      // Update following user's profile (if unfollowing a user)
+      // Update following user's profile (if unfollowing a user) - create if doesn't exist
       if (followType === 'user') {
         const followingRef = doc(db, "user-profiles", followingId);
-        batch.update(followingRef, {
+        batch.set(followingRef, {
           followers: arrayRemove(followerId),
           updatedAt: serverTimestamp(),
-        });
+        }, { merge: true });
       }
 
       await batch.commit();
@@ -1110,7 +1110,8 @@ export const CommentService = {
     authorId: string,
     authorName: string,
     content: string,
-    parentId?: string
+    parentId?: string,
+    authorProfileImage?: string
   ): Promise<string> => {
     try {
       const parentComment = parentId ? await CommentService.getComment(parentId) : null;
@@ -1124,8 +1125,9 @@ export const CommentService = {
         content,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        status: 'pending' as const,
-        parentId,
+        status: 'approved' as const, // Changed from 'pending' to 'approved' for immediate visibility
+        ...(parentId && { parentId }), // Only include parentId if it exists
+        ...(authorProfileImage && { authorProfileImage }), // Include profile image if provided
         replies: [],
         depth,
         likes: 0,
