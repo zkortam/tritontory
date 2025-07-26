@@ -95,20 +95,11 @@ export default async function Home() {
         {/* Animated background */}
         <AnimatedHeroBackground />
 
-        {/* Hero Content */}
-        <div className="container relative z-10 mobile-safe-area py-8">
-          {/* Header */}
-          <div className="text-center mb-12 fade-in">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-4">
-              Triton Tory Media
-            </h1>
-            <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-              The comprehensive voice of UC San Diego
-            </p>
-          </div>
+                {/* Hero Content */}
+        <div className="container relative z-10 mobile-safe-area py-4">
           
-          {/* Sports Banner - Positioned under the title */}
-          <div className="flex justify-center mb-6 md:mb-8">
+          {/* Sports Banner - Positioned at the top */}
+          <div className="flex justify-center mb-4 md:mb-6">
             <div className="w-full max-w-lg" style={{ minHeight: '80px' }}>
               <SportsBanner style="minimal" />
             </div>

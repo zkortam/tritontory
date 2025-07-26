@@ -273,8 +273,8 @@ export function Navigation() {
                   <span className="sr-only">Menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[320px] bg-black border-gray-800 mobile-gpu-accelerated">
-                <div className="flex flex-col h-full mobile-safe-area">
+              <SheetContent side="right" className="w-[320px] bg-black border-gray-800 mobile-gpu-accelerated p-0">
+                <div className="flex flex-col h-full">
                   {/* Header Section */}
                   <div className="flex items-center justify-between p-4 border-b border-gray-800">
                     <div className="flex items-center space-x-3">
@@ -286,14 +286,6 @@ export function Navigation() {
                         <p className="text-gray-400 text-xs">Triton Tory Media</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="p-2 text-gray-400 hover:text-white transition-colors mobile-touch-target"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
                   </div>
 
                   {/* Search Section */}
@@ -311,7 +303,7 @@ export function Navigation() {
                   </div>
 
                   {/* Main Navigation */}
-                  <div className="flex-1 overflow-y-auto py-4">
+                  <div className="flex-1 py-4">
                     <div className="space-y-6">
                       {/* Primary Sections */}
                       <div>
