@@ -143,8 +143,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(user);
       if (user) {
         await fetchUserRole(user.uid);
-        // Handle redirect after successful authentication
-        handleSuccessfulAuth();
+        // Only handle redirect if there's a stored redirect URL (indicating recent sign-in)
+        const redirectTo = getRedirectUrl();
+        if (redirectTo && redirectTo !== '/auth') {
+          handleSuccessfulAuth();
+        }
       } else {
         setUserRole(null);
       }
@@ -153,7 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Cleanup subscription
     return unsubscribe;
-  }, [handleSuccessfulAuth]);
+  }, [handleSuccessfulAuth, getRedirectUrl]);
 
   // Sign in function
   const signIn = async (email: string, password: string, redirectTo?: string) => {
