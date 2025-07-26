@@ -131,7 +131,7 @@ export const CONFERENCES: Conference[] = [
         name: 'UCLA',
         shortName: 'UCLA',
         conference: 'Pac-12',
-        logo: '/ucla.jpg',
+        logo: '/ucla.png',
         primaryColor: '#1E40AF',
         secondaryColor: '#F59E0B',
         instagram: 'https://www.instagram.com/uclabruins/'

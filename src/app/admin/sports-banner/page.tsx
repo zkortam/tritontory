@@ -29,6 +29,7 @@ export default function SportsBannerAdmin() {
   const [loading, setLoading] = useState(true);
   const [editingBanner, setEditingBanner] = useState<SportBanner | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
   const [syncMode, setSyncMode] = useState<'auto' | 'manual'>('manual');
   const [autoSyncInterval, setAutoSyncInterval] = useState(2); // minutes
@@ -111,6 +112,7 @@ export default function SportsBannerAdmin() {
       });
       toast.success('Banner updated successfully');
       setEditingBanner(null);
+      setIsEditDialogOpen(false);
       setFormData({
         sport: 'basketball',
         homeTeamId: 'ucsd',
@@ -198,6 +200,8 @@ export default function SportsBannerAdmin() {
       timeRemaining: banner.timeRemaining || '',
       isEnabled: banner.isEnabled,
     });
+    
+    setIsEditDialogOpen(true);
   };
 
   const getStatusColor = (status: string): string => {
@@ -326,6 +330,22 @@ export default function SportsBannerAdmin() {
               />
             </DialogContent>
           </Dialog>
+          
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Edit Sports Banner</DialogTitle>
+              </DialogHeader>
+              {editingBanner && (
+                <BannerForm
+                  formData={formData}
+                  setFormData={setFormData}
+                  onSubmit={handleUpdateBanner}
+                  submitLabel="Update Banner"
+                />
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -411,21 +431,16 @@ export default function SportsBannerAdmin() {
         </TabsContent>
 
         <TabsContent value="active" className="space-y-4">
-          {editingBanner && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Edit Banner</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <BannerForm
-                  formData={formData}
-                  setFormData={setFormData}
-                  onSubmit={handleUpdateBanner}
-                  submitLabel="Update Banner"
-                />
-              </CardContent>
-            </Card>
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Banner</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">
+                Use the edit button next to any banner to modify its details. The active banner will be displayed on the main site.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="espn" className="space-y-4">
