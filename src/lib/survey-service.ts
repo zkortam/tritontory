@@ -217,6 +217,10 @@ export const TEST_TYPES = {
   POLITICAL_COORDINATES_LEFT_RIGHT: 'political_coordinates_left_right',
   DARK_TRIAD: 'dark_triad',
   VILLAIN_TEST: 'villain_test',
+  PHONE_GERMS: 'phone_germs',
+  MONEY_PERSONALITY: 'money_personality',
+  ORGANIZATION_TEST: 'organization_test',
+  LEARNING_STYLE: 'learning_style',
 } as const;
 
 export type TestType = typeof TEST_TYPES[keyof typeof TEST_TYPES]; 

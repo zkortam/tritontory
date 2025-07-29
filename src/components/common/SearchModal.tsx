@@ -14,12 +14,13 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { cn } from "@/lib/utils";
-import { Search, ArrowRight, User, Filter, X, TrendingUp, Eye } from "lucide-react";
+import { Search, ArrowRight, User, Filter, X, TrendingUp, Eye, Brain, Globe, Clock, Target } from "lucide-react";
 import { SearchService, SearchResult } from "@/lib/search-service";
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isPlaygroundSearch?: boolean;
 }
 
 const typeColors = {
@@ -58,7 +59,223 @@ const contentTypeOptions = [
   { value: "legal", label: "Legal" },
 ];
 
-export function SearchModal({ isOpen, onClose }: SearchModalProps) {
+// Playground items for search
+const playgroundItems = [
+  // Tests
+  {
+    id: "villain-test",
+    title: "Villain Test",
+    description: "Compare yourself with 20 historical figures using Big Five personality theory",
+    type: "test",
+    category: "Personality Tests",
+    difficulty: "Medium",
+    time: "10-15 min",
+    questions: 45,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/villain-test"
+  },
+  {
+    id: "dark-triad",
+    title: "Dark Triad Test",
+    description: "Measure narcissism, Machiavellianism, and psychopathy traits",
+    type: "test",
+    category: "Personality Tests",
+    difficulty: "Medium",
+    time: "8-12 min",
+    questions: 30,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/dark-triad"
+  },
+  {
+    id: "political-coordinates",
+    title: "Political Coordinates Test",
+    description: "Find your position on the political spectrum with this unbiased test",
+    type: "test",
+    category: "Political Tests",
+    difficulty: "Easy",
+    time: "5-10 min",
+    questions: 20,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/political-coordinates"
+  },
+  {
+    id: "left-right",
+    title: "Left vs Right Test",
+    description: "Based on scientific research linking genetics to political orientation",
+    type: "test",
+    category: "Political Tests",
+    difficulty: "Easy",
+    time: "3-5 min",
+    questions: 15,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/left-right"
+  },
+  {
+    id: "iq-test",
+    title: "IQ Assessment",
+    description: "Comprehensive intelligence quotient measurement",
+    type: "test",
+    category: "Cognitive Tests",
+    difficulty: "Hard",
+    time: "15-20 min",
+    questions: 25,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/iq-test"
+  },
+  {
+    id: "memory-test",
+    title: "Memory Test",
+    description: "Evaluate your short-term and working memory",
+    type: "test",
+    category: "Cognitive Tests",
+    difficulty: "Medium",
+    time: "10-15 min",
+    questions: 20,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/memory-test"
+  },
+  {
+    id: "empathy-test",
+    title: "Empathy Test",
+    description: "Measure your emotional intelligence and empathy levels",
+    type: "test",
+    category: "Social Tests",
+    difficulty: "Easy",
+    time: "5-8 min",
+    questions: 18,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/empathy-test"
+  },
+  {
+    id: "leadership-test",
+    title: "Leadership Style",
+    description: "Discover your natural leadership approach",
+    type: "test",
+    category: "Social Tests",
+    difficulty: "Medium",
+    time: "8-12 min",
+    questions: 25,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/leadership-test"
+  },
+  {
+    id: "phone-germs",
+    title: "Phone Germs Test",
+    description: "Find out how many germs are living on your phone!",
+    type: "test",
+    category: "Lifestyle Tests",
+    difficulty: "Easy",
+    time: "3-5 min",
+    questions: 15,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/phone-germs"
+  },
+  {
+    id: "money-personality",
+    title: "Money Personality Test",
+    description: "Discover your financial habits and get personalized money advice!",
+    type: "test",
+    category: "Lifestyle Tests",
+    difficulty: "Easy",
+    time: "5-8 min",
+    questions: 12,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/money-personality"
+  },
+  {
+    id: "organization-test",
+    title: "Organization Test",
+    description: "How organized are you? Find out and get personalized tips!",
+    type: "test",
+    category: "Lifestyle Tests",
+    difficulty: "Easy",
+    time: "5-8 min",
+    questions: 12,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/organization-test"
+  },
+  {
+    id: "learning-style",
+    title: "Learning Style Test",
+    description: "Discover how you learn best and get personalized study tips!",
+    type: "test",
+    category: "Lifestyle Tests",
+    difficulty: "Easy",
+    time: "5-8 min",
+    questions: 12,
+    icon: <Brain className="h-5 w-5" />,
+    url: "/playground/learning-style"
+  },
+  // Geography Games
+  {
+    id: "country-explorer",
+    title: "Country Explorer",
+    description: "Learn about countries, capitals, and flags through interactive exploration",
+    type: "game",
+    category: "Geography Games",
+    difficulty: "Easy",
+    time: "5-10 min",
+    icon: <Globe className="h-5 w-5" />,
+    url: "/playground/geography"
+  },
+  {
+    id: "country-guesser",
+    title: "Country Guesser",
+    description: "Guess countries based on hints and clues - like Globle!",
+    type: "game",
+    category: "Geography Games",
+    difficulty: "Medium",
+    time: "5-15 min",
+    icon: <Globe className="h-5 w-5" />,
+    url: "/playground/geography"
+  },
+  {
+    id: "capital-finder",
+    title: "Capital Finder",
+    description: "Test your knowledge of world capitals",
+    type: "game",
+    category: "Geography Games",
+    difficulty: "Medium",
+    time: "5-10 min",
+    icon: <Globe className="h-5 w-5" />,
+    url: "/playground/geography"
+  },
+  {
+    id: "flag-master",
+    title: "Flag Master",
+    description: "Identify countries by their flags",
+    type: "game",
+    category: "Geography Games",
+    difficulty: "Easy",
+    time: "3-8 min",
+    icon: <Globe className="h-5 w-5" />,
+    url: "/playground/geography"
+  },
+  {
+    id: "continent-quiz",
+    title: "Continent Quiz",
+    description: "Test your knowledge of world continents and regions",
+    type: "game",
+    category: "Geography Games",
+    difficulty: "Easy",
+    time: "3-5 min",
+    icon: <Globe className="h-5 w-5" />,
+    url: "/playground/geography"
+  },
+  {
+    id: "geography-trivia",
+    title: "Geography Trivia",
+    description: "Fun geography facts and trivia questions",
+    type: "game",
+    category: "Geography Games",
+    difficulty: "Medium",
+    time: "5-10 min",
+    icon: <Globe className="h-5 w-5" />,
+    url: "/playground/geography"
+  }
+];
+
+export function SearchModal({ isOpen, onClose, isPlaygroundSearch = false }: SearchModalProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -86,39 +303,55 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     setLoading(true);
 
     try {
-      const searchResults = await SearchService.searchAll(searchQuery, 20);
-      
-      // Apply basic filters
-      let filteredResults = searchResults;
-      
-      if (filters.contentType && filters.contentType !== "all") {
-        filteredResults = filteredResults.filter(result => result.type === filters.contentType);
-      }
-      
-      if (filters.category) {
-        filteredResults = filteredResults.filter(result => 
-          result.category.toLowerCase().includes(filters.category.toLowerCase())
-        );
-      }
-      
-      if (filters.author) {
-        filteredResults = filteredResults.filter(result => 
-          result.authorName.toLowerCase().includes(filters.author.toLowerCase())
-        );
-      }
+      if (isPlaygroundSearch) {
+        // Search playground items
+        const filteredResults = playgroundItems.filter(item => {
+          const matchesQuery = 
+            item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.category.toLowerCase().includes(searchQuery.toLowerCase());
+          
+          return matchesQuery;
+        });
 
-      setResults(filteredResults);
-      setSelectedIndex(0);
+        setResults(filteredResults as any);
+        setSelectedIndex(0);
+      } else {
+        // Search regular content
+        const searchResults = await SearchService.searchAll(searchQuery, 20);
+        
+        // Apply basic filters
+        let filteredResults = searchResults;
+        
+        if (filters.contentType && filters.contentType !== "all") {
+          filteredResults = filteredResults.filter(result => result.type === filters.contentType);
+        }
+        
+        if (filters.category) {
+          filteredResults = filteredResults.filter(result => 
+            result.category.toLowerCase().includes(filters.category.toLowerCase())
+          );
+        }
+        
+        if (filters.author) {
+          filteredResults = filteredResults.filter(result => 
+            result.authorName.toLowerCase().includes(filters.author.toLowerCase())
+          );
+        }
+
+        setResults(filteredResults);
+        setSelectedIndex(0);
+      }
 
       // Track search query (simplified)
-      console.log('Search tracked:', { searchQuery, resultsCount: filteredResults.length, filters });
+      console.log('Search tracked:', { searchQuery, resultsCount: results.length, filters, isPlaygroundSearch });
     } catch (error) {
       console.error("Search error:", error);
       setResults([]);
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, isPlaygroundSearch]);
 
   // Get search suggestions
   const getSuggestions = useCallback(async (searchQuery: string) => {
@@ -200,19 +433,23 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             const result = results[selectedIndex];
             let url = "";
             
-            switch (result.type) {
-              case "article":
-                url = `/triton-tory/${result.id}`;
-                break;
-              case "video":
-                url = `/triton-today/${result.id}`;
-                break;
-              case "research":
-                url = `/triton-science/${result.id}`;
-                break;
-              case "legal":
-                url = `/triton-law/${result.id}`;
-                break;
+            if (isPlaygroundSearch && 'url' in result) {
+              url = (result as any).url;
+            } else {
+              switch (result.type) {
+                case "article":
+                  url = `/triton-tory/${result.id}`;
+                  break;
+                case "video":
+                  url = `/triton-today/${result.id}`;
+                  break;
+                case "research":
+                  url = `/triton-science/${result.id}`;
+                  break;
+                case "legal":
+                  url = `/triton-law/${result.id}`;
+                  break;
+              }
             }
             
             router.push(url);
@@ -229,28 +466,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, results, suggestions, selectedIndex, showSuggestions, router, onClose]);
 
-  // Global keyboard shortcut - disabled on mobile
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Check if it's a mobile device
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      if (isMobile) return; // Disable keyboard shortcuts on mobile
 
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        if (!isOpen) {
-          // Open search modal
-          setQuery("");
-          setResults([]);
-          setSelectedIndex(0);
-          setShowSuggestions(false);
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -310,13 +526,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         <div className="relative flex-shrink-0">
           <Search className="absolute left-4 md:left-6 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search articles, videos, research, and legal analysis..."
+            placeholder={isPlaygroundSearch ? "Search tests and geography games..." : "Search articles, videos, research, and legal analysis..."}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              setShowSuggestions(true);
+              setShowSuggestions(!isPlaygroundSearch);
             }}
-            onFocus={() => setShowSuggestions(true)}
+            onFocus={() => setShowSuggestions(!isPlaygroundSearch)}
             className="border-0 border-b border-gray-700 rounded-none bg-transparent px-12 md:px-12 py-4 md:py-6 text-base md:text-lg focus-visible:ring-0 focus-visible:ring-offset-0 mobile-accessible-text mobile-search-input"
             autoFocus
             autoComplete="off"
@@ -498,72 +714,129 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           {results.length > 0 && (
             <div className="p-2">
               {results.map((result, index) => {
-                let url = "";
-                switch (result.type) {
-                  case "article":
-                    url = `/triton-tory/${result.id}`;
-                    break;
-                  case "video":
-                    url = `/triton-today/${result.id}`;
-                    break;
-                  case "research":
-                    url = `/triton-science/${result.id}`;
-                    break;
-                  case "legal":
-                    url = `/triton-law/${result.id}`;
-                    break;
-                }
-
-                return (
-                  <button
-                    key={result.id}
-                    onClick={() => {
-                      router.push(url);
-                      onClose();
-                    }}
-                    className={cn(
-                      "w-full text-left p-3 rounded-lg hover:bg-gray-800 transition-colors mobile-touch-target mobile-search-item",
-                      index === selectedIndex && "bg-gray-800"
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn("w-2 h-2 rounded-full mt-2 flex-shrink-0", typeColors[result.type])} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge className={cn("text-xs", typeColors[result.type])}>
-                            {typeLabels[result.type]}
-                          </Badge>
-                          <span className="text-xs text-gray-400">{formatDate(result.publishedAt)}</span>
+                if (isPlaygroundSearch) {
+                  // Render playground items
+                  const playgroundResult = result as any;
+                  return (
+                    <button
+                      key={playgroundResult.id}
+                      onClick={() => {
+                        router.push(playgroundResult.url);
+                        onClose();
+                      }}
+                      className={cn(
+                        "w-full text-left p-3 rounded-lg hover:bg-gray-800 transition-colors mobile-touch-target mobile-search-item",
+                        index === selectedIndex && "bg-gray-800"
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-1">
+                          {playgroundResult.icon}
                         </div>
-                        <h4 className="font-medium text-white mb-1 line-clamp-1">
-                          {result.title}
-                        </h4>
-                        <p className="text-sm text-gray-400 line-clamp-2 mb-2">
-                          {result.excerpt || result.description || result.abstract}
-                        </p>
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <div className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            <span>{result.authorName}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge className={playgroundResult.type === "test" ? "bg-purple-500" : "bg-green-500"}>
+                              {playgroundResult.type === "test" ? "Test" : "Game"}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {playgroundResult.category}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {playgroundResult.difficulty}
+                            </Badge>
                           </div>
-                          {result.views && (
+                          <h4 className="font-medium text-white mb-1 line-clamp-1">
+                            {playgroundResult.title}
+                          </h4>
+                          <p className="text-sm text-gray-400 line-clamp-2 mb-2">
+                            {playgroundResult.description}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
                             <div className="flex items-center gap-1">
-                              <Eye className="h-3 w-3" />
-                              <span>{result.views}</span>
+                              <Clock className="h-3 w-3" />
+                              <span>{playgroundResult.time}</span>
                             </div>
-                          )}
-                          {result.likes > 0 && (
-                            <div className="flex items-center gap-1">
-                              <TrendingUp className="h-3 w-3" />
-                              <span>{result.likes}</span>
-                            </div>
-                          )}
+                            {playgroundResult.questions && (
+                              <div className="flex items-center gap-1">
+                                <Target className="h-3 w-3" />
+                                <span>{playgroundResult.questions} questions</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
+                        <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0 mt-2" />
                       </div>
-                      <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0 mt-2" />
-                    </div>
-                  </button>
-                );
+                    </button>
+                  );
+                } else {
+                  // Render regular content
+                  let url = "";
+                  switch (result.type) {
+                    case "article":
+                      url = `/triton-tory/${result.id}`;
+                      break;
+                    case "video":
+                      url = `/triton-today/${result.id}`;
+                      break;
+                    case "research":
+                      url = `/triton-science/${result.id}`;
+                      break;
+                    case "legal":
+                      url = `/triton-law/${result.id}`;
+                      break;
+                  }
+
+                  return (
+                    <button
+                      key={result.id}
+                      onClick={() => {
+                        router.push(url);
+                        onClose();
+                      }}
+                      className={cn(
+                        "w-full text-left p-3 rounded-lg hover:bg-gray-800 transition-colors mobile-touch-target mobile-search-item",
+                        index === selectedIndex && "bg-gray-800"
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={cn("w-2 h-2 rounded-full mt-2 flex-shrink-0", typeColors[result.type])} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge className={cn("text-xs", typeColors[result.type])}>
+                              {typeLabels[result.type]}
+                            </Badge>
+                            <span className="text-xs text-gray-400">{formatDate(result.publishedAt)}</span>
+                          </div>
+                          <h4 className="font-medium text-white mb-1 line-clamp-1">
+                            {result.title}
+                          </h4>
+                          <p className="text-sm text-gray-400 line-clamp-2 mb-2">
+                            {result.excerpt || result.description || result.abstract}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <User className="h-3 w-3" />
+                              <span>{result.authorName}</span>
+                            </div>
+                            {result.views && (
+                              <div className="flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                <span>{result.views}</span>
+                              </div>
+                            )}
+                            {result.likes > 0 && (
+                              <div className="flex items-center gap-1">
+                                <TrendingUp className="h-3 w-3" />
+                                <span>{result.likes}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0 mt-2" />
+                      </div>
+                    </button>
+                  );
+                }
               })}
             </div>
           )}
