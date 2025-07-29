@@ -13,19 +13,8 @@ import {
   Hand,
   Brain,
   RotateCcw,
-  CheckCircle,
-  AlertTriangle,
-  Shield,
-  Zap,
-  Target,
-  FileText,
-  Archive,
-  Search,
-  List,
-  Grid,
   Lightbulb,
   Users,
-  Monitor,
   Share2,
   Download
 } from "lucide-react";
@@ -40,9 +29,10 @@ export default function LearningStyleTest() {
   const [loading, setLoading] = useState(true);
   const [hasPreviousResult, setHasPreviousResult] = useState(false);
   const [timeStarted, setTimeStarted] = useState<Date | null>(null);
-  const [timeCompleted, setTimeCompleted] = useState<Date | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [results, setResults] = useState<any>(null);
   const [isSharedView, setIsSharedView] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [sharedResults, setSharedResults] = useState<any>(null);
 
   const questions = [
@@ -216,7 +206,6 @@ export default function LearningStyleTest() {
               setHasPreviousResult(true);
               setResults(savedResult.results);
               setTimeStarted(savedResult.timeStarted);
-              setTimeCompleted(savedResult.timeCompleted);
               setShowResults(true);
             }
           }
@@ -249,7 +238,6 @@ export default function LearningStyleTest() {
 
   const handleFinish = async () => {
     const completedTime = new Date();
-    setTimeCompleted(completedTime);
     const calculatedResults = calculateLearningStyle();
     setResults(calculatedResults);
     setShowResults(true);
@@ -289,8 +277,8 @@ export default function LearningStyleTest() {
     
     const maxCount = Math.max(...Object.values(counts));
     const dominantStyles = Object.entries(counts)
-      .filter(([_, count]) => count === maxCount)
-      .map(([style, _]) => style);
+      .filter(([, count]) => count === maxCount)
+      .map(([style]) => style);
     
     if (dominantStyles.length === 1) {
       const style = dominantStyles[0];
@@ -424,7 +412,6 @@ export default function LearningStyleTest() {
     setAnswers([]);
     setResults(null);
     setTimeStarted(new Date());
-    setTimeCompleted(null);
     setHasPreviousResult(false);
   };
 
@@ -529,8 +516,8 @@ export default function LearningStyleTest() {
                   <div className="p-4 bg-gray-800/50 rounded-lg">
                     <h3 className="font-semibold mb-2">Your Learning Traits:</h3>
                     <div className="flex flex-wrap gap-2">
-                      {result.traits.map((trait: string, index: number) => (
-                        <Badge key={index} className="bg-gray-700 text-white">
+                      {result.traits.map((trait: string, _index: number) => (
+                        <Badge key={_index} className="bg-gray-700 text-white">
                           {trait}
                         </Badge>
                       ))}
@@ -540,8 +527,8 @@ export default function LearningStyleTest() {
                   <div className="p-4 bg-gray-800/50 rounded-lg">
                     <h3 className="font-semibold mb-2">Study Tips for You:</h3>
                     <ul className="text-gray-300 text-sm space-y-1">
-                      {result.tips.map((tip: string, index: number) => (
-                        <li key={index}>• {tip}</li>
+                      {result.tips.map((tip: string, _index: number) => (
+                        <li key={_index}>• {tip}</li>
                       ))}
                     </ul>
                   </div>
@@ -615,7 +602,7 @@ export default function LearningStyleTest() {
               <BookOpen className="h-8 w-8 text-purple-400" />
             </div>
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              What's Your Learning Style?
+              What&apos;s Your Learning Style?
             </h1>
             <p className="text-xl text-gray-300 mb-6">
               Discover how you learn best and get personalized study tips!

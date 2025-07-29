@@ -4,22 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft,
   Smartphone,
   Shield,
   AlertTriangle,
   CheckCircle,
-  XCircle,
   RotateCcw,
-  Hand,
-  Users,
-  Bus,
-  Baby,
-  Dog,
-  Clock,
-  Share2,
   Bug
 } from "lucide-react";
 
@@ -261,7 +252,7 @@ export default function PhoneGermsTest() {
                       <li>• Clean your phone daily with disinfectant wipes</li>
                       <li>• Wash your hands frequently, especially after using the bathroom</li>
                       <li>• Avoid touching your face after handling your phone</li>
-                      <li>• Don't share your phone with others</li>
+                      <li>• Don&apos;t share your phone with others</li>
                       <li>• Wash hands for at least 20 seconds</li>
                     </ul>
                   </div>

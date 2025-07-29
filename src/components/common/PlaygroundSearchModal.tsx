@@ -296,7 +296,7 @@ export function PlaygroundSearchModal({ isOpen, onClose }: PlaygroundSearchModal
 
     try {
       // Filter playground items based on query and filters
-      let filteredResults = playgroundItems.filter(item => {
+      const filteredResults = playgroundItems.filter(item => {
         const matchesQuery = 
           item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -9,19 +9,11 @@ import {
   ArrowLeft,
   DollarSign,
   PiggyBank,
-  CreditCard,
   TrendingUp,
   ShoppingCart,
   Calculator,
   RotateCcw,
-  CheckCircle,
   AlertTriangle,
-  Shield,
-  Zap,
-  Target,
-  Wallet,
-  Receipt,
-  Coins,
   Share2,
   Download
 } from "lucide-react";
@@ -36,9 +28,10 @@ export default function MoneyPersonalityTest() {
   const [loading, setLoading] = useState(true);
   const [hasPreviousResult, setHasPreviousResult] = useState(false);
   const [timeStarted, setTimeStarted] = useState<Date | null>(null);
-  const [timeCompleted, setTimeCompleted] = useState<Date | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [results, setResults] = useState<any>(null);
   const [isSharedView, setIsSharedView] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [sharedResults, setSharedResults] = useState<any>(null);
 
   const questions = [
@@ -212,7 +205,6 @@ export default function MoneyPersonalityTest() {
               setHasPreviousResult(true);
               setResults(savedResult.results);
               setTimeStarted(savedResult.timeStarted);
-              setTimeCompleted(savedResult.timeCompleted);
               setShowResults(true);
             }
           }
@@ -245,7 +237,6 @@ export default function MoneyPersonalityTest() {
 
   const handleFinish = async () => {
     const completedTime = new Date();
-    setTimeCompleted(completedTime);
     const calculatedResults = calculatePersonality();
     setResults(calculatedResults);
     setShowResults(true);
@@ -364,7 +355,6 @@ export default function MoneyPersonalityTest() {
     setAnswers([]);
     setResults(null);
     setTimeStarted(new Date());
-    setTimeCompleted(null);
     setHasPreviousResult(false);
   };
 
@@ -555,7 +545,7 @@ export default function MoneyPersonalityTest() {
               <DollarSign className="h-8 w-8 text-green-400" />
             </div>
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-              What's Your Money Personality?
+              What&apos;s Your Money Personality?
             </h1>
             <p className="text-xl text-gray-300 mb-6">
               Discover your financial habits and get personalized money advice!

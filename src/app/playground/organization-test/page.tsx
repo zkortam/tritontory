@@ -8,20 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft,
   FolderOpen,
-  Calendar,
-  CheckSquare,
-  Clock,
   RotateCcw,
   CheckCircle,
   AlertTriangle,
-  Shield,
-  Zap,
-  Target,
-  FileText,
-  Archive,
   Search,
-  List,
-  Grid,
   Share2,
   Download
 } from "lucide-react";
@@ -36,9 +26,10 @@ export default function OrganizationTest() {
   const [loading, setLoading] = useState(true);
   const [hasPreviousResult, setHasPreviousResult] = useState(false);
   const [timeStarted, setTimeStarted] = useState<Date | null>(null);
-  const [timeCompleted, setTimeCompleted] = useState<Date | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [results, setResults] = useState<any>(null);
   const [isSharedView, setIsSharedView] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [sharedResults, setSharedResults] = useState<any>(null);
 
   const questions = [
@@ -212,7 +203,6 @@ export default function OrganizationTest() {
               setHasPreviousResult(true);
               setResults(savedResult.results);
               setTimeStarted(savedResult.timeStarted);
-              setTimeCompleted(savedResult.timeCompleted);
               setShowResults(true);
             }
           }
@@ -245,7 +235,6 @@ export default function OrganizationTest() {
 
   const handleFinish = async () => {
     const completedTime = new Date();
-    setTimeCompleted(completedTime);
     const calculatedResults = calculateOrganization();
     setResults(calculatedResults);
     setShowResults(true);
@@ -364,7 +353,6 @@ export default function OrganizationTest() {
     setAnswers([]);
     setResults(null);
     setTimeStarted(new Date());
-    setTimeCompleted(null);
     setHasPreviousResult(false);
   };
 

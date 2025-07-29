@@ -314,7 +314,7 @@ export function SearchModal({ isOpen, onClose, isPlaygroundSearch = false }: Sea
           return matchesQuery;
         });
 
-        setResults(filteredResults as any);
+        setResults(filteredResults as unknown as SearchResult[]);
         setSelectedIndex(0);
       } else {
         // Search regular content
@@ -351,7 +351,7 @@ export function SearchModal({ isOpen, onClose, isPlaygroundSearch = false }: Sea
     } finally {
       setLoading(false);
     }
-  }, [filters, isPlaygroundSearch]);
+  }, [filters, isPlaygroundSearch, results.length]);
 
   // Get search suggestions
   const getSuggestions = useCallback(async (searchQuery: string) => {
@@ -434,7 +434,7 @@ export function SearchModal({ isOpen, onClose, isPlaygroundSearch = false }: Sea
             let url = "";
             
             if (isPlaygroundSearch && 'url' in result) {
-              url = (result as any).url;
+              url = (result as { url: string }).url;
             } else {
               switch (result.type) {
                 case "article":
@@ -464,7 +464,7 @@ export function SearchModal({ isOpen, onClose, isPlaygroundSearch = false }: Sea
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, results, suggestions, selectedIndex, showSuggestions, router, onClose]);
+  }, [isOpen, results, suggestions, selectedIndex, showSuggestions, router, onClose, isPlaygroundSearch]);
 
 
 
@@ -716,7 +716,18 @@ export function SearchModal({ isOpen, onClose, isPlaygroundSearch = false }: Sea
               {results.map((result, index) => {
                 if (isPlaygroundSearch) {
                   // Render playground items
-                  const playgroundResult = result as any;
+                  const playgroundResult = result as unknown as {
+                    id: string;
+                    url: string;
+                    icon: React.ReactNode;
+                    type: string;
+                    category: string;
+                    difficulty: string;
+                    title: string;
+                    description: string;
+                    time: string;
+                    questions?: number;
+                  };
                   return (
                     <button
                       key={playgroundResult.id}

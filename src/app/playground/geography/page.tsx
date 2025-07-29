@@ -12,20 +12,14 @@ import {
   Building,
   ArrowRight,
   ArrowLeft,
-  Compass,
   Target,
   Clock,
   Trophy,
-  Star,
   Zap,
-  Search,
   Thermometer,
   CheckCircle,
   XCircle,
-  HelpCircle,
-  RotateCcw,
-  Play,
-  Pause
+  RotateCcw
 } from "lucide-react";
 
 export default function GeographyPage() {
@@ -449,7 +443,7 @@ function CountryGuesserGame({ onBack }: { onBack: () => void }) {
             Country Guesser
           </h1>
           <p className="text-xl text-gray-300 mb-6">
-            I'm thinking of a country. Can you guess it?
+            I&apos;m thinking of a country. Can you guess it?
           </p>
           
           {gameState === "playing" && (
