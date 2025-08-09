@@ -289,7 +289,11 @@ export default function TritonLawPage() {
                 </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredLegal.map((item) => renderFeaturedLegalCard(item))}
+                {filteredLegal.map((item) => (
+                  <div key={item.id}>
+                    {renderFeaturedLegalCard(item)}
+                  </div>
+                ))}
               </div>
             )}
           </section>
@@ -307,9 +311,11 @@ export default function TritonLawPage() {
                 <h2 className="text-2xl font-bold text-white">Featured Analysis</h2>
                   </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {featuredLegal.slice(0, 2).map((item) => 
-                  renderFeaturedLegalCard(item)
-                )}
+                {featuredLegal.slice(0, 2).map((item) => (
+                  <div key={item.id}>
+                    {renderFeaturedLegalCard(item)}
+                  </div>
+                ))}
               </div>
         </div>
         
@@ -317,10 +323,14 @@ export default function TritonLawPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {legalCategories.map((category) => {
                 const categoryLegal = legalArticles.filter(l => l.category === category.name);
-                return renderCategorySection(
-                  category.name, 
-                  categoryLegal, 
-                  category.icon
+                return (
+                  <div key={category.name}>
+                    {renderCategorySection(
+                      category.name, 
+                      categoryLegal, 
+                      category.icon
+                    )}
+                  </div>
                 );
               })}
             </div>

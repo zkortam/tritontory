@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Newspaper, Video, Scale, FlaskConical, Building, Globe } from "lucide-react";
+import { ArrowLeft, Newspaper, Video, Scale, FlaskConical, Building, Globe, Mail } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -84,10 +84,23 @@ export default function AboutPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
             About Triton Tory Media
           </h1>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed mb-8">
             The comprehensive voice of UC San Diego, delivering news, analysis, and insights 
             across campus life, research, and legal discourse.
           </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild className="bg-tory-500 hover:bg-tory-600 text-white">
+              <Link href="/contact">
+                <Mail className="h-4 w-4 mr-2" />
+                Get In Touch
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500">
+              <Link href="/triton-tory">
+                Explore Our News
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* History Section */}
@@ -205,7 +218,7 @@ export default function AboutPage() {
         </div>
 
         {/* Mission Section */}
-        <div className="max-w-4xl mx-auto pb-16">
+        <div className="max-w-4xl mx-auto mb-20">
           <Card className="bg-gradient-to-br from-gray-900/30 to-tory-900/10 border-gray-800/50 backdrop-blur-sm">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl text-white mb-2">Our Mission</CardTitle>
@@ -214,12 +227,49 @@ export default function AboutPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-                              <p className="text-gray-300 leading-relaxed max-w-3xl mx-auto">
+              <p className="text-gray-300 leading-relaxed max-w-3xl mx-auto mb-6">
                 Triton Tory Media is committed to providing accurate, engaging, and comprehensive coverage 
                 of UC San Diego&apos;s vibrant campus community. From breaking news to in-depth analysis, 
                 we strive to inform, inspire, and connect the Triton community through quality journalism 
                 and innovative storytelling across all our platforms.
               </p>
+              <Button asChild className="bg-tory-500 hover:bg-tory-600 text-white">
+                <Link href="/contact">
+                  <Mail className="h-4 w-4 mr-2" />
+                  Contact Us
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Contact CTA Section */}
+        <div className="max-w-4xl mx-auto pb-16">
+          <Card className="bg-gray-900/30 border-gray-800/50 backdrop-blur-sm">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl text-white mb-2">Get Involved</CardTitle>
+              <CardDescription className="text-gray-400">
+                Join our team or share your story
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-gray-300 leading-relaxed max-w-2xl mx-auto mb-6">
+                Whether you're interested in joining our team, have a story to share, or want to support 
+                student journalism, we'd love to hear from you.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild className="bg-tory-500 hover:bg-tory-600 text-white">
+                  <Link href="/contact">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Contact Us
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500">
+                  <Link href="/playground">
+                    Explore Our Games
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -178,109 +178,105 @@ export default function VideoPage() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Video */}
-          <div className="lg:col-span-2">
-            <div className="relative">
-              <video
-                ref={videoRef}
-                src={video.videoUrl}
-                poster={video.thumbnailUrl}
-                className="w-full aspect-[9/16] max-w-md mx-auto object-cover rounded-lg"
-                loop
-                playsInline
-                autoPlay
-                muted={isMuted}
-                onPlay={() => {
-                  setIsPlaying(true);
-                  // Track view when video starts playing
-                  trackVideoView();
-                }}
-                onPause={() => setIsPlaying(false)}
-              />
-              
-              {/* Video Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center max-w-md mx-auto">
-                <button
-                  onClick={handleVideoClick}
-                  className="bg-black/50 rounded-full p-4 opacity-0 hover:opacity-100 transition-opacity"
-                >
-                  {isPlaying ? (
-                    <Pause className="w-8 h-8 text-white" />
-                  ) : (
-                    <Play className="w-8 h-8 text-white" />
-                  )}
-                </button>
-              </div>
-
-              {/* Video Controls */}
-              <div className="absolute top-4 right-4 max-w-md mx-auto">
-                <button
-                  onClick={handleMuteToggle}
-                  className="bg-black/50 rounded-full p-2 text-white"
-                >
-                  {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                </button>
-              </div>
-
-              {/* Duration Badge */}
-              <div className="absolute top-4 left-4 max-w-md mx-auto">
-                <Badge className="bg-black/80 text-white text-xs">
-                  {formatDuration(video.duration)}
-                </Badge>
-              </div>
+        <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-4xl mx-auto gap-6">
+          {/* Video Player */}
+          <div className="relative flex-shrink-0">
+            <video
+              ref={videoRef}
+              src={video.videoUrl}
+              poster={video.thumbnailUrl}
+              className="w-full max-w-sm h-[80vh] object-cover rounded-lg"
+              loop
+              playsInline
+              autoPlay
+              muted={isMuted}
+              onPlay={() => {
+                setIsPlaying(true);
+                // Track view when video starts playing
+                trackVideoView();
+              }}
+              onPause={() => setIsPlaying(false)}
+            />
+            
+            {/* Video Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <button
+                onClick={handleVideoClick}
+                className="bg-black/50 rounded-full p-4 opacity-0 hover:opacity-100 transition-opacity"
+              >
+                {isPlaying ? (
+                  <Pause className="w-8 h-8 text-white" />
+                ) : (
+                  <Play className="w-8 h-8 text-white" />
+                )}
+              </button>
             </div>
 
+            {/* Mute Button */}
+            <button
+              onClick={handleMuteToggle}
+              className="absolute top-4 right-4 bg-black/50 rounded-full p-2 text-white"
+            >
+              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            </button>
+
+            {/* Duration Badge */}
+            <div className="absolute top-4 left-4">
+              <Badge className="bg-black/80 text-white text-xs">
+                {formatDuration(video.duration)}
+              </Badge>
+            </div>
+
+            {/* Category Badge */}
+            <div className="absolute top-4 left-20">
+              <Badge className="bg-today-500/90 text-white text-xs">
+                {video.category}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Content Sidebar */}
+          <div className="flex flex-col justify-between h-[80vh] max-w-sm w-full md:w-auto">
             {/* Video Info */}
-            <div className="mt-6 max-w-md mx-auto">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h1 className="text-2xl font-bold mb-2">{video.title}</h1>
-                  <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
-                      <span>{formatViews(video.views)} views</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{formatDistanceToNow(video.publishedAt, { addSuffix: true })}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{formatDuration(video.duration)}</span>
-                    </div>
-                  </div>
+            <div className="flex-1">
+              <h1 className="text-white font-semibold text-xl mb-3 line-clamp-3">
+                {video.title}
+              </h1>
+              <p className="text-gray-300 text-sm mb-4 line-clamp-4 leading-relaxed">
+                {video.description}
+              </p>
+              <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
+                <div className="flex items-center gap-1">
+                  <User className="w-4 h-4" />
+                  <span>{video.authorName}</span>
                 </div>
-              </div>
-
-              {/* Author Info */}
-              <div className="flex items-center gap-3 mb-4 p-4 bg-gray-900/50 rounded-lg">
-                <div className="w-12 h-12 bg-today-500 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>{formatDistanceToNow(video.publishedAt, { addSuffix: true })}</span>
                 </div>
-                <div>
-                  <h3 className="font-semibold">{video.authorName}</h3>
-                  <p className="text-sm text-gray-400">Content Creator</p>
+                <div className="flex items-center gap-1">
+                  <Eye className="w-4 h-4" />
+                  <span>{formatViews(video.views)}</span>
                 </div>
-              </div>
-
-              {/* Description */}
-              <div className="mb-6">
-                <p className="text-gray-300 leading-relaxed">{video.description}</p>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center gap-3 mb-6">
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setLiked(!liked)}
-                  className={liked ? "border-red-500 text-red-500" : ""}
+                  className={`${liked ? "border-red-500 text-red-500" : "border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"}`}
                 >
                   <Heart className={`w-4 h-4 mr-2 ${liked ? 'fill-red-500' : ''}`} />
                   {liked ? 'Liked' : 'Like'}
                 </Button>
                 
-                <Button variant="outline">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"
+                >
                   <MessageCircle className="w-4 h-4 mr-2" />
                   Comment
                 </Button>
@@ -296,8 +292,9 @@ export default function VideoPage() {
                 
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setSaved(!saved)}
-                  className={saved ? "border-today-500 text-today-500" : ""}
+                  className={`${saved ? "border-today-500 text-today-500" : "border-gray-600 text-gray-300 hover:text-white hover:border-gray-500"}`}
                 >
                   {saved ? (
                     <Bookmark className="w-4 h-4 mr-2 fill-today-500" />
@@ -308,79 +305,26 @@ export default function VideoPage() {
                 </Button>
               </div>
 
-              {/* Category and Tags */}
-              <div className="flex flex-wrap gap-2 mb-8">
-                <Badge className="bg-today-500 text-white">
-                  {video.category}
-                </Badge>
+              {/* Tags */}
+              <div className="flex flex-wrap gap-2 mb-6">
                 {video.tags?.map((tag, index) => (
-                  <Badge key={index} variant="outline" className="border-gray-600 text-gray-300">
+                  <Badge key={index} variant="outline" className="border-gray-600 text-gray-300 text-xs">
                     {tag}
                   </Badge>
                 ))}
               </div>
-
-              {/* Comments */}
-              <div className="mb-8">
-                <Comments
-                  contentId={video.id}
-                  contentType="video"
-                />
-              </div>
             </div>
-          </div>
 
-          {/* Sidebar - Related Videos */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8">
-              <h2 className="text-xl font-bold mb-6">Related Videos</h2>
-              <div className="space-y-4">
-                {relatedVideos.map((relatedVideo) => (
-                  <Link key={relatedVideo.id} href={`/triton-today/${relatedVideo.id}`}>
-                    <Card className="bg-gray-900/50 border-gray-800 hover:border-today-500/50 transition-colors cursor-pointer">
-                      <div className="relative aspect-[9/16] overflow-hidden rounded-t-lg">
-                        <video
-                          src={relatedVideo.videoUrl}
-                          poster={relatedVideo.thumbnailUrl}
-                          className="w-full h-full object-cover"
-                          muted
-                          loop
-                          playsInline
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                        <div className="absolute top-2 right-2">
-                          <Badge className="bg-black/80 text-white text-xs">
-                            {formatDuration(relatedVideo.duration)}
-                          </Badge>
-                        </div>
-                        <div className="absolute bottom-2 left-2 right-2">
-                          <div className="flex items-center gap-2 text-white text-sm">
-                            <Eye className="w-4 h-4" />
-                            <span>{formatViews(relatedVideo.views)}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold text-white line-clamp-2 mb-2">
-                          {relatedVideo.title}
-                        </h3>
-                        <div className="flex items-center justify-between text-sm text-gray-400">
-                          <span>{relatedVideo.authorName}</span>
-                          <span>{formatDistanceToNow(relatedVideo.publishedAt, { addSuffix: true })}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-              
-              {relatedVideos.length === 0 && (
-                <div className="text-center py-8 text-gray-400">
-                  <p>No related videos found.</p>
-                </div>
-              )}
-            </div>
+
           </div>
+        </div>
+
+        {/* Comments Section */}
+        <div className="max-w-4xl mx-auto mt-12">
+          <Comments
+            contentId={video.id}
+            contentType="video"
+          />
         </div>
       </div>
     </div>
