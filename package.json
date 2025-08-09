@@ -33,7 +33,7 @@
     "@tiptap/starter-kit": "^3.0.7",
     "@types/d3": "^7.4.3",
     "@types/d3-geo": "^3.1.0",
-    "@types/leaflet": "^1.9.20",
+
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -46,13 +46,13 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.0",
     "firebase": "^11.8.1",
-    "leaflet": "^1.9.4",
+
     "lucide-react": "^0.263.1",
     "next": "^15.4.1",
     "node-fetch": "^3.3.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-leaflet": "^5.0.0",
+
     "react-simple-maps": "^3.0.0",
     "recharts": "^2.15.3",
     "sonner": "^2.0.6",
